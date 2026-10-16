@@ -120,3 +120,18 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
+// Fails the build if any native library in the debug APK isn't 16 KB
+// page-size compatible (ELF LOAD alignment and zip alignment).
+// See scripts/check-16kb-alignment.sh.
+val check16KbAlignment by tasks.registering(Exec::class) {
+    group = "verification"
+    description = "Checks that native libs in the debug APK are 16 KB page-size aligned."
+    val script = rootProject.layout.projectDirectory.file("scripts/check-16kb-alignment.sh")
+    val apk = layout.buildDirectory.file("outputs/apk/debug/app-debug.apk")
+    inputs.file(apk)
+    commandLine(script.asFile.absolutePath, apk.get().asFile.absolutePath)
+}
+
+tasks.matching { it.name == "assembleDebug" }.configureEach {
+    finalizedBy(check16KbAlignment)
+}

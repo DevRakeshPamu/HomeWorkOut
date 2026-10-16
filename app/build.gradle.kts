@@ -52,6 +52,14 @@ android {
     buildFeatures {
         compose = true
     }
+
+    // Store native libs uncompressed and page-aligned so they load in place on
+    // 16 KB page-size devices (Google Play requirement for Android 15+).
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
 }
 
 dependencies {
@@ -81,7 +89,7 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
-    implementation("net.zetetic:sqlcipher-android:4.6.0")
+    implementation(libs.sqlcipher.android)
     implementation("androidx.sqlite:sqlite-ktx:2.4.0")
 
     // DataStore

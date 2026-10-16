@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fit10 - Product Requirements Document (PRD)</title>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 18mm 16mm 18mm 16mm;
+    @bottom-right {
+      content: counter(page);
+    }
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #0f172a;
+    line-height: 1.55;
+    font-size: 11pt;
+    margin: 0;
+    padding: 0;
+    background-color: #ffffff;
+  }
+
+  /* Header banner */
+  .doc-header {
+    border-bottom: 2px solid #10b981;
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .doc-title-group h1 {
+    font-size: 24pt;
+    font-weight: 800;
+    color: #047857;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.5px;
+  }
+
+  .doc-subtitle {
+    font-size: 12pt;
+    color: #475569;
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .doc-badge {
+    display: inline-block;
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #10b981;
+    font-size: 8.5pt;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  /* Meta table */
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 24px;
+  }
+
+  .meta-item {
+    font-size: 9pt;
+  }
+
+  .meta-label {
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 7.5pt;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .meta-val {
+    color: #0f172a;
+    font-weight: 600;
+  }
+
+  /* Section styles */
+  h2 {
+    font-size: 14pt;
+    color: #065f46;
+    border-bottom: 1.5px solid #e2e8f0;
+    padding-bottom: 6px;
+    margin-top: 26px;
+    margin-bottom: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    page-break-after: avoid;
+  }
+
+  h2 span.num {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    background: #10b981;
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    font-size: 9pt;
+    margin-right: 8px;
+  }
+
+  h3 {
+    font-size: 11.5pt;
+    color: #0f172a;
+    margin-top: 16px;
+    margin-bottom: 6px;
+    font-weight: 700;
+    page-break-after: avoid;
+  }
+
+  p {
+    margin: 0 0 10px 0;
+    color: #334155;
+  }
+
+  ul, ol {
+    margin: 0 0 12px 0;
+    padding-left: 22px;
+    color: #334155;
+  }
+
+  li {
+    margin-bottom: 4px;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 16px 0;
+    font-size: 9pt;
+    page-break-inside: avoid;
+  }
+
+  th {
+    background: #f1f5f9;
+    color: #0f172a;
+    text-align: left;
+    padding: 8px 10px;
+    font-weight: 700;
+    border-top: 1px solid #cbd5e1;
+    border-bottom: 2px solid #cbd5e1;
+  }
+
+  td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) td {
+    background-color: #fafbfc;
+  }
+
+  .table-highlight {
+    font-weight: 600;
+    color: #047857;
+  }
+
+  /* Callout boxes */
+  .callout {
+    background: #f0fdf4;
+    border-left: 4px solid #10b981;
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    margin: 12px 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+
+  .callout-title {
+    font-weight: 700;
+    color: #065f46;
+    margin-bottom: 4px;
+  }
+
+  .callout-warning {
+    background: #fffbeb;
+    border-left-color: #f59e0b;
+  }
+  .callout-warning .callout-title {
+    color: #b45309;
+  }
+
+  /* Pill badges */
+  .badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 7.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .badge-green { background: #d1fae5; color: #065f46; }
+  .badge-blue { background: #e0f2fe; color: #0369a1; }
+  .badge-amber { background: #fef3c7; color: #92400e; }
+  .badge-purple { background: #f3e8ff; color: #6b21a8; }
+
+  /* Page break helpers */
+  .page-break {
+    page-break-before: always;
+  }
+
+  .avoid-break {
+    page-break-inside: avoid;
+  }
+
+  /* Key Metrics Grid */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 14px 0;
+    page-break-inside: avoid;
+  }
+
+  .kpi-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-top: 3px solid #10b981;
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+
+  .kpi-number {
+    font-size: 16pt;
+    font-weight: 800;
+    color: #047857;
+    margin-bottom: 2px;
+  }
+
+  .kpi-label {
+    font-size: 8.5pt;
+    font-weight: 700;
+    color: #1e293b;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
+  .kpi-desc {
+    font-size: 8pt;
+    color: #64748b;
+    line-height: 1.35;
+  }
+
+  .code-token {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 8.5pt;
+    background: #f1f5f9;
+    padding: 1px 4px;
+    border-radius: 4px;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 30px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 10px;
+    font-size: 8pt;
+    color: #94a3b8;
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="doc-header">
+    <div class="doc-title-group">
+      <h1>Fit10 — Product Requirements Document</h1>
+      <p class="doc-subtitle">10-Minute Daily Home Workout & Adaptive Personal Trainer</p>
+      <span class="doc-badge">Production Baseline • Version 1.0.0</span>
+    </div>
+  </div>
+
+  <!-- Meta Summary Grid -->
+  <div class="meta-grid">
+    <div class="meta-item">
+      <div class="meta-label">App Identifier</div>
+      <div class="meta-val">com.fit10.app</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Target OS / SDK</div>
+      <div class="meta-val">Android 14+ (Min SDK 24, Target 37)</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Architecture</div>
+      <div class="meta-val">MVVM + Clean Arch (Jetpack Compose)</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Database / Engine</div>
+      <div class="meta-val">Room SQLite + Reactive StateFlow</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Monetization</div>
+      <div class="meta-val">Google Play Billing v9.1.0 (Pro Pass)</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Content Catalog</div>
+      <div class="meta-val">21 Exercises • 10 Workouts • 2 Programs</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Execution Model</div>
+      <div class="meta-val">100% Offline-First (No Mandatory Cloud)</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Document Date</div>
+      <div class="meta-val">October 2026</div>
+    </div>
+  </div>
+
+  <!-- 1. Executive Summary & Vision -->
+  <h2><span class="num">1</span> Executive Summary & Product Vision</h2>
+  <p>
+    <strong>Fit10</strong> addresses the primary bottleneck in home fitness adherence: <em>time friction and chronic burnout</em>. While conventional fitness applications prescribe rigid 45–60 minute sessions requiring equipment or gyms, Fit10 delivers high-density, scientifically sequenced <strong>10-minute micro-workouts</strong> performed entirely with bodyweight.
+  </p>
+  <div class="callout">
+    <div class="callout-title">Core Value Proposition</div>
+    "Ten minutes of scientifically programmed daily movement that adapts to your joint comfort, prevents overtraining through muscle recovery awareness, and builds an unbreakable exercise habit."
+  </div>
+  <p>
+    By integrating an automated deload cycle, muscle overlap protection (ensuring back-to-back workouts do not fatigue identical muscle groups), and real-time exercise substitution, Fit10 ensures every user makes steady progress without risk of overuse injury or demotivation.
+  </p>
+
+  <!-- 2. Target Personas -->
+  <h2><span class="num">2</span> Target Demographics & User Personas</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 22%;">Persona</th>
+        <th style="width: 28%;">Primary Motivation</th>
+        <th style="width: 25%;">Pain Points</th>
+        <th style="width: 25%;">Fit10 Solution</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="table-highlight">The Time-Constrained Professional</td>
+        <td>Maintain health and energy without sacrificing calendar blocks or commuting to gyms.</td>
+        <td>Unpredictable meetings, fatigue after long work hours, guilt over skipping 1-hour workouts.</td>
+        <td>Zero-setup 10-minute sessions with automated timers and customizable daily reminder schedules.</td>
+      </tr>
+      <tr>
+        <td class="table-highlight">The Habit Starter / Beginner</td>
+        <td>Build a sustainable, non-intimidating daily fitness habit from home.</td>
+        <td>Severe post-workout soreness, joint discomfort, complex gym jargon, gym anxiety.</td>
+        <td>14-Day Kickstart guided track, clear form instructions, and joint-friendly low-impact regressions.</td>
+      </tr>
+      <tr>
+        <td class="table-highlight">The Adaptive Athlete</td>
+        <td>Maintain functional conditioning, core stability, and posterior chain strength.</td>
+        <td>Plateaus caused by static routines; overtraining push/quad groups without pulling exercises.</td>
+        <td>Dynamic progression engine (+2 reps / +5s holds), balanced push/pull volume, and deload weeks.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 3. Information Architecture & Navigation Flow -->
+  <h2><span class="num">3</span> Information Architecture & Navigation</h2>
+  <p>
+    Fit10 utilizes single-activity Android architecture driven by Jetpack Compose Navigation (<span class="code-token">Fit10NavGraph</span>). The destination graph enforces seamless state restoration and deep linking:
+  </p>
+  <ul>
+    <li><strong>Splash Screen:</strong> Evaluates onboarding completion flag in DataStore; routes first-time users to Onboarding and returning users directly to Home.</li>
+    <li><strong>Onboarding Flow:</strong> 6-step guided assessment generating a personalized user profile and plan summary.</li>
+    <li><strong>Home Dashboard:</strong> Primary hub featuring daily recommended workout, streak rings, active program tracker, and focus area shortcuts.</li>
+    <li><strong>Workout Preview & Detail:</strong> Exercise breakdown with form cues, rep/duration targets, and one-tap exercise replacement.</li>
+    <li><strong>Interval Workout Player:</strong> High-precision ticker managing countdowns, work intervals, rest periods, audio tones, and haptic pulses.</li>
+    <li><strong>Workout Summary & RPE Feedback:</strong> Completion telemetry, calorie computation, perceived exertion input, and real-time engine adaptation messaging.</li>
+    <li><strong>Discovery & Analytics:</strong> Explore catalog, workout history calendar, reminder settings, profile, and subscription management.</li>
+  </ul>
+
+  <div class="page-break"></div>
+
+  <!-- 4. Functional Requirements -->
+  <h2><span class="num">4</span> Functional Requirements & Feature Specifications</h2>
+
+  <h3>4.1 Onboarding & Assessment Flow</h3>
+  <p>
+    A guided 6-step questionnaire implemented in <span class="code-token">OnboardingViewModel</span> that captures the user's fitness profile and synthesizes their initial training program:
+  </p>
+  <ul>
+    <li><strong>Step 1: Fitness Level:</strong> Beginner, Intermediate, or Advanced baseline.</li>
+    <li><strong>Step 2: Primary Fitness Goal:</strong> Lose Weight, Build Strength, Improve Fitness, Flexibility, or Stay Active.</li>
+    <li><strong>Step 3: Target Daily Duration:</strong> 5, 10 (default), or 15 minutes.</li>
+    <li><strong>Step 4: Available Equipment:</strong> None / Bodyweight (default), Dumbbells, Resistance Bands, Yoga Mat.</li>
+    <li><strong>Step 5: Exercise Exclusions / Physical Limitations:</strong> Avoid jumping, avoid knee stress, avoid wrist loading, or none.</li>
+    <li><strong>Step 6: Weekly Schedule:</strong> Select active days per week (default 5 days) and recovery style (Active Recovery vs Complete Rest).</li>
+  </ul>
+
+  <h3>4.2 Intelligent Personalization & Adaptation Engine</h3>
+  <p>
+    The core algorithm (<span class="code-token">PersonalizationEngine</span>) scores candidate workouts and recalibrates user volume using multi-factor heuristics:
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Heuristic</th>
+        <th style="width: 45%;">Rule Specification</th>
+        <th style="width: 30%;">Impact on User</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Deload Gate</strong></td>
+        <td>Every 20 completed sessions (<span class="code-token">total % 20 == 0</span>), the engine forces 3–5 days of <span class="badge badge-green">MOBILITY</span> routines.</td>
+        <td>Prevents chronic systemic fatigue and tendon strain; promotes active recovery.</td>
+      </tr>
+      <tr>
+        <td><strong>Overlap-Aware Recovery</strong></td>
+        <td>Treats <span class="badge badge-amber">FULL_BODY</span> as overlapping Lower, Upper, and Core. Back-to-back identical muscle stress applies a <strong>-15 penalty</strong>; alternating groups grants a <strong>+12 bonus</strong>.</td>
+        <td>Prevents consecutive-day quadriceps or pushing overload.</td>
+      </tr>
+      <tr>
+        <td><strong>Weekly Volume Guard</strong></td>
+        <td>Penalizes any muscle focus area appearing $\ge 2\times$ (or Full Body $\ge 3\times$) in the rolling 7 completed sessions with a <strong>-20 penalty</strong>.</td>
+        <td>Enforces natural muscle rotation throughout the week.</td>
+      </tr>
+      <tr>
+        <td><strong>Staleness Guard</strong></td>
+        <td>Penalizes the exact workout completed in the prior session with <strong>-8 penalty</strong> to break score ties.</td>
+        <td>Guarantees routine variety even when user preferences are narrow.</td>
+      </tr>
+      <tr>
+        <td><strong>Auto-Progression</strong></td>
+        <td>$\ge 3$ of last 5 sessions rated <span class="code-token">TOO_EASY</span> with $\ge 95\%$ completion advances level to Intermediate/Advanced. Also triggers if 3 consecutive sessions hit 100% completion.</td>
+        <td>Applies progressive overload without manual user configuration.</td>
+      </tr>
+      <tr>
+        <td><strong>Auto-Regression</strong></td>
+        <td>$\ge 3$ ratings of <span class="code-token">TOO_HARD</span> or completion rate $< 60\%$ drops difficulty by one tier and activates low-impact exercise substitutions.</td>
+        <td>Protects struggling users from dropout and injury.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>4.3 Real-Time Interval Workout Player</h3>
+  <p>
+    Powered by <span class="code-token">WorkoutSessionEngine</span> operating on a dedicated coroutine ticker:
+  </p>
+  <ul>
+    <li><strong>State Lifecycle:</strong> <span class="code-token">Idle</span> &rarr; <span class="code-token">Countdown</span> (5s prep) &rarr; <span class="code-token">ActiveExercise</span> (30–60s) &rarr; <span class="code-token">RestInterval</span> (15–20s) &rarr; <span class="code-token">Summary</span>.</li>
+    <li><strong>Interactive Controls:</strong> Play, Pause, Resume, Skip Next, Go to Previous Exercise.</li>
+    <li><strong>Audio Cues:</strong> Synthesized beeps via Android <span class="code-token">ToneGenerator</span>: countdown tick (<span class="code-token">TONE_PROP_BEEP</span>), exercise start (<span class="code-token">TONE_PROP_ACK</span>), rest interval (<span class="code-token">TONE_PROP_PROMPT</span>), halfway mark, and completion fanfare.</li>
+    <li><strong>Haptic Engine:</strong> Waveform vibration patterns coordinated by <span class="code-token">WorkoutFeedbackCoordinator</span> for silent pocket/floor workout execution.</li>
+    <li><strong>Visual Motion Guides:</strong> Animated demonstration component and live countdown circular progress rings.</li>
+  </ul>
+
+  <h3>4.4 Exercise Replacement & Regression Engine</h3>
+  <p>
+    Enables users to swap out problematic exercises prior to or during a workout. Substitutions preserve physiological intent while adjusting joint loading:
+  </p>
+  <ul>
+    <li><em>Basic High-Impact Swaps (Free Core Tier):</em> Jumping Jacks (Moderate Impact) &rarr; <strong>Arm Circles Warm-up</strong> (Zero Impact), Mountain Climbers (Moderate Impact) &rarr; <strong>Forearm Plank Hold</strong> (Low Impact Core), High Knees (High Impact) &rarr; <strong>Glute Bridges</strong> (Low Impact Posterior Chain).</li>
+    <li><em>Full Joint-Friendly Regression Engine (Fit10 Pro):</em> Unlocks infinite custom substitutions across all 21 exercises, knee/wrist/joint pain avoidance filters, and multi-tier progressions (e.g. Standard Push-up &rarr; Wide-Grip, Knee Push-up, Wall Push-up, or Decline Push-up).</li>
+  </ul>
+
+  <div class="page-break"></div>
+
+  <!-- 4.5 Content Catalog -->
+  <h3>4.5 Content Catalog: Exercises, Workouts & Programs</h3>
+  <p>
+    Fit10 launches with a curated catalog of <strong>21 bodyweight exercises</strong>, <strong>10 structured 10-minute workouts</strong>, and <strong>2 multi-week programs</strong>:
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 26%;">Exercise</th>
+        <th style="width: 14%;">Category</th>
+        <th style="width: 14%;">Impact</th>
+        <th style="width: 28%;">Target Musculature</th>
+        <th style="width: 18%;">Default Cadence</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Bodyweight Squats</strong></td>
+        <td><span class="badge badge-blue">Strength</span></td>
+        <td>Low</td>
+        <td>Quadriceps, Glutes, Hamstrings</td>
+        <td>15 reps / 45s</td>
+      </tr>
+      <tr>
+        <td><strong>Alternating Forward Lunges</strong></td>
+        <td><span class="badge badge-blue">Strength</span></td>
+        <td>Low</td>
+        <td>Quadriceps, Glutes, Calves</td>
+        <td>14 reps / 45s</td>
+      </tr>
+      <tr>
+        <td><strong>Alternating Reverse Lunges</strong></td>
+        <td><span class="badge badge-blue">Strength</span></td>
+        <td>Low</td>
+        <td>Glutes, Hamstrings (Knee-friendly)</td>
+        <td>14 reps / 45s</td>
+      </tr>
+      <tr>
+        <td><strong>Glute Bridges</strong></td>
+        <td><span class="badge badge-blue">Strength</span></td>
+        <td>Low</td>
+        <td>Glutes, Hamstrings, Erector Spinae</td>
+        <td>15 reps / 45s</td>
+      </tr>
+      <tr>
+        <td><strong>Glute Bridge March</strong></td>
+        <td><span class="badge badge-blue">Strength</span></td>
+        <td>Low</td>
+        <td>Glutes, Anti-rotation Core</td>
+        <td>12 reps / 45s</td>
+      </tr>
+      <tr>
+        <td><strong>Wall Sit</strong></td>
+        <td><span class="badge badge-blue">Strength</span></td>
+        <td>Low</td>
+        <td>Isometric Quadriceps, Glutes</td>
+        <td>45s hold</td>
+      </tr>
+      <tr>
+        <td><strong>Push-ups</strong></td>
+        <td><span class="badge badge-blue">Strength</span></td>
+        <td>Low</td>
+        <td>Chest, Triceps, Anterior Deltoids</td>
+        <td>12 reps / 45s</td>
+      </tr>
+      <tr>
+        <td><strong>Wide-Grip Push-ups</strong></td>
+        <td><span class="badge badge-blue">Strength</span></td>
+        <td>Low</td>
+        <td>Outer Pectorals, Deltoids</td>
+        <td>10 reps / 45s</td>
+      </tr>
+      <tr>
+        <td><strong>Diamond Push-ups</strong></td>
+        <td><span class="badge badge-blue">Strength</span></td>
+        <td>Low</td>
+        <td>Triceps, Inner Chest</td>
+        <td>8 reps / 45s</td>
+      </tr>
+      <tr>
+        <td><strong>Prone Y-T-W Hold</strong></td>
+        <td><span class="badge badge-blue">Strength</span></td>
+        <td>Low</td>
+        <td>Rear Delts, Rhomboids, Trapezius</td>
+        <td>45s hold</td>
+      </tr>
+      <tr>
+        <td><strong>Forearm Plank</strong></td>
+        <td><span class="badge badge-green">Core</span></td>
+        <td>Low</td>
+        <td>Transverse Abdominis, Deep Core</td>
+        <td>45s hold</td>
+      </tr>
+      <tr>
+        <td><strong>Bicycle Crunches</strong></td>
+        <td><span class="badge badge-green">Core</span></td>
+        <td>Low</td>
+        <td>Internal/External Obliques</td>
+        <td>20 reps / 40s</td>
+      </tr>
+      <tr>
+        <td><strong>Plank Shoulder Taps</strong></td>
+        <td><span class="badge badge-green">Core</span></td>
+        <td>Low</td>
+        <td>Shoulder Stability, Anti-rotational Core</td>
+        <td>45s</td>
+      </tr>
+      <tr>
+        <td><strong>Bird Dog</strong></td>
+        <td><span class="badge badge-green">Core</span></td>
+        <td>Low</td>
+        <td>Rotary Stability, Lower Back</td>
+        <td>45s</td>
+      </tr>
+      <tr>
+        <td><strong>Superman Hold</strong></td>
+        <td><span class="badge badge-green">Core</span></td>
+        <td>Low</td>
+        <td>Erector Spinae, Glutes, Posterior Chain</td>
+        <td>45s hold</td>
+      </tr>
+      <tr>
+        <td><strong>Jumping Jacks</strong></td>
+        <td><span class="badge badge-amber">Cardio</span></td>
+        <td>Moderate</td>
+        <td>Cardiovascular, Calves, Deltoids</td>
+        <td>40s</td>
+      </tr>
+      <tr>
+        <td><strong>Mountain Climbers</strong></td>
+        <td><span class="badge badge-amber">Cardio</span></td>
+        <td>Moderate</td>
+        <td>Hip Flexors, Core, Shoulder Girdle</td>
+        <td>40s</td>
+      </tr>
+      <tr>
+        <td><strong>High Knees</strong></td>
+        <td><span class="badge badge-amber">Cardio</span></td>
+        <td>High</td>
+        <td>Hip Flexors, Fast-twitch Calves</td>
+        <td>40s</td>
+      </tr>
+      <tr>
+        <td><strong>Arm Circles Warm-up</strong></td>
+        <td><span class="badge badge-purple">Warmup</span></td>
+        <td>Low</td>
+        <td>Rotator Cuff, Deltoids</td>
+        <td>30s</td>
+      </tr>
+      <tr>
+        <td><strong>Cat-Cow Stretch</strong></td>
+        <td><span class="badge badge-purple">Mobility</span></td>
+        <td>Low</td>
+        <td>Spinal Flexion/Extension, Neck</td>
+        <td>45s flow</td>
+      </tr>
+      <tr>
+        <td><strong>Child's Pose</strong></td>
+        <td><span class="badge badge-purple">Cooldown</span></td>
+        <td>Low</td>
+        <td>Latissimus Dorsi, Hips, Spinal Decompression</td>
+        <td>45s hold</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4>Workouts & Program Tracks</h4>
+  <ul>
+    <li><strong>Week 1 Foundation Workouts:</strong> Full Body Ignition, Core Shred, Lower Body Burn, Upper Body Sculpt, Daily Mobility Reset.</li>
+    <li><strong>Week 2 Overload Workouts:</strong> Full Body Power (+2 reps / +5s holds), Core Endurance, Lower Body Burn Level Up, Upper Body Strength, Full Body Challenge (HIIT finisher).</li>
+    <li><strong>14-Day Fit10 Kickstart:</strong> 2-week beginner progression with built-in active recovery days on Days 4, 7, and 9.</li>
+    <li><strong>14-Day Fit10 Intermediate:</strong> Dense volume progression for users graduating from Kickstart.</li>
+  </ul>
+
+  <!-- 4.6 Monetization -->
+  <h3>4.6 Monetization & Subscription Strategy (Fit10 Pro)</h3>
+  <p>
+    Built on <strong>Google Play Billing Library v9.1.0</strong> conforming to Play Store billing policies:
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Tier</th>
+        <th style="width: 20%;">Price (INR)</th>
+        <th style="width: 25%;">Trial / Billing Terms</th>
+        <th style="width: 30%;">Access Level</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="table-highlight">Annual Pass (Recommended)</td>
+        <td>₹499 / year</td>
+        <td><strong>7-Day Free Trial</strong>, auto-bills ₹41.58/mo equivalent.</td>
+        <td>Full Pro Access: multi-week guided programs, adaptive difficulty between sessions, full exercise regression engine, advanced analytics, streak repair. No ads, zero workout tracking.</td>
+      </tr>
+      <tr>
+        <td class="table-highlight">Monthly Pass</td>
+        <td>₹149 / month</td>
+        <td>Billed monthly with instant cancellation.</td>
+        <td>Full Pro Access on a flexible month-to-month basis.</td>
+      </tr>
+      <tr>
+        <td class="table-highlight">Free Tier (Privacy-First)</td>
+        <td>₹0</td>
+        <td>No credit card required.</td>
+        <td>All 10 foundation & progressive workouts, daily recommendation, basic history & streaks, Kickstart preview (Days 1–3), basic high-impact exercise swaps, reminders, local export. Completely ad-free with full local privacy.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="page-break"></div>
+
+  <!-- 5. Technical Architecture -->
+  <h2><span class="num">5</span> Technical Architecture & Data Design</h2>
+  <div class="callout">
+    <div class="callout-title">Architecture Philosophy: Clean MVVM + Unidirectional Data Flow (UDF)</div>
+    Every feature is decomposed into <strong>UI (Compose)</strong>, <strong>ViewModel (StateFlow)</strong>, <strong>Domain (Use Cases / Engines)</strong>, and <strong>Data (Room / DataStore)</strong>. UI components observe immutable UI states and dispatch declarative events.
+  </div>
+
+  <h3>5.1 Database Entity Relationship (Room)</h3>
+  <ul>
+    <li><span class="code-token">ExerciseEntity</span>: Stores 21 canonical exercises (ID, name, instructions, tips, target muscles, equipment, impact level).</li>
+    <li><span class="code-token">WorkoutEntity & WorkoutExerciseEntity</span>: Represents workout metadata and joined exercise sequence with order index, duration, reps, and rest timers.</li>
+    <li><span class="code-token">ProgramEntity & ProgramDayEntity</span>: Multi-week tracks mapped to daily workout IDs and rest flags.</li>
+    <li><span class="code-token">WorkoutResultEntity</span>: Historical session logs (session ID, workout ID, duration, exercises completed, calories, RPE feedback rating, completed timestamp).</li>
+  </ul>
+
+  <!-- 6. Non-Functional Requirements -->
+  <h2><span class="num">6</span> Non-Functional Requirements (NFRs)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Dimension</th>
+        <th style="width: 45%;">Target Standard</th>
+        <th style="width: 30%;">Verification Method</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Cold Start Latency</strong></td>
+        <td>$\le 800\text{ ms}$ to interactive Home screen.</td>
+        <td>Baseline Profiles + R8 optimization.</td>
+      </tr>
+      <tr>
+        <td><strong>UI Fluidity</strong></td>
+        <td>Sustained 60 FPS across all workout countdowns and timer animations.</td>
+        <td>Compose Layout Inspector / Macrobenchmark.</td>
+      </tr>
+      <tr>
+        <td><strong>Offline Resiliency</strong></td>
+        <td>100% of workouts, timers, audio tones, and logs execute without internet.</td>
+        <td>Room database pre-seeded on first run.</td>
+      </tr>
+      <tr>
+        <td><strong>Thermal & Battery Load</strong></td>
+        <td>$< 2\%$ battery consumption per 10-minute session.</td>
+        <td>Coroutine timer delays over wake-locks; low CPU audio synthesis.</td>
+      </tr>
+      <tr>
+        <td><strong>Data Privacy</strong></td>
+        <td>Zero health/biometric data transmitted to remote servers by default.</td>
+        <td>On-device Room storage; exportable JSON database.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 7. Key Performance Indicators -->
+  <h2><span class="num">7</span> Key Performance Indicators (KPIs)</h2>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-number">$\ge 82\%$</div>
+      <div class="kpi-label">Workout Completion</div>
+      <div class="kpi-desc">Percentage of initiated workouts that finish without early abandonment.</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-number">$\ge 45\%$ / $25\%$</div>
+      <div class="kpi-label">D7 / D30 Retention</div>
+      <div class="kpi-desc">Sustained habit retention enabled by 10-minute micro-commitment.</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-number">$\ge 12\%$</div>
+      <div class="kpi-label">Trial Conversion</div>
+      <div class="kpi-desc">Conversion rate from the 7-day annual pass trial into paying subscribers.</div>
+    </div>
+  </div>
+
+  <!-- 8. Future Roadmap -->
+  <h2><span class="num">8</span> Product Roadmap (Post-v1.0)</h2>
+  <ul>
+    <li><strong>v1.1 (Wear OS Companion):</strong> Standalone smartwatch workout player with real-time wrist haptics and heart rate monitoring.</li>
+    <li><strong>v1.2 (Health Connect Integration):</strong> Bidirectional sync with Google Health Connect for unified caloric and step tracking.</li>
+    <li><strong>v1.3 (Chromecast / Smart TV Casting):</strong> Full-screen animated workout timer view designed for living room workouts.</li>
+    <li><strong>v1.4 (Custom Circuit Builder):</strong> Power users can assemble custom 10-minute workout circuits from the 21 exercise catalog.</li>
+  </ul>
+
+  <!-- Document Footer -->
+  <div class="footer">
+    <div>Fit10 Mobile Product Team • Confidential & Proprietary</div>
+    <div>Page 1 of 1 — Generated for Production Release</div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fit10 Mom - Product Requirements Document (PRD)</title>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 18mm 16mm 18mm 16mm;
+    @bottom-right {
+      content: counter(page);
+    }
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #0f172a;
+    line-height: 1.55;
+    font-size: 11pt;
+    margin: 0;
+    padding: 0;
+    background-color: #ffffff;
+  }
+
+  /* Header banner */
+  .doc-header {
+    border-bottom: 2px solid #10b981;
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .doc-title-group h1 {
+    font-size: 24pt;
+    font-weight: 800;
+    color: #047857;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.5px;
+  }
+
+  .doc-subtitle {
+    font-size: 12pt;
+    color: #475569;
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .doc-badge {
+    display: inline-block;
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #10b981;
+    font-size: 8.5pt;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  /* Meta table */
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 24px;
+  }
+
+  .meta-item {
+    font-size: 9pt;
+  }
+
+  .meta-label {
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 7.5pt;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .meta-val {
+    color: #0f172a;
+    font-weight: 600;
+  }
+
+  /* Section styles */
+  h2 {
+    font-size: 14pt;
+    color: #065f46;
+    border-bottom: 1.5px solid #e2e8f0;
+    padding-bottom: 6px;
+    margin-top: 26px;
+    margin-bottom: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    page-break-after: avoid;
+  }
+
+  h2 span.num {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    background: #10b981;
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    font-size: 9pt;
+    margin-right: 8px;
+  }
+
+  h3 {
+    font-size: 11.5pt;
+    color: #0f172a;
+    margin-top: 16px;
+    margin-bottom: 6px;
+    font-weight: 700;
+    page-break-after: avoid;
+  }
+
+  p {
+    margin: 0 0 10px 0;
+    color: #334155;
+  }
+
+  ul, ol {
+    margin: 0 0 12px 0;
+    padding-left: 22px;
+    color: #334155;
+  }
+
+  li {
+    margin-bottom: 4px;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 16px 0;
+    font-size: 9pt;
+    page-break-inside: avoid;
+  }
+
+  th {
+    background: #f1f5f9;
+    color: #0f172a;
+    text-align: left;
+    padding: 8px 10px;
+    font-weight: 700;
+    border-top: 1px solid #cbd5e1;
+    border-bottom: 2px solid #cbd5e1;
+  }
+
+  td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) td {
+    background-color: #fafbfc;
+  }
+
+  .table-highlight {
+    font-weight: 600;
+    color: #047857;
+  }
+
+  /* Callout boxes */
+  .callout {
+    background: #f0fdf4;
+    border-left: 4px solid #10b981;
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    margin: 12px 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+
+  .callout-title {
+    font-weight: 700;
+    color: #065f46;
+    margin-bottom: 4px;
+  }
+
+  .callout-warning {
+    background: #fffbeb;
+    border-left-color: #f59e0b;
+  }
+  .callout-warning .callout-title {
+    color: #b45309;
+  }
+
+  /* Pill badges */
+  .badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 7.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .badge-green { background: #d1fae5; color: #065f46; }
+  .badge-blue { background: #e0f2fe; color: #0369a1; }
+  .badge-amber { background: #fef3c7; color: #92400e; }
+  .badge-purple { background: #f3e8ff; color: #6b21a8; }
+
+  /* Page break helpers */
+  .page-break {
+    page-break-before: always;
+  }
+
+  .avoid-break {
+    page-break-inside: avoid;
+  }
+
+  /* Key Metrics Grid */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 14px 0;
+    page-break-inside: avoid;
+  }
+
+  .kpi-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-top: 3px solid #10b981;
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+
+  .kpi-number {
+    font-size: 16pt;
+    font-weight: 800;
+    color: #047857;
+    margin-bottom: 2px;
+  }
+
+  .kpi-label {
+    font-size: 8.5pt;
+    font-weight: 700;
+    color: #1e293b;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
+  .kpi-desc {
+    font-size: 8pt;
+    color: #64748b;
+    line-height: 1.35;
+  }
+
+  .code-token {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 8.5pt;
+    background: #f1f5f9;
+    padding: 1px 4px;
+    border-radius: 4px;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 30px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 10px;
+    font-size: 8pt;
+    color: #94a3b8;
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="doc-header">
+    <div class="doc-title-group">
+      <h1>Fit10 Mom — Product Requirements Document</h1>
+      <p class="doc-subtitle">Safe 10-Minute Workouts to Rebuild Strength &amp; Energy After Pregnancy</p>
+      <span class="doc-badge">Pivot Draft • Version 2.1.0</span>
+    </div>
+  </div>
+
+  <!-- Meta Summary Grid -->
+  <div class="meta-grid">
+    <div class="meta-item">
+      <div class="meta-label">App Identifier</div>
+      <div class="meta-val">com.fit10.app</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Target Audience</div>
+      <div class="meta-val">New mothers in India, 6 weeks – 2 years postpartum</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Launch Languages</div>
+      <div class="meta-val">Hindi + English</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Platform</div>
+      <div class="meta-val">Android (Jetpack Compose, MVVM)</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Monetization</div>
+      <div class="meta-val">Freemium • Annual / Monthly / Lifetime</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Content Catalog</div>
+      <div class="meta-val">≈40 Exercises • 12-Week Journey • 4 Phases</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Execution Model</div>
+      <div class="meta-val">Offline-First, Private by Default</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Document Date</div>
+      <div class="meta-val">October 2026</div>
+    </div>
+  </div>
+
+  <!-- Executive Summary -->
+  <h2><span class="num">1</span> Executive Summary &amp; Product Vision</h2>
+  <p>
+    General home-workout apps are a crowded, ad-funded market. Fit10 Mom narrows the original Fit10 product to one underserved group: <strong>women recovering after pregnancy</strong>. These users have time in small pieces (nap windows), real physical considerations (C-section healing, abdominal separation, pelvic floor changes), and chronic tiredness. Generic apps ignore all three.
+  </p>
+  <div class="callout">
+    <div class="callout-title">Core Value Proposition</div>
+    "Safe 10-minute workouts to get your strength and energy back after baby. Designed with physiotherapists. In your language."
+  </div>
+  <p>
+    The existing Fit10 engine (adaptive difficulty, exercise swaps, interval player, offline storage) is reused and redirected: swaps become <strong>postpartum-safe alternatives</strong>, the adaptation engine responds to <strong>sleep and energy</strong>, and random workouts become a <strong>guided 12-week recovery journey</strong>. That journey is also the main reason to pay.
+  </p>
+
+  <h3>Why this can stand out</h3>
+  <table>
+    <thead>
+      <tr><th style="width:22%;"></th><th>Typical home-workout apps</th><th>Fit10 Mom</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Audience</strong></td><td>Everyone</td><td class="table-highlight">Women after pregnancy</td></tr>
+      <tr><td><strong>Safety</strong></td><td>Generic exercises</td><td class="table-highlight">Physio-reviewed, C-section aware, red-flag screening</td></tr>
+      <tr><td><strong>Structure</strong></td><td>Random workouts</td><td class="table-highlight">12-week journey in 4 phases</td></tr>
+      <tr><td><strong>Personalization</strong></td><td>Fitness level only</td><td class="table-highlight">Weeks since birth, delivery type, daily sleep/energy</td></tr>
+      <tr><td><strong>Time</strong></td><td>20–45 minutes</td><td class="table-highlight">10 minutes, pause anytime for the baby</td></tr>
+      <tr><td><strong>Language</strong></td><td>English</td><td class="table-highlight">Hindi first, regional languages next</td></tr>
+      <tr><td><strong>Ads &amp; privacy</strong></td><td>Ads, data collected</td><td class="table-highlight">No ads, data stays on the phone</td></tr>
+      <tr><td><strong>Goal framing</strong></td><td>Weight loss</td><td class="table-highlight">Energy, strength, feeling like yourself again</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Personas -->
+  <h2><span class="num">2</span> Target Users &amp; Personas</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 20%;">Persona</th>
+        <th style="width: 26%;">Situation</th>
+        <th style="width: 27%;">Pain Points</th>
+        <th style="width: 27%;">Fit10 Mom Solution</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Priya, first-time mom (3 months postpartum, C-section)</strong></td>
+        <td>At home with baby, joint family, Hindi-speaking, budget-conscious.</td>
+        <td>Afraid exercise will hurt the scar; low energy; no time; English apps feel foreign.</td>
+        <td>C-section-aware plan, Hindi voice coaching, 10-minute sessions during naps.</td>
+      </tr>
+      <tr>
+        <td><strong>Ananya, working mom (8 months postpartum)</strong></td>
+        <td>Back at office job, baby at daycare or with grandparents.</td>
+        <td>Back and neck pain from feeding and carrying; guilt about "losing herself".</td>
+        <td>Back &amp; neck relief sessions, energy check-ins, progress that celebrates strength.</td>
+      </tr>
+      <tr>
+        <td><strong>Sneha, second-time mom (14 months postpartum)</strong></td>
+        <td>Two kids, used to be active before pregnancy.</td>
+        <td>Belly "doming", mild leaking when jumping; generic HIIT made it worse.</td>
+        <td>Abdominal separation self-check, pelvic floor progression, impact only when ready.</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="callout">
+    <div class="callout-title">Positioning note</div>
+    Marketing uses "new moms", not "housewives". It includes homemakers and working mothers alike and avoids a label many women find limiting.
+  </div>
+
+  <!-- Safety -->
+  <h2><span class="num">3</span> Safety Framework (Non-Negotiable)</h2>
+  <div class="callout callout-warning">
+    <div class="callout-title">Launch blocker</div>
+    All exercises, phase rules and screening questions must be reviewed and signed off by a qualified <strong>women's health physiotherapist</strong> before release. The app is a fitness product, not a medical device, and must never diagnose or replace clinical advice.
+  </div>
+  <ul>
+    <li><strong>Medical clearance gate:</strong> The 12-week journey starts only after the user confirms her doctor has cleared her for exercise. Guidance text: typically around 6 weeks after a vaginal birth and 8 weeks or more after a C-section, but the doctor's advice always wins.</li>
+    <li><strong>Not for pregnancy:</strong> Users who are currently pregnant are told the app is not designed for them.</li>
+    <li><strong>Red-flag routing:</strong> Pain, bleeding, pelvic heaviness, or leaking that worsens with exercise stops the session and shows "please consult your doctor or a women's health physiotherapist". No workout is offered that day.</li>
+    <li><strong>Contraindication tags:</strong> Every exercise carries tags (e.g. <span class="code-token">DIASTASIS_LOAD</span>, <span class="code-token">PELVIC_FLOOR_IMPACT</span>, <span class="code-token">EARLY_CSECTION</span>, <span class="code-token">PRONE_PRESSURE</span>). The engine filters exercises against the user's profile.</li>
+    <li><strong>Excluded entirely:</strong> Crunches and bicycle crunches (they load the abdominal wall in a way that can worsen separation).</li>
+    <li><strong>Gated to Phase 4 after self-check:</strong> Full planks, shoulder taps, jumping jacks, high knees, mountain climbers. A low-impact alternative is always one tap away.</li>
+    <li><strong>Body-image care:</strong> No "bounce back" language, no before/after weight framing, weight tracking off by default.</li>
+  </ul>
+
+  <!-- Functional Requirements -->
+  <h2><span class="num">4</span> Functional Requirements</h2>
+
+  <h3>4.1 Onboarding &amp; Safety Screening (OnboardingViewModel)</h3>
+  <ol>
+    <li><strong>Language:</strong> Hindi or English (changeable later).</li>
+    <li><strong>Pregnancy status:</strong> Currently pregnant → polite exit message.</li>
+    <li><strong>Baby's age:</strong> Weeks or months since birth.</li>
+    <li><strong>Delivery type:</strong> Vaginal, C-section, or prefer not to say (treated as C-section for safety).</li>
+    <li><strong>Doctor clearance:</strong> Yes / Not yet / Not sure. "Not yet" unlocks only the gentle recovery basics.</li>
+    <li><strong>Body check:</strong> Guided abdominal separation self-check (video) and pelvic floor symptom questions (leaking, heaviness).</li>
+    <li><strong>Pre-pregnancy activity level:</strong> Inactive, somewhat active, very active.</li>
+    <li><strong>Goal:</strong> More energy, core strength, back pain relief, overall fitness.</li>
+    <li><strong>Schedule:</strong> Days per week and preferred reminder time (default: 5 days).</li>
+  </ol>
+  <p>Output: a personalized plan summary ("You'll start in Phase 1: Reconnect, 3 weeks, 10 minutes a day"), immediately followed by the paywall (Section 9.2).</p>
+
+  <h3>4.2 Daily Energy Check-In</h3>
+  <p>Before each session: "How did you sleep?" (Badly / Okay / Well) and "Any pain or discomfort today?" (Yes → red-flag questions). A bad night switches the day's session to a gentler variant at the same phase. Logged locally to show patterns over time.</p>
+
+  <h3>4.3 Adaptation Engine (PersonalizationEngine changes)</h3>
+  <table>
+    <thead><tr><th style="width:24%;">Rule</th><th>Specification</th><th style="width:28%;">Change vs v1.0</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Phase gating</strong></td><td>Advance to the next phase only when the minimum weeks are done <em>and</em> the end-of-phase self-check passes (no pain, no leaking or heaviness, no doming). Users may repeat a phase without penalty.</td><td>Replaces the every-20-sessions deload gate.</td></tr>
+      <tr><td><strong>Safety filter</strong></td><td>Exclude exercises whose contraindication tags match the profile or the latest check-in.</td><td>New. Runs before scoring.</td></tr>
+      <tr><td><strong>Energy adjustment</strong></td><td>Bad sleep → shorter work intervals, longer rest, no new exercises that day.</td><td>New.</td></tr>
+      <tr><td><strong>Overlap &amp; volume guards</strong></td><td>Existing −15 back-to-back and −20 weekly volume penalties kept.</td><td>Kept.</td></tr>
+      <tr><td><strong>Auto-progression / regression</strong></td><td>Driven by session ratings and completion, but capped at the current phase's ceiling.</td><td>Now bounded by phase.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.4 Workout Player (WorkoutSessionEngine changes)</h3>
+  <ul>
+    <li><strong>Baby-proof pause:</strong> Session state is saved on pause and survives the app being closed. Resume within 2 hours continues where she left off; after that, offer "finish the last few exercises" or restart.</li>
+    <li><strong>Hindi and English voice coaching</strong> (pre-recorded cues) in addition to tones and haptics.</li>
+    <li><strong>Quiet mode:</strong> Haptics plus on-screen cues only, for when the baby is sleeping nearby.</li>
+    <li><strong>Breathing cues</strong> on screen for every core and pelvic floor exercise (exhale on effort).</li>
+  </ul>
+
+  <h3>4.5 Session Library</h3>
+  <ul>
+    <li><strong>12-Week Recovery Journey</strong> (main program, Section 5).</li>
+    <li><strong>Quick Energy (5 min):</strong> Standing, low-impact sessions for tired days.</li>
+    <li><strong>Back &amp; Neck Relief:</strong> For feeding and carrying posture.</li>
+    <li><strong>With Baby:</strong> Babywearing squats, baby-on-chest bridges, playtime floor sessions.</li>
+    <li><strong>Mom Strength (after week 12):</strong> Ongoing rotating sessions so the subscription keeps delivering value.</li>
+  </ul>
+
+  <h3>4.6 Progress &amp; Motivation</h3>
+  <ul>
+    <li>Streaks that forgive missed days (a baby is unpredictable): 5 sessions per week counts as a full week.</li>
+    <li>Strength milestones ("first incline push-up", "Phase 2 complete"), energy trend from check-ins, optional private progress photos stored only on the device.</li>
+    <li>Shareable milestone cards for WhatsApp and Instagram (no health details on the card). This doubles as organic marketing.</li>
+  </ul>
+
+  <!-- Content -->
+  <h2><span class="num">5</span> Content: The 12-Week Recovery Journey</h2>
+  <p>Four 3-week phases, 5 sessions of 10 minutes per week (60 sessions in total). The schedule is a guideline; phase gating (4.3) decides progression.</p>
+  <table>
+    <thead><tr><th style="width:18%;">Phase</th><th style="width:12%;">Weeks</th><th style="width:28%;">Focus</th><th>Example Exercises</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge badge-green">1 · Reconnect</span></td><td>1–3</td><td>Breathing, pelvic floor, posture, gentle mobility</td><td>360° breathing, pelvic floor activation (quick and long holds), core connection breath, heel slides, pelvic tilts, clamshells, cat-cow, child's pose, neck &amp; shoulder release</td></tr>
+      <tr><td><span class="badge badge-blue">2 · Rebuild Core</span></td><td>4–6</td><td>Deep core and glutes, light upper body</td><td>Glute bridge, kneeling bird dog, modified dead bug (toe taps), side-lying leg lifts, wall push-up, sit-to-stand from chair, side plank from knees</td></tr>
+      <tr><td><span class="badge badge-amber">3 · Strength</span></td><td>7–9</td><td>Full-body strength for daily mom life (lifting, carrying)</td><td>Bodyweight squat, reverse lunge, supported split squat, incline push-up, glute bridge march, single-leg bridge, wall sit, suitcase carry (water bottle or baby bag), babywearing squat</td></tr>
+      <tr><td><span class="badge badge-purple">4 · Energy</span></td><td>10–12</td><td>Low-impact cardio, then impact only if ready</td><td>Marching, step-touch, step jacks, incline plank, slow incline mountain climbers; jumping jacks and high knees only after pelvic floor readiness check</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Catalog size:</strong> about 40 exercises. Roughly 14 safe exercises from the v1.0 catalog are reused (squats, reverse lunges, glute bridges, bridge march, wall sit, bird dog, cat-cow, child's pose, arm circles, and others); about 26 are new.</p>
+  <div class="callout callout-warning">
+    <div class="callout-title">Video content</div>
+    Stock preview clips in <span class="code-token">scratch_videos/</span> (e.g. iStock "adpp" files) are not licensed for release. Shoot original videos with a female trainer in modest workout clothing, ideally a mother herself. This is also stronger branding.
+  </div>
+
+  <!-- UI -->
+  <h2><span class="num">6</span> UI &amp; Visual Design</h2>
+  <p>The UI should feel calm, warm and capable: a tired mom should understand every screen at a glance and use it one-handed while holding a baby.</p>
+
+  <h3>Color palette: Plum (light and dark)</h3>
+  <table>
+    <thead><tr><th style="width:26%;">Token</th><th style="width:18%;">Light</th><th style="width:18%;">Dark</th><th>Use</th></tr></thead>
+    <tbody>
+      <tr><td><span class="code-token">primary</span> / <span class="code-token">onPrimary</span></td><td>#7E3A70 / #FFFFFF</td><td>#E6A8D8 / #3E1638</td><td>Main buttons, progress, selected states</td></tr>
+      <tr><td><span class="code-token">primaryContainer</span> / on</td><td>#F6E9F3 / #5A2550</td><td>#34202F / #F8E8F4</td><td>Today's session card, selected chips</td></tr>
+      <tr><td><span class="code-token">background</span></td><td>#FDF8FC</td><td>#120E12</td><td>Screen background (warm near-black at night, never pure black)</td></tr>
+      <tr><td><span class="code-token">surface</span></td><td>#FFFFFF</td><td>#1C161B</td><td>Cards and sheets</td></tr>
+      <tr><td><span class="code-token">onSurface</span> / <span class="code-token">onSurfaceVariant</span></td><td>#26182A / #6B5A68</td><td>#F4ECF2 / #B6A6B2</td><td>Main text / supporting text</td></tr>
+      <tr><td><span class="code-token">outlineVariant</span></td><td>#EBDCE7</td><td>#33282F</td><td>Hairline borders, inactive tracks</td></tr>
+    </tbody>
+  </table>
+  <ul>
+    <li><strong>Appearance setting:</strong> System (default), Light, Dark. Dark mode is tuned for night feeds: low glare, soft pink accents.</li>
+    <li><strong>No hardcoded colors in screens.</strong> Every color comes from the theme so both modes always work. Extra accents (streak, rest, timer) get light and dark values through a theme-provided <span class="code-token">Fit10ExtendedColors</span>.</li>
+    <li><strong>Contrast:</strong> text and buttons meet WCAG AA (4.5:1) in both modes.</li>
+    <li><strong>Palette validation:</strong> show Plum, Rose and Lavender to beta users; later A/B test store screenshots with Play store listing experiments.</li>
+  </ul>
+
+  <h3>Layout &amp; components</h3>
+  <ul>
+    <li>Edge-to-edge screens, large rounded cards (20dp), generous spacing, sentence-case copy.</li>
+    <li>Primary actions in the bottom third of the screen for one-handed use; touch targets of at least 48dp.</li>
+    <li>Shared-element transition: today's session card expands into the workout player.</li>
+    <li>Skeleton shimmer instead of spinners; animated bottom navigation icons.</li>
+    <li>Hindi typography with Noto Sans Devanagari; layouts tested at 200% font scale and with TalkBack.</li>
+  </ul>
+
+  <!-- Motion -->
+  <h2><span class="num">7</span> Motion &amp; Haptics</h2>
+  <p>Motion should feel alive but calm. Every press responds instantly, celebrations feel warm, and nothing is loud or hyperactive.</p>
+  <table>
+    <thead><tr><th style="width:24%;">Moment</th><th style="width:30%;">Animation</th><th style="width:22%;">Haptic</th><th>Implementation</th></tr></thead>
+    <tbody>
+      <tr><td>Tap a choice</td><td>Springy bounce and color morph</td><td>Light tick</td><td><span class="code-token">spring()</span>, <span class="code-token">HapticFeedbackConstants.CLOCK_TICK</span></td></tr>
+      <tr><td>Press Start</td><td>Button squish; card expands into player</td><td>Confirm</td><td><span class="code-token">SharedTransitionLayout</span>, <span class="code-token">CONFIRM</span></td></tr>
+      <tr><td>Breathing guide</td><td>Circle grows and shrinks with breath</td><td>None</td><td><span class="code-token">rememberInfiniteTransition</span></td></tr>
+      <tr><td>Timer</td><td>Smooth ring sweep</td><td>Ticks at 3-2-1, double pulse at halfway</td><td><span class="code-token">WorkoutFeedbackCoordinator</span> waveforms</td></tr>
+      <tr><td>Pause</td><td>"Baby needs you?" card slides up</td><td>Soft press</td><td><span class="code-token">AnimatedVisibility</span></td></tr>
+      <tr><td>Session complete</td><td>Checkmark draws, confetti, stats count up</td><td>Celebration pattern</td><td>Lottie or Canvas particles</td></tr>
+      <tr><td>Phase unlocked</td><td>Badge pops in with glow</td><td>Strong success</td><td>Lottie</td></tr>
+      <tr><td>Red-flag safety screen</td><td>No playful motion</td><td>Single firm pulse</td><td><span class="code-token">REJECT</span></td></tr>
+    </tbody>
+  </table>
+  <ul>
+    <li><strong>Settings:</strong> haptics on/off; quiet mode (haptics and on-screen cues only while the baby sleeps).</li>
+    <li><strong>Reduce motion:</strong> respect Android's "Remove animations" setting; replace motion with simple fades.</li>
+    <li><strong>Performance:</strong> UI animations at 60 fps, most transitions 200–400 ms, no jank on low-end devices (2–3 GB RAM).</li>
+  </ul>
+
+  <!-- Retention -->
+  <h2><span class="num">8</span> Daily Retention System</h2>
+  <p>Goal: a reason to open the app every day, and a habit that survives sleepless nights and missed days.</p>
+  <table>
+    <thead><tr><th style="width:24%;">Feature</th><th>How it works</th><th style="width:22%;">Retention job</th></tr></thead>
+    <tbody>
+      <tr><td><strong>First win on day 0</strong></td><td>Safety questions first, everything else later. Onboarding ends with a 2-minute breathing session.</td><td>Activation</td></tr>
+      <tr><td><strong>Daily check-in</strong></td><td>10 seconds: sleep, energy, mood. Counts as showing up even without a workout.</td><td>Daily open</td></tr>
+      <tr><td><strong>"Even 3 minutes counts"</strong></td><td>Short fallback session on bad days.</td><td>Avoid all-or-nothing drop-off</td></tr>
+      <tr><td><strong>Smart reminder</strong></td><td>Learns when she usually works out (often nap time). Max 1 notification per day, quiet hours respected, never guilt-based.</td><td>Habit trigger</td></tr>
+      <tr><td><strong>Home-screen widget</strong></td><td>Shows today's session with one-tap start (Jetpack Glance).</td><td>Daily visibility</td></tr>
+      <tr><td><strong>Forgiving streaks</strong></td><td>5 sessions a week counts as a full week, plus one free "baby day" skip.</td><td>Motivation without shame</td></tr>
+      <tr><td><strong>Welcome back</strong></td><td>After 3 missed days: warm message and a gentler session. No broken-streak shaming.</td><td>Win-back</td></tr>
+      <tr><td><strong>Sunday recap</strong></td><td>Sessions done, energy trend, "you're stronger than last week".</td><td>Visible progress</td></tr>
+      <tr><td><strong>Baby-age moments</strong></td><td>"Baby is 4 months old! Try the babywearing squat session."</td><td>Personal reason to return</td></tr>
+      <tr><td><strong>Weekly new session</strong></td><td>One new Pro session every week.</td><td>Freshness, renewal</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Monetization -->
+  <h2><span class="num">9</span> Revenue Model &amp; Monetization</h2>
+  <p>Principle: <strong>safety basics are free; the guided transformation is paid.</strong> No ads. Ads would undermine trust with this audience and the privacy promise.</p>
+
+  <h3>9.1 Pricing (Google Play Billing)</h3>
+  <table>
+    <thead><tr><th style="width:22%;">Plan</th><th style="width:16%;">Price (INR)</th><th style="width:30%;">Terms</th><th>Why it exists</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Free</strong></td><td>₹0</td><td>No card required.</td><td>Onboarding, safety screening, Phase 1 Week 1, daily breathing &amp; pelvic floor routine, one Quick Energy session, reminders. Builds trust and the habit.</td></tr>
+      <tr><td class="table-highlight">Annual (Recommended)</td><td class="table-highlight">₹699 / year</td><td>7-day free trial, auto-renews. About ₹58 per month.</td><td>Main revenue driver. Covers the full 12-week journey plus Mom Strength afterwards.</td></tr>
+      <tr><td><strong>Monthly</strong></td><td>₹149 / month</td><td>Cancel anytime.</td><td>For users who don't want to commit. Makes the annual plan look like good value.</td></tr>
+      <tr><td><strong>Lifetime</strong></td><td>₹1,499 one-time</td><td>In-app product, no renewal.</td><td>Many Indian users avoid subscriptions. Also easy for a husband or family member to buy as a gift on her phone.</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Pro includes:</strong> the full 12-week journey (Phases 1–4), Mom Strength library, Back &amp; Neck Relief, With Baby sessions, energy-adaptive sessions, unlimited safe swaps, milestones and progress history. Language and safety features are never behind the paywall.</p>
+  <p><strong>Later experiment:</strong> a prepaid "12-Week Journey Pass" (₹399, no auto-renew) using Play's prepaid plans, A/B tested against the monthly plan.</p>
+
+  <h3>9.2 Paywall Placement</h3>
+  <ul>
+    <li><strong>After onboarding:</strong> Show her personalized plan, then the annual trial offer, with a clear "Continue free" option.</li>
+    <li><strong>End of Phase 1 Week 1:</strong> Celebrate the first week, then "unlock the rest of your journey". This is the highest-intent moment.</li>
+    <li><strong>Contextual:</strong> Tapping a Pro session opens the existing <span class="code-token">ContextualUpsellSheet</span>.</li>
+    <li>Copy is warm and honest. No countdown timers, fake discounts, or shame-based messaging.</li>
+  </ul>
+
+  <h3>9.3 Additional Revenue Streams (after product–market fit)</h3>
+  <table>
+    <thead><tr><th style="width:24%;">Stream</th><th>How it works</th><th style="width:16%;">Timing</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Physio consultations</strong></td><td>In-app booking of video consults with women's health physiotherapists (around ₹499–999). Fit10 takes a 20–25% commission. Needs a backend and a Play Payments policy review.</td><td>v1.2</td></tr>
+      <tr><td><strong>Clinic &amp; hospital partners</strong></td><td>Gynecologists and maternity hospitals hand out QR cards with extended-trial offers; clinics can buy bulk access codes (within Play promo code limits).</td><td>v1.3</td></tr>
+      <tr><td><strong>Nutrition add-on</strong></td><td>Postpartum and breastfeeding-friendly Indian meal plans, reviewed by a dietitian. Included in Pro or sold as an add-on (to be tested).</td><td>v1.3</td></tr>
+      <tr><td><strong>Employer programs</strong></td><td>Companies offer Fit10 Mom to employees returning from maternity leave (B2B wellness).</td><td>v2.0</td></tr>
+    </tbody>
+  </table>
+
+  <h3>9.4 Illustrative Revenue Scenario</h3>
+  <p>All conversion rates below are <strong>assumptions to validate in beta</strong>, not benchmarks. Per 10,000 installs per month:</p>
+  <table>
+    <thead><tr><th>Step</th><th style="width:20%;">Assumption</th><th style="width:16%;">Users</th><th style="width:20%;">Gross (INR)</th></tr></thead>
+    <tbody>
+      <tr><td>Start annual trial</td><td>12% of installs</td><td>1,200</td><td>—</td></tr>
+      <tr><td>Trial → paid annual (₹699)</td><td>30% of trials</td><td>360</td><td>₹2,51,640</td></tr>
+      <tr><td>Monthly plan, first month (₹149)</td><td>1% of installs</td><td>100</td><td>₹14,900</td></tr>
+      <tr><td>Lifetime (₹1,499)</td><td>0.5% of installs</td><td>50</td><td>₹74,950</td></tr>
+      <tr><td class="table-highlight">Total first-purchase revenue</td><td></td><td>510 payers</td><td class="table-highlight">≈ ₹3.41 lakh</td></tr>
+      <tr><td>After Google Play fee (15%)</td><td></td><td></td><td class="table-highlight">≈ ₹2.90 lakh</td></tr>
+    </tbody>
+  </table>
+  <p>That is about <strong>₹29 net per install</strong> from first purchases alone, before monthly renewals and second-year annual renewals. Paid marketing must stay below this cost per install to be profitable on first purchase, so organic and referral channels (Section 11) are essential early on.</p>
+
+  <!-- Technical -->
+  <h2><span class="num">10</span> Technical Changes to the Existing App</h2>
+  <table>
+    <thead><tr><th style="width:26%;">Area</th><th>Change</th></tr></thead>
+    <tbody>
+      <tr><td><span class="code-token">OnboardingViewModel</span></td><td>New 9-step flow (4.1), clearance and red-flag branches.</td></tr>
+      <tr><td><span class="code-token">PersonalizationEngine</span></td><td>Phase gating, safety filter, energy adjustment; remove the deload gate.</td></tr>
+      <tr><td><span class="code-token">WorkoutSessionEngine</span></td><td>Persist session state for resume after process death; voice cue playback; quiet mode.</td></tr>
+      <tr><td>Room schema</td><td><span class="code-token">ExerciseEntity</span> gains contraindication tags and minimum phase. New <span class="code-token">PostpartumProfileEntity</span>, <span class="code-token">DailyCheckInEntity</span>, <span class="code-token">PhaseProgressEntity</span>. Migration from v1.0 schema.</td></tr>
+      <tr><td>Seed catalogs</td><td>Rewrite <span class="code-token">ExerciseCatalog</span>, <span class="code-token">WorkoutCatalog</span>, <span class="code-token">ProgramCatalog</span> for the journey and session library.</td></tr>
+      <tr><td><span class="code-token">BillingRepository</span></td><td>Add annual and monthly subscription base plans (trial offer on annual) and a lifetime in-app product. Keep <span class="code-token">EntitlementVerifier</span> design from ADR 001.</td></tr>
+      <tr><td>Localization</td><td>Full Hindi strings and recorded Hindi voice cues; regional languages in v1.1.</td></tr>
+      <tr><td>Privacy &amp; compliance</td><td>Explicit consent for health data under India's Digital Personal Data Protection Act, 2023; one-tap "delete all my data"; existing encrypted database (<span class="code-token">DatabaseKeyManager</span>); Google Play Health apps declaration.</td></tr>
+      <tr><td>Theme</td><td>Plum light and dark palettes in <span class="code-token">Color.kt</span>; <span class="code-token">Fit10ExtendedColors</span> for accents; appearance setting (System / Light / Dark) stored in DataStore; replace ~500 hardcoded colors in screens with theme tokens.</td></tr>
+      <tr><td>Haptics &amp; motion</td><td><span class="code-token">Fit10Haptics</span> helper for UI taps; new waveform patterns in <span class="code-token">WorkoutFeedbackCoordinator</span>; haptics and reduce-motion settings; Lottie for celebrations.</td></tr>
+      <tr><td>Retention features</td><td>Daily check-in, Glance home-screen widget, smart reminder scheduling (WorkManager), forgiving streak logic, weekly recap notification.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Growth -->
+  <h2><span class="num">11</span> Acquisition &amp; Growth</h2>
+  <table>
+    <thead><tr><th style="width:24%;">Channel</th><th>How</th><th style="width:16%;">Cost</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Instagram Reels / YouTube Shorts (Hindi)</strong></td><td>3 per week: safe exercises, myths ("Can I exercise after a C-section?"), real mom stories.</td><td>Free, needs time</td></tr>
+      <tr><td><strong>Mom micro-influencers</strong></td><td>10k–100k followers. Free lifetime Pro plus a referral code; pay per install later.</td><td>Low</td></tr>
+      <tr><td><strong>Referral loop</strong></td><td>Shareable milestone card; give 1 month free, get 1 month free (Play subscription offers).</td><td>Built in</td></tr>
+      <tr><td><strong>Doctors &amp; clinics</strong></td><td>QR cards at gynecologists, hospitals, lactation consultants and prenatal classes, with an extended trial.</td><td>Printing</td></tr>
+      <tr><td><strong>Mom communities</strong></td><td>WhatsApp and Facebook mom groups, parenting forums. Helpful, never spammy.</td><td>Free</td></tr>
+      <tr><td><strong>Store listing (ASO)</strong></td><td>Hindi listing; keywords like "postpartum workout", "C-section exercise", "delivery ke baad exercise".</td><td>Free</td></tr>
+      <tr><td><strong>Paid Meta ads</strong></td><td>Only after retention is proven. Cost per install must stay below net revenue per install (≈ ₹29, Section 9.4 scenario).</td><td>Paid</td></tr>
+    </tbody>
+  </table>
+  <div class="callout">
+    <div class="callout-title">Growth loop</div>
+    Mom finishes a milestone → shares the card on WhatsApp → a friend installs with 1 month free → both are rewarded → the friend reaches her own milestone and shares.
+  </div>
+  <p><strong>Sequence:</strong> (1) closed beta with 100–200 moms and fix drop-off points; (2) launch with the retention features in Section 8; (3) organic content and referrals, then influencers and clinics, paid ads last.</p>
+
+  <!-- KPIs -->
+  <h2><span class="num">12</span> Key Metrics &amp; Targets</h2>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-number">≥ 3 / week</div>
+      <div class="kpi-label">North Star</div>
+      <div class="kpi-desc">Share of active moms completing 3 or more sessions per week.</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-number">≥ 60%</div>
+      <div class="kpi-label">Day-0 Activation</div>
+      <div class="kpi-desc">Installs that finish onboarding and complete a first session on day one.</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-number">40 / 25 / 12%</div>
+      <div class="kpi-label">D1 / D7 / D30 Retention</div>
+      <div class="kpi-desc">Ambitious for fitness apps; the check-in, widget and forgiving streaks must earn it.</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-number">≥ 30%</div>
+      <div class="kpi-label">Trial → Paid</div>
+      <div class="kpi-desc">Annual trial conversion. Install → trial target: ≥ 10%.</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-number">≥ 5%</div>
+      <div class="kpi-label">Install → Paying</div>
+      <div class="kpi-desc">All plans combined, within 30 days of install.</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-number">≥ 40%</div>
+      <div class="kpi-label">Phase 1 Completion</div>
+      <div class="kpi-desc">Paying users who complete Phase 1, the leading indicator of renewal.</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-number">≥ 15%</div>
+      <div class="kpi-label">Referral Rate</div>
+      <div class="kpi-desc">Active users who share a milestone card or invite at least once.</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-number">&lt; ₹29</div>
+      <div class="kpi-label">Cost per Install</div>
+      <div class="kpi-desc">Blended acquisition cost, kept below net revenue per install.</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-number">0</div>
+      <div class="kpi-label">Injury Reports</div>
+      <div class="kpi-desc">Track red-flag routing and safety feedback; review weekly with the physio partner.</div>
+    </div>
+  </div>
+
+  <!-- Roadmap -->
+  <h2><span class="num">13</span> Roadmap</h2>
+  <ul>
+    <li><strong>Pre-launch (6–8 weeks):</strong> Sign a physio partner, rewrite content, film original videos, closed beta with 100–200 moms. Test pricing and measure retention before a public launch.</li>
+    <li><strong>v1.0 Launch:</strong> Hindi + English, 12-week journey, Annual / Monthly / Lifetime plans.</li>
+    <li><strong>v1.1:</strong> Telugu, Tamil, Marathi, Bengali; prepaid 12-Week Pass experiment.</li>
+    <li><strong>v1.2:</strong> Physio consultation booking (first backend component).</li>
+    <li><strong>v1.3:</strong> Nutrition plans; clinic partner program.</li>
+    <li><strong>v1.4:</strong> Moderated mom community; Health Connect sync (steps, sleep).</li>
+  </ul>
+
+  <!-- Risks -->
+  <h2><span class="num">14</span> Risks &amp; Mitigations</h2>
+  <table>
+    <thead><tr><th style="width:28%;">Risk</th><th>Mitigation</th></tr></thead>
+    <tbody>
+      <tr><td><strong>User injury / liability</strong></td><td>Physio sign-off, clearance gate, red-flag routing, clear disclaimers, conservative defaults.</td></tr>
+      <tr><td><strong>Low willingness to pay</strong></td><td>Lifetime and prepaid options, family-gift framing, generous but limited free tier, test prices in beta.</td></tr>
+      <tr><td><strong>High acquisition cost</strong></td><td>Organic content, referrals and clinic partnerships before paid ads.</td></tr>
+      <tr><td><strong>Churn after 12 weeks</strong></td><td>Mom Strength library, new monthly sessions, back-care and energy content.</td></tr>
+      <tr><td><strong>Play Store policy</strong></td><td>Health apps declaration, accurate store claims (no medical promises), Play Billing for all digital content.</td></tr>
+      <tr><td><strong>Body-image harm</strong></td><td>Strength- and energy-focused progress, weight tracking off by default, careful copy review.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Document Footer -->
+  <div class="footer">
+    <div>Fit10 Mobile Product Team • Confidential &amp; Proprietary</div>
+    <div>Version 2.1 Draft — Postpartum Pivot</div>
+  </div>
+
+</body>
+</html>

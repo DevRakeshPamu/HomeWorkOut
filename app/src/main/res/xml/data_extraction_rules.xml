@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Fit10 Data Extraction Rules (Android 12+ / API 31+)
+    
+    Privacy Policy & Architecture Decision:
+    Fit10 enforces an offline-first, on-device data architecture. In order to honor
+    the core privacy guarantee that health, workout history, and personal biometrics
+    never leave the user's device without explicit consent:
+    - The Room SQLite database (fit10.db) containing workout sessions, RPE fatigue ratings,
+      and user profiles is strictly excluded from cloud backup and device transfer.
+    - DataStore preferences (datastore/) and local billing caches are excluded to avoid
+      unintended data leaks or out-of-sync entitlement states across devices.
+    - Device transfers and Google Drive cloud backups are disabled for all sensitive health stores.
+    
+    Open Question for Product/Engineering:
+    Whether to introduce an explicit, opt-in cloud sync/backup toggle in future releases
+    with end-to-end user-managed encryption.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="database" path="fit10.db" />
+        <exclude domain="database" path="fit10.db-shm" />
+        <exclude domain="database" path="fit10.db-wal" />
+        <exclude domain="database" path="." />
+        <exclude domain="file" path="datastore" />
+        <exclude domain="sharedpref" path="fit10_preferences.preferences_pb" />
+        <exclude domain="sharedpref" path="fit10_billing_cache.xml" />
+        <exclude domain="sharedpref" path="fit10_keystore_prefs.xml" />
+        <exclude domain="sharedpref" path="fit10_analytics_prefs.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="database" path="fit10.db" />
+        <exclude domain="database" path="fit10.db-shm" />
+        <exclude domain="database" path="fit10.db-wal" />
+        <exclude domain="database" path="." />
+        <exclude domain="file" path="datastore" />
+        <exclude domain="sharedpref" path="fit10_preferences.preferences_pb" />
+        <exclude domain="sharedpref" path="fit10_billing_cache.xml" />
+        <exclude domain="sharedpref" path="fit10_keystore_prefs.xml" />
+        <exclude domain="sharedpref" path="fit10_analytics_prefs.xml" />
+    </device-transfer>
+</data-extraction-rules>

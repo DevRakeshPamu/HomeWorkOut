@@ -1,0 +1,17 @@
+package com.fit10.app.data.db.entity
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "reminders")
+data class ReminderEntity(
+    @PrimaryKey
+    val id: String,
+    val userId: String,
+    val isEnabled: Boolean,
+    val hour: Int,
+    val minute: Int,
+    val daysOfWeek: Set<Int>,
+    val title: String,
+    val message: String
+)

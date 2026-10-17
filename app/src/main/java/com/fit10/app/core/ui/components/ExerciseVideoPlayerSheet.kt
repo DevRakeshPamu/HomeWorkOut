@@ -262,7 +262,7 @@ private fun EmbeddedExerciseVideoPlayer(exercise: Exercise) {
             }
 
             Text(
-                text = "Animated demo • Loops",
+                text = "Demo • Loops",
                 color = TextMuted,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Medium

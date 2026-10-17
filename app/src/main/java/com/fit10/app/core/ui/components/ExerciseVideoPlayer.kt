@@ -97,7 +97,7 @@ private val OnMedia: Color
     @Composable @ReadOnlyComposable get() = Fit10Theme.extendedColors.onMediaScrim
 
 /**
- * Looping exercise demo clip (animated Fit10 Mom coach, rendered by scripts/exercise_videos).
+ * Looping exercise demo clip: licensed Pexels footage or an animated coach (see scripts/exercise_videos).
  *
  * Capabilities:
  *  • Continuous loop playback of exact exercise movements

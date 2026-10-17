@@ -56,23 +56,6 @@ val md_dark_outline               = Color(0xFF7D6E79)
 val md_dark_outlineVariant        = Color(0xFF33282F)
 val md_dark_scrim                 = Color(0xFF000000)
 
-// ── Athletic Accent Palette (High energy stats & cues) ───────────────────────
-object Fit10Colors {
-    val VoltGreen      = Color(0xFF00E676)
-    val Emerald        = Color(0xFF00875A)
-    val CalorieCoral   = Color(0xFFFF5722)
-    val CalorieLight   = Color(0xFFFFECE5)
-    val TimerCyan      = Color(0xFF00B4D8)
-    val TimerLight     = Color(0xFFE0F7FA)
-    val StreakOrange   = Color(0xFFFF9100)
-    val StreakLight    = Color(0xFFFFF3E0)
-    val Gold           = Color(0xFFFFB703)
-    val PurplePill     = Color(0xFF8B5CF6)
-    val PurpleLight    = Color(0xFFF3E8FF)
-    val RestTeal       = Color(0xFF10B981)
-    val RestLight      = Color(0xFFECFDF5)
-}
-
 // ── Surface containers (Material 3 cards, sheets, navigation) ───────────────
 val md_light_surfaceContainerLowest  = Color(0xFFFFFFFF)
 val md_light_surfaceContainerLow     = Color(0xFFFBF4F9)

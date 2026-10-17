@@ -1,5 +1,9 @@
 package com.fit10.app.feature.onboarding
 
+import com.fit10.app.core.ui.theme.Fit10Theme
+import androidx.compose.runtime.ReadOnlyComposable
+import com.fit10.app.core.feedback.HapticKind
+import com.fit10.app.core.feedback.rememberFit10Haptics
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -77,13 +81,28 @@ import com.fit10.app.domain.model.FitnessLevel
 import com.fit10.app.domain.model.FocusArea
 import com.fit10.app.domain.model.IntensityPreference
 
-private val PrimaryGreen      = Color(0xFF10B981)
-private val DarkGreen         = Color(0xFF047857)
-private val LightGreenSurface = Color(0xFFECFDF5)
-private val BorderInactive    = Color(0xFFE2E8F0)
-private val TextMain          = Color(0xFF0F172A)
-private val TextMuted         = Color(0xFF64748B)
-private val CardWhite         = Color(0xFFFFFFFF)
+private val BrandPrimary: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
+private val BrandStrong: Color
+    @Composable @ReadOnlyComposable get() = Fit10Theme.extendedColors.brandStrong
+private val OnBrand: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimary
+private val BrandDeep: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimaryContainer
+private val BrandContainer: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primaryContainer
+private val BorderInactive: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.outlineVariant
+private val TextMain: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurface
+private val TextMuted: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurfaceVariant
+private val CardSurface: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surface
+private val IconWell: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surfaceVariant
+private val ScreenBackground: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.background
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,6 +110,7 @@ fun OnboardingScreen(
     viewModel: OnboardingViewModel,
     onOnboardingFinished: () -> Unit
 ) {
+    val haptics = rememberFit10Haptics()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(state.isCompleted) {
@@ -100,10 +120,10 @@ fun OnboardingScreen(
     }
 
     Scaffold(
-        containerColor = Color(0xFFF8FAF9),
+        containerColor = ScreenBackground,
         topBar = {
             TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF8FAF9)),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = ScreenBackground),
                 title = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -141,7 +161,7 @@ fun OnboardingScreen(
                     TextButton(onClick = viewModel::skipOnboarding) {
                         Text(
                             text = "Skip",
-                            color = PrimaryGreen,
+                            color = BrandPrimary,
                             fontWeight = FontWeight.SemiBold
                         )
                     }
@@ -150,7 +170,7 @@ fun OnboardingScreen(
         },
         bottomBar = {
             androidx.compose.material3.Surface(
-                color = CardWhite,
+                color = CardSurface,
                 shadowElevation = 8.dp,
                 border = androidx.compose.foundation.BorderStroke(1.dp, BorderInactive)
             ) {
@@ -168,19 +188,19 @@ fun OnboardingScreen(
                             .background(
                                 if (!state.isLoading)
                                     androidx.compose.ui.graphics.Brush.horizontalGradient(
-                                        listOf(Color(0xFF059669), PrimaryGreen)
+                                        listOf(BrandStrong, BrandPrimary)
                                     )
                                 else
                                     androidx.compose.ui.graphics.Brush.horizontalGradient(
-                                        listOf(Color(0xFF9CA3AF), Color(0xFF9CA3AF))
+                                        listOf(TextMuted.copy(alpha = 0.38f), TextMuted.copy(alpha = 0.38f))
                                     )
                             )
-                            .clickable(enabled = !state.isLoading, onClick = viewModel::nextStep),
+                            .clickable(enabled = !state.isLoading, onClick = { haptics.perform(HapticKind.Confirm); viewModel.nextStep() }),
                         contentAlignment = Alignment.Center
                     ) {
                         if (state.isLoading) {
                             CircularProgressIndicator(
-                                color = Color.White,
+                                color = OnBrand,
                                 modifier = Modifier.size(24.dp),
                                 strokeWidth = 2.5.dp
                             )
@@ -194,14 +214,14 @@ fun OnboardingScreen(
                                     },
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.White
+                                    color = OnBrand
                                 )
                                 Spacer(Modifier.width(6.dp))
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
                                     contentDescription = null,
                                     modifier = Modifier.size(18.dp),
-                                    tint = Color.White
+                                    tint = OnBrand
                                 )
                             }
                         }
@@ -248,11 +268,11 @@ fun OnboardingScreen(
                                 .background(
                                     if (i <= state.step)
                                         androidx.compose.ui.graphics.Brush.horizontalGradient(
-                                            listOf(Color(0xFF059669), PrimaryGreen)
+                                            listOf(BrandStrong, BrandPrimary)
                                         )
                                     else
                                         androidx.compose.ui.graphics.Brush.horizontalGradient(
-                                            listOf(Color(0xFFE2E8F0), Color(0xFFE2E8F0))
+                                            listOf(BorderInactive, BorderInactive)
                                         )
                                 )
                         )
@@ -323,12 +343,12 @@ private fun WelcomeStep(onStart: () -> Unit) {
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(50))
-                .background(LightGreenSurface)
+                .background(BrandContainer)
                 .padding(horizontal = 12.dp, vertical = 6.dp)
         ) {
             Text(
                 text = "⚡ 10-min Workout Routine",
-                color = DarkGreen,
+                color = BrandDeep,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold
             )
@@ -354,7 +374,7 @@ private fun WelcomeStep(onStart: () -> Unit) {
         // Daily Spark Card
         Surface(
             shape = RoundedCornerShape(16.dp),
-            color = Color.White,
+            color = CardSurface,
             border = BorderStroke(1.dp, BorderInactive),
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -366,13 +386,13 @@ private fun WelcomeStep(onStart: () -> Unit) {
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(LightGreenSurface),
+                        .background(BrandContainer),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Bolt,
                         contentDescription = null,
-                        tint = PrimaryGreen,
+                        tint = BrandPrimary,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -393,12 +413,12 @@ private fun WelcomeStep(onStart: () -> Unit) {
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(50))
-                        .background(LightGreenSurface)
+                        .background(BrandContainer)
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
                         text = "10:00",
-                        color = DarkGreen,
+                        color = BrandDeep,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -441,13 +461,13 @@ private fun WelcomeStep(onStart: () -> Unit) {
             horizontalArrangement = Arrangement.Center
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy((-8).dp)) {
-                listOf(Color(0xFF3B82F6), Color(0xFF10B981), Color(0xFFF59E0B)).forEach { col ->
+                Fit10Theme.extendedColors.celebration.take(3).forEach { col ->
                     Box(
                         modifier = Modifier
                             .size(24.dp)
                             .clip(CircleShape)
                             .background(col)
-                            .border(1.5.dp, Color.White, CircleShape)
+                            .border(1.5.dp, CardSurface, CircleShape)
                     )
                 }
             }
@@ -466,7 +486,7 @@ private fun WelcomeStep(onStart: () -> Unit) {
 private fun BenefitRow(icon: ImageVector, title: String, subtitle: String) {
     Surface(
         shape = RoundedCornerShape(14.dp),
-        color = Color.White,
+        color = CardSurface,
         border = BorderStroke(1.dp, BorderInactive),
         modifier = Modifier
             .fillMaxWidth()
@@ -480,13 +500,13 @@ private fun BenefitRow(icon: ImageVector, title: String, subtitle: String) {
                 modifier = Modifier
                     .size(36.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFF1F5F9)),
+                    .background(IconWell),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = PrimaryGreen,
+                    tint = BrandPrimary,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -567,7 +587,7 @@ private fun FitnessLevelStep(
         // Tip Card
         Surface(
             shape = RoundedCornerShape(14.dp),
-            color = LightGreenSurface,
+            color = BrandContainer,
             modifier = Modifier.fillMaxWidth()
         ) {
             Row(
@@ -577,14 +597,14 @@ private fun FitnessLevelStep(
                 Icon(
                     imageVector = Icons.Rounded.Lightbulb,
                     contentDescription = null,
-                    tint = PrimaryGreen,
+                    tint = BrandPrimary,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(Modifier.width(10.dp))
                 Text(
                     text = "Not sure? You can safely adjust your difficulty benchmark or swap out exercises anytime in settings.",
                     fontSize = 12.5.sp,
-                    color = DarkGreen,
+                    color = BrandDeep,
                     lineHeight = 18.sp
                 )
             }
@@ -602,13 +622,14 @@ private fun LevelCard(
     onClick: () -> Unit,
     badge: String? = null
 ) {
+    val haptics = rememberFit10Haptics()
     Surface(
-        onClick = onClick,
+        onClick = { haptics.perform(HapticKind.Tick); onClick() },
         shape = RoundedCornerShape(16.dp),
-        color = if (isSelected) LightGreenSurface else Color.White,
+        color = if (isSelected) BrandContainer else CardSurface,
         border = BorderStroke(
             width = if (isSelected) 1.8.dp else 1.dp,
-            color = if (isSelected) PrimaryGreen else BorderInactive
+            color = if (isSelected) BrandPrimary else BorderInactive
         ),
         modifier = Modifier
             .fillMaxWidth()
@@ -630,12 +651,12 @@ private fun LevelCard(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(50))
-                            .background(PrimaryGreen)
+                            .background(BrandPrimary)
                             .padding(horizontal = 8.dp, vertical = 3.dp)
                     ) {
                         Text(
                             text = badge,
-                            color = Color.White,
+                            color = OnBrand,
                             fontSize = 10.5.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -668,7 +689,7 @@ private fun LevelCard(
                                 .height(5.dp)
                                 .clip(RoundedCornerShape(50))
                                 .background(
-                                    if (i <= barsFilled) PrimaryGreen else Color(0xFFCBD5E1)
+                                    if (i <= barsFilled) BrandPrimary else BorderInactive
                                 )
                         )
                     }
@@ -677,7 +698,7 @@ private fun LevelCard(
                 Text(
                     text = paceLabel,
                     fontSize = 12.sp,
-                    color = if (isSelected) DarkGreen else TextMuted,
+                    color = if (isSelected) BrandDeep else TextMuted,
                     fontWeight = FontWeight.SemiBold
                 )
             }
@@ -761,7 +782,7 @@ private fun GoalStep(
         // Fit10 Adaptive Engine card
         Surface(
             shape = RoundedCornerShape(14.dp),
-            color = LightGreenSurface,
+            color = BrandContainer,
             modifier = Modifier.fillMaxWidth()
         ) {
             Row(
@@ -771,7 +792,7 @@ private fun GoalStep(
                 Icon(
                     imageVector = Icons.Rounded.Lightbulb,
                     contentDescription = null,
-                    tint = PrimaryGreen,
+                    tint = BrandPrimary,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(Modifier.width(10.dp))
@@ -780,12 +801,12 @@ private fun GoalStep(
                         text = "Fit10 Adaptive Engine",
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp,
-                        color = DarkGreen
+                        color = BrandDeep
                     )
                     Text(
                         text = "Workouts calibrate dynamically to your choices.",
                         fontSize = 12.sp,
-                        color = DarkGreen
+                        color = BrandDeep
                     )
                 }
             }
@@ -803,13 +824,14 @@ private fun GoalRow(
     onClick: () -> Unit,
     badge: String? = null
 ) {
+    val haptics = rememberFit10Haptics()
     Surface(
-        onClick = onClick,
+        onClick = { haptics.perform(HapticKind.Tick); onClick() },
         shape = RoundedCornerShape(16.dp),
-        color = if (isSelected) LightGreenSurface else Color.White,
+        color = if (isSelected) BrandContainer else CardSurface,
         border = BorderStroke(
             width = if (isSelected) 1.8.dp else 1.dp,
-            color = if (isSelected) PrimaryGreen else BorderInactive
+            color = if (isSelected) BrandPrimary else BorderInactive
         ),
         modifier = Modifier
             .fillMaxWidth()
@@ -823,13 +845,13 @@ private fun GoalRow(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(if (isSelected) PrimaryGreen else Color(0xFFF1F5F9)),
+                    .background(if (isSelected) BrandPrimary else IconWell),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = if (isSelected) Color.White else PrimaryGreen,
+                    tint = if (isSelected) OnBrand else BrandPrimary,
                     modifier = Modifier.size(22.dp)
                 )
             }
@@ -849,12 +871,12 @@ private fun GoalRow(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(50))
-                                .background(PrimaryGreen)
+                                .background(BrandPrimary)
                                 .padding(horizontal = 7.dp, vertical = 2.dp)
                         ) {
                             Text(
                                 text = badge,
-                                color = Color.White,
+                                color = OnBrand,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -875,7 +897,7 @@ private fun GoalRow(
                 Icon(
                     imageVector = Icons.Rounded.CheckCircle,
                     contentDescription = "Selected",
-                    tint = PrimaryGreen,
+                    tint = BrandPrimary,
                     modifier = Modifier.size(22.dp)
                 )
             }
@@ -955,7 +977,7 @@ private fun DurationStep(
         // Habit Science insight card
         Surface(
             shape = RoundedCornerShape(14.dp),
-            color = LightGreenSurface,
+            color = BrandContainer,
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(modifier = Modifier.padding(14.dp)) {
@@ -963,14 +985,14 @@ private fun DurationStep(
                     text = "HABIT SCIENCE",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = PrimaryGreen,
+                    color = BrandPrimary,
                     letterSpacing = 1.sp
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text = "Fit10 members who commit to 10 minutes daily are 3.4x more likely to maintain their streak after 90 days.",
                     fontSize = 12.5.sp,
-                    color = DarkGreen,
+                    color = BrandDeep,
                     lineHeight = 18.sp
                 )
             }
@@ -988,13 +1010,14 @@ private fun DurationCard(
     badge: String? = null,
     socialStat: String? = null
 ) {
+    val haptics = rememberFit10Haptics()
     Surface(
-        onClick = onClick,
+        onClick = { haptics.perform(HapticKind.Tick); onClick() },
         shape = RoundedCornerShape(16.dp),
-        color = if (isSelected) LightGreenSurface else Color.White,
+        color = if (isSelected) BrandContainer else CardSurface,
         border = BorderStroke(
             width = if (isSelected) 1.8.dp else 1.dp,
-            color = if (isSelected) PrimaryGreen else BorderInactive
+            color = if (isSelected) BrandPrimary else BorderInactive
         ),
         modifier = Modifier
             .fillMaxWidth()
@@ -1010,7 +1033,7 @@ private fun DurationCard(
                     Icon(
                         imageVector = if (isSelected) Icons.Rounded.RadioButtonChecked else Icons.Rounded.RadioButtonUnchecked,
                         contentDescription = null,
-                        tint = if (isSelected) PrimaryGreen else TextMuted,
+                        tint = if (isSelected) BrandPrimary else TextMuted,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(Modifier.width(10.dp))
@@ -1034,12 +1057,12 @@ private fun DurationCard(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(50))
-                            .background(PrimaryGreen)
+                            .background(BrandPrimary)
                             .padding(horizontal = 8.dp, vertical = 3.dp)
                     ) {
                         Text(
                             text = badge,
-                            color = Color.White,
+                            color = OnBrand,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -1063,12 +1086,12 @@ private fun DurationCard(
                         modifier = Modifier
                             .size(6.dp)
                             .clip(CircleShape)
-                            .background(PrimaryGreen)
+                            .background(BrandPrimary)
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(
                         text = socialStat,
-                        color = DarkGreen,
+                        color = BrandDeep,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -1089,6 +1112,7 @@ private fun EquipmentStep(
     avoidList: Set<String>,
     onToggleAvoid: (String) -> Unit
 ) {
+    val haptics = rememberFit10Haptics()
     Column {
         Text(
             text = "What do you have at home?",
@@ -1142,7 +1166,7 @@ private fun EquipmentStep(
         // 10-Min Session Highlight
         Surface(
             shape = RoundedCornerShape(14.dp),
-            color = LightGreenSurface,
+            color = BrandContainer,
             modifier = Modifier.fillMaxWidth()
         ) {
             Row(
@@ -1153,13 +1177,13 @@ private fun EquipmentStep(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
-                        .background(PrimaryGreen),
+                        .background(BrandPrimary),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Bolt,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = OnBrand,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -1169,12 +1193,12 @@ private fun EquipmentStep(
                         text = "Every session is 10 minutes",
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp,
-                        color = DarkGreen
+                        color = BrandDeep
                     )
                     Text(
                         text = "We adapt rest intervals and intensity to your exact gear.",
                         fontSize = 12.sp,
-                        color = DarkGreen
+                        color = BrandDeep
                     )
                 }
             }
@@ -1208,12 +1232,12 @@ private fun EquipmentStep(
             avoidOptions.forEach { option ->
                 val isSelected = avoidList.contains(option)
                 Surface(
-                    onClick = { onToggleAvoid(option) },
+                    onClick = { haptics.perform(HapticKind.Tick); onToggleAvoid(option) },
                     shape = RoundedCornerShape(50),
-                    color = if (isSelected) LightGreenSurface else Color.White,
+                    color = if (isSelected) BrandContainer else CardSurface,
                     border = BorderStroke(
                         width = 1.dp,
-                        color = if (isSelected) PrimaryGreen else BorderInactive
+                        color = if (isSelected) BrandPrimary else BorderInactive
                     )
                 ) {
                     Row(
@@ -1223,7 +1247,7 @@ private fun EquipmentStep(
                         Icon(
                             imageVector = if (isSelected) Icons.Rounded.Check else Icons.Rounded.Close,
                             contentDescription = null,
-                            tint = if (isSelected) PrimaryGreen else TextMuted,
+                            tint = if (isSelected) BrandPrimary else TextMuted,
                             modifier = Modifier.size(15.dp)
                         )
                         Spacer(Modifier.width(6.dp))
@@ -1231,7 +1255,7 @@ private fun EquipmentStep(
                             text = option,
                             fontSize = 13.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isSelected) DarkGreen else TextMain
+                            color = if (isSelected) BrandDeep else TextMain
                         )
                     }
                 }
@@ -1248,13 +1272,14 @@ private fun EquipmentCheckRow(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    val haptics = rememberFit10Haptics()
     Surface(
-        onClick = onClick,
+        onClick = { haptics.perform(HapticKind.Tick); onClick() },
         shape = RoundedCornerShape(16.dp),
-        color = if (isSelected) LightGreenSurface else Color.White,
+        color = if (isSelected) BrandContainer else CardSurface,
         border = BorderStroke(
             width = if (isSelected) 1.8.dp else 1.dp,
-            color = if (isSelected) PrimaryGreen else BorderInactive
+            color = if (isSelected) BrandPrimary else BorderInactive
         ),
         modifier = Modifier
             .fillMaxWidth()
@@ -1268,13 +1293,13 @@ private fun EquipmentCheckRow(
                 modifier = Modifier
                     .size(38.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFF1F5F9)),
+                    .background(IconWell),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = PrimaryGreen,
+                    tint = BrandPrimary,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -1300,13 +1325,13 @@ private fun EquipmentCheckRow(
                     modifier = Modifier
                         .size(22.dp)
                         .clip(CircleShape)
-                        .background(PrimaryGreen),
+                        .background(BrandPrimary),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Check,
                         contentDescription = "Selected",
-                        tint = Color.White,
+                        tint = OnBrand,
                         modifier = Modifier.size(14.dp)
                     )
                 }
@@ -1331,6 +1356,7 @@ private fun PersonalizeStep(
     focusAreas: Set<FocusArea>,
     onToggleFocusArea: (FocusArea) -> Unit
 ) {
+    val haptics = rememberFit10Haptics()
     Column {
         Text(
             text = "Let's personalize your workouts",
@@ -1408,14 +1434,14 @@ private fun PersonalizeStep(
                     modifier = Modifier
                         .size(42.dp)
                         .clip(CircleShape)
-                        .background(if (isSelected) PrimaryGreen else Color.White)
-                        .border(1.dp, if (isSelected) PrimaryGreen else BorderInactive, CircleShape)
-                        .clickable { onToggleDay(dayNum) },
+                        .background(if (isSelected) BrandPrimary else CardSurface)
+                        .border(1.dp, if (isSelected) BrandPrimary else BorderInactive, CircleShape)
+                        .clickable { haptics.perform(HapticKind.Tick); onToggleDay(dayNum) },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = label,
-                        color = if (isSelected) Color.White else TextMain,
+                        color = if (isSelected) OnBrand else TextMain,
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp
                     )
@@ -1426,7 +1452,7 @@ private fun PersonalizeStep(
         Text(
             text = "${preferredDays.size} days selected • Optimal for habit formation",
             fontSize = 12.sp,
-            color = DarkGreen,
+            color = BrandDeep,
             fontWeight = FontWeight.Medium
         )
 
@@ -1490,12 +1516,12 @@ private fun PersonalizeStep(
                     FocusArea.MOBILITY -> "Mobility"
                 }
                 Surface(
-                    onClick = { onToggleFocusArea(area) },
+                    onClick = { haptics.perform(HapticKind.Tick); onToggleFocusArea(area) },
                     shape = RoundedCornerShape(50),
-                    color = if (isSelected) LightGreenSurface else Color.White,
+                    color = if (isSelected) BrandContainer else CardSurface,
                     border = BorderStroke(
                         width = 1.dp,
-                        color = if (isSelected) PrimaryGreen else BorderInactive
+                        color = if (isSelected) BrandPrimary else BorderInactive
                     )
                 ) {
                     Row(
@@ -1506,7 +1532,7 @@ private fun PersonalizeStep(
                             Icon(
                                 imageVector = Icons.Rounded.Check,
                                 contentDescription = null,
-                                tint = PrimaryGreen,
+                                tint = BrandPrimary,
                                 modifier = Modifier.size(14.dp)
                             )
                             Spacer(Modifier.width(6.dp))
@@ -1515,7 +1541,7 @@ private fun PersonalizeStep(
                             text = label,
                             fontSize = 13.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isSelected) DarkGreen else TextMain
+                            color = if (isSelected) BrandDeep else TextMain
                         )
                     }
                 }
@@ -1527,7 +1553,7 @@ private fun PersonalizeStep(
         // 5. Adaptive Micro-Cycles Info Banner
         Surface(
             shape = RoundedCornerShape(14.dp),
-            color = LightGreenSurface,
+            color = BrandContainer,
             modifier = Modifier.fillMaxWidth()
         ) {
             Row(
@@ -1538,13 +1564,13 @@ private fun PersonalizeStep(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
-                        .background(PrimaryGreen),
+                        .background(BrandPrimary),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Bolt,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = OnBrand,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -1554,12 +1580,12 @@ private fun PersonalizeStep(
                         text = "Adaptive Micro-Cycles",
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp,
-                        color = DarkGreen
+                        color = BrandDeep
                     )
                     Text(
                         text = "Fit10 modulates workout intensity automatically if your sleep or recovery signals low readiness.",
                         fontSize = 12.sp,
-                        color = DarkGreen,
+                        color = BrandDeep,
                         lineHeight = 17.sp
                     )
                 }
@@ -1575,13 +1601,14 @@ private fun IntensityChoiceCard(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    val haptics = rememberFit10Haptics()
     Surface(
-        onClick = onClick,
+        onClick = { haptics.perform(HapticKind.Tick); onClick() },
         shape = RoundedCornerShape(14.dp),
-        color = if (isSelected) LightGreenSurface else Color.White,
+        color = if (isSelected) BrandContainer else CardSurface,
         border = BorderStroke(
             width = if (isSelected) 1.8.dp else 1.dp,
-            color = if (isSelected) PrimaryGreen else BorderInactive
+            color = if (isSelected) BrandPrimary else BorderInactive
         ),
         modifier = Modifier
             .fillMaxWidth()
@@ -1594,7 +1621,7 @@ private fun IntensityChoiceCard(
             Icon(
                 imageVector = if (isSelected) Icons.Rounded.RadioButtonChecked else Icons.Rounded.RadioButtonUnchecked,
                 contentDescription = null,
-                tint = if (isSelected) PrimaryGreen else TextMuted,
+                tint = if (isSelected) BrandPrimary else TextMuted,
                 modifier = Modifier.size(20.dp)
             )
             Spacer(Modifier.width(12.dp))
@@ -1622,13 +1649,14 @@ private fun RecoveryCard(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    val haptics = rememberFit10Haptics()
     Surface(
-        onClick = onClick,
+        onClick = { haptics.perform(HapticKind.Tick); onClick() },
         shape = RoundedCornerShape(14.dp),
-        color = if (isSelected) LightGreenSurface else Color.White,
+        color = if (isSelected) BrandContainer else CardSurface,
         border = BorderStroke(
             width = if (isSelected) 1.8.dp else 1.dp,
-            color = if (isSelected) PrimaryGreen else BorderInactive
+            color = if (isSelected) BrandPrimary else BorderInactive
         ),
         modifier = Modifier
             .fillMaxWidth()
@@ -1641,7 +1669,7 @@ private fun RecoveryCard(
             Icon(
                 imageVector = if (isSelected) Icons.Rounded.RadioButtonChecked else Icons.Rounded.RadioButtonUnchecked,
                 contentDescription = null,
-                tint = if (isSelected) PrimaryGreen else TextMuted,
+                tint = if (isSelected) BrandPrimary else TextMuted,
                 modifier = Modifier.size(20.dp)
             )
             Spacer(Modifier.width(12.dp))

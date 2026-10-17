@@ -43,17 +43,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import com.fit10.app.core.feedback.rememberFit10Haptics
+import com.fit10.app.core.feedback.HapticKind
+import com.fit10.app.core.ui.theme.Fit10Theme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fit10.app.domain.model.Exercise
 
-private val SheetBackground = Color(0xFF0F172A)
-private val PrimaryGreen = Color(0xFF10B981)
-private val VoltGreen = Color(0xFF00F59B)
-private val DarkCardSurface = Color(0xFF1E293B)
-private val TextMuted = Color(0xFF94A3B8)
-private val DangerRed = Color(0xFFEF4444)
+private val SheetBackground: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surface
+private val BrandPrimary: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
+private val OnBrand: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimary
+private val CardSurface: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surfaceContainerHigh
+private val TextMain: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurface
+private val TextMuted: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurfaceVariant
+private val DangerRed: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.error
 
 /**
  * Fullscreen / Bottom sheet modal providing interactive HD workout video playback,
@@ -65,6 +78,7 @@ fun ExerciseVideoPlayerSheet(
     exercise: Exercise,
     onDismiss: () -> Unit
 ) {
+    val haptics = rememberFit10Haptics()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
@@ -90,14 +104,14 @@ fun ExerciseVideoPlayerSheet(
                 Column {
                     Text(
                         text = "FORM MASTERCLASS & VIDEO",
-                        color = VoltGreen,
+                        color = BrandPrimary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.8.sp
                     )
                     Text(
                         text = exercise.name,
-                        color = Color.White,
+                        color = TextMain,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -108,12 +122,12 @@ fun ExerciseVideoPlayerSheet(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
-                        .background(DarkCardSurface)
+                        .background(CardSurface)
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Close,
                         contentDescription = "Close",
-                        tint = Color.White,
+                        tint = TextMain,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -159,11 +173,11 @@ fun ExerciseVideoPlayerSheet(
 
             // "Got it! Continue Workout" Action Button
             Button(
-                onClick = onDismiss,
+                onClick = { haptics.perform(HapticKind.Confirm); onDismiss() },
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = PrimaryGreen,
-                    contentColor = Color.White
+                    containerColor = BrandPrimary,
+                    contentColor = OnBrand
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -185,6 +199,7 @@ fun ExerciseVideoPlayerSheet(
  */
 @Composable
 private fun EmbeddedExerciseVideoPlayer(exercise: Exercise) {
+    val haptics = rememberFit10Haptics()
     var showBiomechanicalOverlay by remember { mutableStateOf(false) }
 
     Column(
@@ -202,7 +217,7 @@ private fun EmbeddedExerciseVideoPlayer(exercise: Exercise) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(240.dp)
-                        .background(Color(0xFF0F172A))
+                        .background(MaterialTheme.colorScheme.scrim)
                 ) {
                     ExerciseMotionGuide(
                         exerciseId = exercise.id,
@@ -234,13 +249,13 @@ private fun EmbeddedExerciseVideoPlayer(exercise: Exercise) {
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
-                    .background(if (showBiomechanicalOverlay) VoltGreen else Color(0x33FFFFFF))
-                    .clickable { showBiomechanicalOverlay = !showBiomechanicalOverlay }
+                    .background(if (showBiomechanicalOverlay) Fit10Theme.extendedColors.mediaAccent else Fit10Theme.extendedColors.onMediaScrim.copy(alpha = 0.2f))
+                    .clickable { haptics.perform(HapticKind.Tick); showBiomechanicalOverlay = !showBiomechanicalOverlay }
                     .padding(horizontal = 12.dp, vertical = 6.dp)
             ) {
                 Text(
                     text = if (showBiomechanicalOverlay) "⚡ Kinetic Skeleton: ON" else "⚡ Kinetic Skeleton: OFF",
-                    color = if (showBiomechanicalOverlay) Color.Black else Color.White,
+                    color = if (showBiomechanicalOverlay) Fit10Theme.extendedColors.mediaScrim else Fit10Theme.extendedColors.onMediaScrim,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -278,7 +293,7 @@ private fun FormBreakdownContent(exercise: Exercise) {
         steps.forEachIndexed { index, step ->
             Surface(
                 shape = RoundedCornerShape(14.dp),
-                color = DarkCardSurface,
+                color = CardSurface,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -291,12 +306,12 @@ private fun FormBreakdownContent(exercise: Exercise) {
                         modifier = Modifier
                             .size(26.dp)
                             .clip(CircleShape)
-                            .background(PrimaryGreen.copy(alpha = 0.2f)),
+                            .background(BrandPrimary.copy(alpha = 0.2f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "${index + 1}",
-                            color = VoltGreen,
+                            color = BrandPrimary,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -306,7 +321,7 @@ private fun FormBreakdownContent(exercise: Exercise) {
 
                     Text(
                         text = step,
-                        color = Color(0xFFE2E8F0),
+                        color = TextMain,
                         fontSize = 13.5.sp,
                         lineHeight = 19.sp,
                         modifier = Modifier.weight(1f)
@@ -318,8 +333,8 @@ private fun FormBreakdownContent(exercise: Exercise) {
         // Breathing Rhythm Guidance
         Surface(
             shape = RoundedCornerShape(14.dp),
-            color = Color(0xFF0F233B),
-            border = BorderStroke(1.dp, Color(0xFF1E3A8A)),
+            color = Fit10Theme.extendedColors.timerContainer,
+            border = BorderStroke(1.dp, Fit10Theme.extendedColors.timer.copy(alpha = 0.3f)),
             modifier = Modifier.fillMaxWidth()
         ) {
             Row(
@@ -331,20 +346,20 @@ private fun FormBreakdownContent(exercise: Exercise) {
                 Icon(
                     imageVector = Icons.Rounded.Air,
                     contentDescription = null,
-                    tint = Color(0xFF38BDF8),
+                    tint = Fit10Theme.extendedColors.timer,
                     modifier = Modifier.size(22.dp)
                 )
                 Spacer(Modifier.width(12.dp))
                 Column {
                     Text(
                         text = "BREATHING RHYTHM",
-                        color = Color(0xFF38BDF8),
+                        color = Fit10Theme.extendedColors.timer,
                         fontSize = 10.5.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = "Inhale on descent (eccentric) • Exhale forcefully on exertion (concentric)",
-                        color = Color(0xFFE0F2FE),
+                        color = TextMain,
                         fontSize = 12.5.sp,
                         fontWeight = FontWeight.Normal
                     )
@@ -372,7 +387,7 @@ private fun CommonMistakesContent(exercise: Exercise) {
         tips.forEach { tip ->
             Surface(
                 shape = RoundedCornerShape(14.dp),
-                color = DarkCardSurface,
+                color = CardSurface,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
@@ -384,13 +399,13 @@ private fun CommonMistakesContent(exercise: Exercise) {
                         Icon(
                             imageVector = Icons.Rounded.CheckCircle,
                             contentDescription = null,
-                            tint = VoltGreen,
+                            tint = BrandPrimary,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(Modifier.width(8.dp))
                         Text(
                             text = "PRO COACH TIP",
-                            color = VoltGreen,
+                            color = BrandPrimary,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -398,7 +413,7 @@ private fun CommonMistakesContent(exercise: Exercise) {
                     Spacer(Modifier.height(6.dp))
                     Text(
                         text = tip,
-                        color = Color(0xFFE2E8F0),
+                        color = TextMain,
                         fontSize = 13.sp,
                         lineHeight = 18.sp
                     )
@@ -409,7 +424,7 @@ private fun CommonMistakesContent(exercise: Exercise) {
         // Common Mistake Callout
         Surface(
             shape = RoundedCornerShape(14.dp),
-            color = Color(0xFF2D1515),
+            color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f),
             border = BorderStroke(1.dp, DangerRed.copy(alpha = 0.4f)),
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -435,7 +450,7 @@ private fun CommonMistakesContent(exercise: Exercise) {
                     )
                     Text(
                         text = "Rushing repetitions or letting hips sag. Quality of movement always beats quantity for joint health and muscle stimulation.",
-                        color = Color(0xFFFECACA),
+                        color = TextMain,
                         fontSize = 12.5.sp,
                         lineHeight = 17.sp
                     )
@@ -452,17 +467,18 @@ private fun TabPill(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val haptics = rememberFit10Haptics()
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(50))
-            .background(if (selected) PrimaryGreen else DarkCardSurface)
-            .clickable(onClick = onClick)
+            .background(if (selected) BrandPrimary else CardSurface)
+            .clickable { haptics.perform(HapticKind.Tick); onClick() }
             .padding(vertical = 10.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = title,
-            color = if (selected) Color.White else TextMuted,
+            color = if (selected) OnBrand else TextMuted,
             fontSize = 13.sp,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
         )

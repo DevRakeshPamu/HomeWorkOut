@@ -81,8 +81,6 @@ import kotlin.random.Random
 
 private val BrandPrimary: Color
     @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
-private val BrandBright: Color
-    @Composable @ReadOnlyComposable get() = Fit10Theme.extendedColors.brandBright
 private val BrandDeep: Color
     @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimaryContainer
 private val BrandContainer: Color
@@ -398,7 +396,7 @@ fun WorkoutSummaryScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                        // Green quote mark
+                        // Brand quote mark
                         Box(
                             modifier = Modifier.size(44.dp).clip(RoundedCornerShape(12.dp))
                                 .background(BrandContainer),

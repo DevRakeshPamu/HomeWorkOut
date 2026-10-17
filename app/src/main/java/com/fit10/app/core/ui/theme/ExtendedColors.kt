@@ -22,6 +22,7 @@ data class Fit10ExtendedColors(
     val successContainer: Color,
     val mediaScrim: Color,         // Overlay on photos and video, always dark in both modes
     val onMediaScrim: Color,
+    val mediaAccent: Color,        // Brand accent that stays readable on a media scrim in both modes
     val celebration: List<Color>,  // Confetti
 )
 
@@ -38,6 +39,7 @@ internal val LightExtendedColors = Fit10ExtendedColors(
     successContainer = Color(0xFFDCFCE7),
     mediaScrim       = Color(0xCC1A1019),
     onMediaScrim     = Color(0xFFFFFFFF),
+    mediaAccent      = Color(0xFFE6A8D8),
     celebration      = listOf(
         Color(0xFF7E3A70), Color(0xFFE6A8D8), Color(0xFFF0997B),
         Color(0xFFEF9F27), Color(0xFF9FE1CB), Color(0xFFB5609F),
@@ -57,6 +59,7 @@ internal val DarkExtendedColors = Fit10ExtendedColors(
     successContainer = Color(0xFF052E16),
     mediaScrim       = Color(0xCC000000),
     onMediaScrim     = Color(0xFFFFFFFF),
+    mediaAccent      = Color(0xFFF0BFE3),
     celebration      = listOf(
         Color(0xFFE6A8D8), Color(0xFFF5C9EA), Color(0xFFF5B49C),
         Color(0xFFFAC775), Color(0xFF9FE1CB), Color(0xFFC77FB6),

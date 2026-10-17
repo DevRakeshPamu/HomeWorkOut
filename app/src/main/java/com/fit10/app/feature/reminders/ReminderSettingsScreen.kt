@@ -1,5 +1,10 @@
 package com.fit10.app.feature.reminders
 
+import com.fit10.app.core.feedback.rememberFit10Haptics
+import com.fit10.app.core.feedback.HapticKind
+import androidx.compose.material3.MaterialTheme
+import com.fit10.app.core.ui.theme.Fit10Theme
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -59,12 +64,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fit10.app.R
 
-private val PrimaryGreen = Color(0xFF00C070)
-private val DarkGreen = Color(0xFF065F46)
-private val LightGreenSurface = Color(0xFFE8F7F0)
-private val CardBorderColor = Color(0xFFE2E8F0)
-private val TextMain = Color(0xFF0F172A)
-private val TextMuted = Color(0xFF64748B)
+private val BrandPrimary: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
+private val OnBrand: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimary
+private val BrandDeep: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimaryContainer
+private val BrandContainer: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primaryContainer
+private val ScreenBackground: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.background
+private val BorderInactive: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.outlineVariant
+private val TextMain: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurface
+private val TextMuted: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurfaceVariant
+private val CardSurface: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surface
+private val IconWell: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surfaceVariant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,6 +93,7 @@ fun ReminderSettingsScreen(
     onCancel: () -> Unit = onBack,
     onTestNotification: () -> Unit = {}
 ) {
+    val haptics = rememberFit10Haptics()
     var remindersEnabled by remember { mutableStateOf(true) }
     var selectedHour by remember { mutableIntStateOf(19) } // 7:00 PM
     var selectedMinute by remember { mutableIntStateOf(0) }
@@ -97,10 +117,10 @@ fun ReminderSettingsScreen(
     )
 
     Scaffold(
-        containerColor = Color(0xFFF8FAF9),
+        containerColor = ScreenBackground,
         topBar = {
             TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF8FAF9)),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = ScreenBackground),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -126,7 +146,7 @@ fun ReminderSettingsScreen(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .border(1.5.dp, PrimaryGreen, CircleShape)
+                            .border(1.5.dp, BrandPrimary, CircleShape)
                     )
                     Spacer(Modifier.width(16.dp))
                 }
@@ -134,7 +154,7 @@ fun ReminderSettingsScreen(
         },
         bottomBar = {
             Surface(
-                color = Color.White,
+                color = CardSurface,
                 tonalElevation = 6.dp,
                 shadowElevation = 8.dp,
                 modifier = Modifier.fillMaxWidth()
@@ -146,11 +166,11 @@ fun ReminderSettingsScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Button(
-                        onClick = onSave,
+                        onClick = { haptics.perform(HapticKind.Confirm); onSave() },
                         shape = RoundedCornerShape(50),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = PrimaryGreen,
-                            contentColor = Color.White
+                            containerColor = BrandPrimary,
+                            contentColor = OnBrand
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -183,7 +203,7 @@ fun ReminderSettingsScreen(
                             fontSize = 13.sp,
                             color = TextMuted,
                             modifier = Modifier
-                                .clickable(onClick = onCancel)
+                                .clickable { haptics.perform(HapticKind.Tick); onCancel() }
                                 .padding(horizontal = 12.dp, vertical = 6.dp)
                         )
                         Text(text = "•", color = TextMuted, fontSize = 12.sp)
@@ -191,9 +211,9 @@ fun ReminderSettingsScreen(
                             text = "Test notification",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = PrimaryGreen,
+                            color = BrandPrimary,
                             modifier = Modifier
-                                .clickable(onClick = onTestNotification)
+                                .clickable { haptics.perform(HapticKind.Tick); onTestNotification() }
                                 .padding(horizontal = 12.dp, vertical = 6.dp)
                         )
                     }
@@ -213,8 +233,8 @@ fun ReminderSettingsScreen(
             // 1. Micro-Habit Engine Header Banner
             Surface(
                 shape = RoundedCornerShape(18.dp),
-                color = LightGreenSurface,
-                border = BorderStroke(1.dp, PrimaryGreen.copy(alpha = 0.25f)),
+                color = BrandContainer,
+                border = BorderStroke(1.dp, BrandPrimary.copy(alpha = 0.25f)),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -225,13 +245,13 @@ fun ReminderSettingsScreen(
                         modifier = Modifier
                             .size(38.dp)
                             .clip(CircleShape)
-                            .background(PrimaryGreen.copy(alpha = 0.2f)),
+                            .background(BrandPrimary.copy(alpha = 0.2f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.NotificationsActive,
                             contentDescription = null,
-                            tint = DarkGreen,
+                            tint = BrandDeep,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -243,7 +263,7 @@ fun ReminderSettingsScreen(
                             text = "MICRO-HABIT ENGINE",
                             fontSize = 10.5.sp,
                             fontWeight = FontWeight.Bold,
-                            color = DarkGreen,
+                            color = BrandDeep,
                             letterSpacing = 0.8.sp
                         )
                         Spacer(Modifier.height(3.dp))
@@ -251,13 +271,13 @@ fun ReminderSettingsScreen(
                             text = "Small daily prompt, huge compounding fitness.",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = DarkGreen
+                            color = BrandDeep
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             text = "Never miss your 10 minutes. Build unstoppable consistency with gentle reminders.",
                             fontSize = 12.sp,
-                            color = DarkGreen.copy(alpha = 0.85f),
+                            color = BrandDeep.copy(alpha = 0.85f),
                             lineHeight = 17.sp
                         )
                     }
@@ -269,8 +289,8 @@ fun ReminderSettingsScreen(
             // 2. Android Permission Status Row
             Surface(
                 shape = RoundedCornerShape(12.dp),
-                color = Color.White,
-                border = BorderStroke(1.dp, CardBorderColor),
+                color = CardSurface,
+                border = BorderStroke(1.dp, BorderInactive),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -283,7 +303,7 @@ fun ReminderSettingsScreen(
                             modifier = Modifier
                                 .size(6.dp)
                                 .clip(CircleShape)
-                                .background(PrimaryGreen)
+                                .background(BrandPrimary)
                         )
                         Spacer(Modifier.width(8.dp))
                         Text(
@@ -296,12 +316,12 @@ fun ReminderSettingsScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(50))
-                            .background(LightGreenSurface)
+                            .background(BrandContainer)
                             .padding(horizontal = 8.dp, vertical = 3.dp)
                     ) {
                         Text(
                             text = "Allowed ✓",
-                            color = DarkGreen,
+                            color = BrandDeep,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -314,8 +334,8 @@ fun ReminderSettingsScreen(
             // 3. Enable Reminders Toggle Card
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = Color.White,
-                border = BorderStroke(1.dp, CardBorderColor),
+                color = CardSurface,
+                border = BorderStroke(1.dp, BorderInactive),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -328,7 +348,7 @@ fun ReminderSettingsScreen(
                             modifier = Modifier
                                 .size(34.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFFF1F5F9)),
+                                .background(IconWell),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -359,12 +379,12 @@ fun ReminderSettingsScreen(
 
                     Switch(
                         checked = remindersEnabled,
-                        onCheckedChange = { remindersEnabled = it },
+                        onCheckedChange = { haptics.perform(HapticKind.Tick); remindersEnabled = it },
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = PrimaryGreen,
-                            uncheckedThumbColor = Color.White,
-                            uncheckedTrackColor = Color(0xFFCBD5E1)
+                            checkedThumbColor = OnBrand,
+                            checkedTrackColor = BrandPrimary,
+                            uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
                         )
                     )
                 }
@@ -375,8 +395,8 @@ fun ReminderSettingsScreen(
             // 4. Reminder Time Card
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = Color.White,
-                border = BorderStroke(1.dp, CardBorderColor),
+                color = CardSurface,
+                border = BorderStroke(1.dp, BorderInactive),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -405,7 +425,7 @@ fun ReminderSettingsScreen(
                             text = "Evening Wind-Down",
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Medium,
-                            color = PrimaryGreen
+                            color = BrandPrimary
                         )
                     }
 
@@ -425,11 +445,12 @@ fun ReminderSettingsScreen(
 
                         OutlinedButton(
                             onClick = {
+                                haptics.perform(HapticKind.Tick)
                                 // Toggle demo time
                                 if (selectedHour == 19) selectedHour = 8 else selectedHour = 19
                             },
                             shape = RoundedCornerShape(50),
-                            border = BorderStroke(1.dp, CardBorderColor),
+                            border = BorderStroke(1.dp, BorderInactive),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = TextMain)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -456,8 +477,8 @@ fun ReminderSettingsScreen(
             // 5. Repeat on Workout Days Card
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = Color.White,
-                border = BorderStroke(1.dp, CardBorderColor),
+                color = CardSurface,
+                border = BorderStroke(1.dp, BorderInactive),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -476,7 +497,7 @@ fun ReminderSettingsScreen(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(50))
-                                .background(Color(0xFFF1F5F9))
+                                .background(IconWell)
                                 .padding(horizontal = 8.dp, vertical = 2.dp)
                         ) {
                             Text(
@@ -500,8 +521,9 @@ fun ReminderSettingsScreen(
                                 modifier = Modifier
                                     .size(38.dp)
                                     .clip(CircleShape)
-                                    .background(if (isSelected) PrimaryGreen else Color(0xFFF1F5F9))
+                                    .background(if (isSelected) BrandPrimary else IconWell)
                                     .clickable {
+                                        haptics.perform(HapticKind.Tick)
                                         selectedDays = if (isSelected) {
                                             selectedDays - dayInt
                                         } else {
@@ -514,7 +536,7 @@ fun ReminderSettingsScreen(
                                     text = label,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isSelected) Color.White else TextMuted
+                                    color = if (isSelected) OnBrand else TextMuted
                                 )
                             }
                         }
@@ -535,8 +557,8 @@ fun ReminderSettingsScreen(
             // 6. Reminder Message Card
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = Color.White,
-                border = BorderStroke(1.dp, CardBorderColor),
+                color = CardSurface,
+                border = BorderStroke(1.dp, BorderInactive),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -568,17 +590,17 @@ fun ReminderSettingsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(if (isSelected) LightGreenSurface.copy(alpha = 0.5f) else Color.Transparent)
-                                .clickable { selectedMessageIndex = index }
+                                .background(if (isSelected) BrandContainer.copy(alpha = 0.5f) else Color.Transparent)
+                                .clickable { haptics.perform(HapticKind.Tick); selectedMessageIndex = index }
                                 .padding(vertical = 8.dp, horizontal = 4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             RadioButton(
                                 selected = isSelected,
-                                onClick = { selectedMessageIndex = index },
+                                onClick = { haptics.perform(HapticKind.Tick); selectedMessageIndex = index },
                                 colors = RadioButtonDefaults.colors(
-                                    selectedColor = PrimaryGreen,
-                                    unselectedColor = Color(0xFFCBD5E1)
+                                    selectedColor = BrandPrimary,
+                                    unselectedColor = MaterialTheme.colorScheme.outline
                                 )
                             )
                             Spacer(Modifier.width(8.dp))

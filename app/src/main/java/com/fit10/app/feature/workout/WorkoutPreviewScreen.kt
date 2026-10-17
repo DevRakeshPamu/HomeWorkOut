@@ -1,5 +1,9 @@
 package com.fit10.app.feature.workout
 
+import com.fit10.app.core.feedback.rememberFit10Haptics
+import com.fit10.app.core.feedback.HapticKind
+import com.fit10.app.core.ui.theme.Fit10Theme
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -54,13 +58,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fit10.app.domain.model.Workout
 
-private val PrimaryGreen      = Color(0xFF10B981)
-private val DarkGreen         = Color(0xFF047857)
-private val LightGreenSurface = Color(0xFFECFDF5)
-private val BorderInactive    = Color(0xFFE2E8F0)
-private val TextMain          = Color(0xFF0F172A)
-private val TextMuted         = Color(0xFF64748B)
-private val CardWhite         = Color(0xFFFFFFFF)
+private val BrandPrimary: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
+private val BrandStrong: Color
+    @Composable @ReadOnlyComposable get() = Fit10Theme.extendedColors.brandStrong
+private val OnBrand: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimary
+private val BrandDeep: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimaryContainer
+private val BrandContainer: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primaryContainer
+private val ScreenBackground: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.background
+private val BorderInactive: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.outlineVariant
+private val TextMain: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurface
+private val TextMuted: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurfaceVariant
+private val CardSurface: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surface
+private val IconWell: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surfaceVariant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,16 +90,17 @@ fun WorkoutPreviewScreen(
     onExerciseClick: (exerciseId: String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val haptics = rememberFit10Haptics()
     val title = workout?.title ?: "Full Body Workout"
     val description = workout?.description ?: "Balanced routine designed to activate major muscle groups with zero gear."
     val durationMin = workout?.estimatedDurationMinutes ?: 10
     val exerciseCount = workout?.exercises?.size ?: 6
 
     Scaffold(
-        containerColor = Color(0xFFF8FAF9),
+        containerColor = ScreenBackground,
         topBar = {
             TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF8FAF9)),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = ScreenBackground),
                 title = {},
                 navigationIcon = {
                     IconButton(onClick = onBack) {
@@ -104,7 +124,7 @@ fun WorkoutPreviewScreen(
         },
         bottomBar = {
             Surface(
-                color = CardWhite,
+                color = CardSurface,
                 shadowElevation = 10.dp,
                 border = BorderStroke(1.dp, BorderInactive)
             ) {
@@ -120,17 +140,17 @@ fun WorkoutPreviewScreen(
                             .clip(RoundedCornerShape(50))
                             .background(
                                 androidx.compose.ui.graphics.Brush.horizontalGradient(
-                                    listOf(Color(0xFF059669), PrimaryGreen)
+                                    listOf(BrandStrong, BrandPrimary)
                                 )
                             )
-                            .clickable(onClick = onStartWorkout),
+                            .clickable { haptics.perform(HapticKind.Confirm); onStartWorkout() },
                         contentAlignment = Alignment.Center
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Rounded.PlayArrow,
                                 contentDescription = null,
-                                tint = Color.White,
+                                tint = OnBrand,
                                 modifier = Modifier.size(22.dp)
                             )
                             Spacer(Modifier.width(8.dp))
@@ -138,7 +158,7 @@ fun WorkoutPreviewScreen(
                                 text = "Start Workout",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = OnBrand
                             )
                         }
                     }
@@ -157,8 +177,8 @@ fun WorkoutPreviewScreen(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
-                    .background(LightGreenSurface)
-                    .border(1.dp, PrimaryGreen.copy(alpha = 0.3f), RoundedCornerShape(50))
+                    .background(BrandContainer)
+                    .border(1.dp, BrandPrimary.copy(alpha = 0.3f), RoundedCornerShape(50))
                     .padding(horizontal = 12.dp, vertical = 5.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -166,12 +186,12 @@ fun WorkoutPreviewScreen(
                         modifier = Modifier
                             .size(6.dp)
                             .clip(CircleShape)
-                            .background(PrimaryGreen)
+                            .background(BrandPrimary)
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(
                         text = "Routine #10 • Quick Activation",
-                        color = DarkGreen,
+                        color = BrandDeep,
                         fontSize = 11.5.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -213,7 +233,7 @@ fun WorkoutPreviewScreen(
             // 4. Guided Rhythm Included Box
             Surface(
                 shape = RoundedCornerShape(14.dp),
-                color = LightGreenSurface,
+                color = BrandContainer,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -224,13 +244,13 @@ fun WorkoutPreviewScreen(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(PrimaryGreen),
+                            .background(BrandPrimary),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Bolt,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = OnBrand,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -240,12 +260,12 @@ fun WorkoutPreviewScreen(
                             text = "Guided Rhythm Included",
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.5.sp,
-                            color = DarkGreen
+                            color = BrandDeep
                         )
                         Text(
                             text = "30-sec guided warmup and cooldown included in pacing.",
                             fontSize = 12.sp,
-                            color = DarkGreen
+                            color = BrandDeep
                         )
                     }
                 }
@@ -307,7 +327,7 @@ fun WorkoutPreviewScreen(
 private fun SpecBadge(text: String) {
     Surface(
         shape = RoundedCornerShape(8.dp),
-        color = Color(0xFFF1F5F9),
+        color = IconWell,
         border = BorderStroke(1.dp, BorderInactive)
     ) {
         Text(
@@ -329,14 +349,15 @@ private fun ExerciseFlowCard(
     index: Int = 0,
     onClick: () -> Unit = {}
 ) {
+    val haptics = rememberFit10Haptics()
     Surface(
         shape = RoundedCornerShape(16.dp),
-        color = CardWhite,
+        color = CardSurface,
         shadowElevation = 2.dp,
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 5.dp)
-            .clickable(onClick = onClick)
+            .clickable { haptics.perform(HapticKind.Tick); onClick() }
     ) {
         Row(
             modifier = Modifier.padding(14.dp),
@@ -349,14 +370,14 @@ private fun ExerciseFlowCard(
                     .clip(CircleShape)
                     .background(
                         androidx.compose.ui.graphics.Brush.linearGradient(
-                            listOf(Color(0xFF059669), PrimaryGreen)
+                            listOf(BrandStrong, BrandPrimary)
                         )
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "${index + 1}",
-                    color = Color.White,
+                    color = OnBrand,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Black
                 )
@@ -376,13 +397,13 @@ private fun ExerciseFlowCard(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(50))
-                            .background(LightGreenSurface)
+                            .background(BrandContainer)
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
                             text = category,
                             fontSize = 9.5.sp,
-                            color = DarkGreen,
+                            color = BrandDeep,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -398,13 +419,13 @@ private fun ExerciseFlowCard(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(50))
-                            .background(Color(0xFFE0F2FE))
+                            .background(Fit10Theme.extendedColors.timerContainer)
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
                             text = "▶ Motion Guide",
                             fontSize = 9.sp,
-                            color = Color(0xFF0369A1),
+                            color = Fit10Theme.extendedColors.timer,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -416,14 +437,14 @@ private fun ExerciseFlowCard(
                 modifier = Modifier
                     .size(34.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(LightGreenSurface)
+                    .background(BrandContainer)
                     .clickable {},
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Rounded.SwapHoriz,
                     contentDescription = "Replace",
-                    tint = PrimaryGreen,
+                    tint = BrandPrimary,
                     modifier = Modifier.size(18.dp)
                 )
             }

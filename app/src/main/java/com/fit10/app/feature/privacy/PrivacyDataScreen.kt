@@ -1,5 +1,9 @@
 package com.fit10.app.feature.privacy
 
+import com.fit10.app.core.ui.theme.Fit10Theme
+import androidx.compose.runtime.ReadOnlyComposable
+import com.fit10.app.core.feedback.rememberFit10Haptics
+import com.fit10.app.core.feedback.HapticKind
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -61,13 +65,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fit10.app.R
 
-private val PrimaryGreen = Color(0xFF10B981)
-private val DarkGreen = Color(0xFF047857)
-private val LightGreenSurface = Color(0xFFECFDF5)
-private val BackgroundSurface = Color(0xFFF8FAF9)
-private val BorderInactive = Color(0xFFE2E8F0)
-private val TextMain = Color(0xFF0F172A)
-private val TextMuted = Color(0xFF64748B)
+private val BrandPrimary: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
+private val OnBrand: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimary
+private val BrandDeep: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimaryContainer
+private val BrandContainer: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primaryContainer
+private val ScreenBackground: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.background
+private val BorderInactive: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.outlineVariant
+private val TextMain: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurface
+private val TextMuted: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurfaceVariant
+private val CardSurface: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surface
+private val IconWell: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surfaceVariant
 
 @Composable
 fun PrivacyDataScreen(
@@ -76,13 +93,14 @@ fun PrivacyDataScreen(
     onManagePermissions: () -> Unit = {},
     onDeleteAccount: () -> Unit = {}
 ) {
+    val haptics = rememberFit10Haptics()
     var cloudBackupEnabled by remember { mutableStateOf(true) }
     var personalizedAdsEnabled by remember { mutableStateOf(false) }
     var analyticsEnabled by remember { mutableStateOf(true) }
     var healthDataEnabled by remember { mutableStateOf(true) }
 
     Scaffold(
-        containerColor = BackgroundSurface
+        containerColor = ScreenBackground
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -125,7 +143,7 @@ fun PrivacyDataScreen(
                     modifier = Modifier
                         .size(34.dp)
                         .clip(CircleShape)
-                        .border(1.5.dp, PrimaryGreen, CircleShape)
+                        .border(1.5.dp, BrandPrimary, CircleShape)
                 )
             }
 
@@ -141,21 +159,21 @@ fun PrivacyDataScreen(
                     modifier = Modifier
                         .size(80.dp)
                         .clip(CircleShape)
-                        .background(PrimaryGreen.copy(alpha = 0.1f)),
+                        .background(BrandPrimary.copy(alpha = 0.1f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Box(
                         modifier = Modifier
                             .size(60.dp)
                             .clip(CircleShape)
-                            .background(LightGreenSurface)
-                            .border(1.5.dp, PrimaryGreen.copy(alpha = 0.3f), CircleShape),
+                            .background(BrandContainer)
+                            .border(1.5.dp, BrandPrimary.copy(alpha = 0.3f), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Shield,
                             contentDescription = null,
-                            tint = PrimaryGreen,
+                            tint = BrandPrimary,
                             modifier = Modifier.size(32.dp)
                         )
                     }
@@ -166,8 +184,8 @@ fun PrivacyDataScreen(
                 // Badge: On-Device Encryption & Android Protected
                 Surface(
                     shape = RoundedCornerShape(20.dp),
-                    color = LightGreenSurface,
-                    border = BorderStroke(1.dp, PrimaryGreen.copy(alpha = 0.3f))
+                    color = BrandContainer,
+                    border = BorderStroke(1.dp, BrandPrimary.copy(alpha = 0.3f))
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
@@ -177,14 +195,14 @@ fun PrivacyDataScreen(
                             modifier = Modifier
                                 .size(6.dp)
                                 .clip(CircleShape)
-                                .background(PrimaryGreen)
+                                .background(BrandPrimary)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "On-Device Encryption & Android Protected",
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = DarkGreen
+                            color = BrandDeep
                         )
                     }
                 }
@@ -238,7 +256,7 @@ fun PrivacyDataScreen(
 
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = Color.White,
+                color = CardSurface,
                 border = BorderStroke(1.dp, BorderInactive),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -248,13 +266,13 @@ fun PrivacyDataScreen(
                             modifier = Modifier
                                 .size(34.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(LightGreenSurface),
+                                .background(BrandContainer),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Security,
                                 contentDescription = null,
-                                tint = PrimaryGreen,
+                                tint = BrandPrimary,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -280,7 +298,7 @@ fun PrivacyDataScreen(
 
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = Color(0xFFF1F5F9)
+                        color = IconWell
                     ) {
                         Text(
                             text = "🛡 Fully compliant with GDPR, CCPA, and Android Keystore standards.",
@@ -291,7 +309,7 @@ fun PrivacyDataScreen(
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
-                    Divider(color = Color(0xFFF1F5F9), thickness = 1.dp)
+                    Divider(color = BorderInactive, thickness = 1.dp)
                     Spacer(modifier = Modifier.height(12.dp))
 
                     // Cloud Backup & Sync Toggle
@@ -307,7 +325,7 @@ fun PrivacyDataScreen(
                             Icon(
                                 imageVector = Icons.Rounded.CloudSync,
                                 contentDescription = null,
-                                tint = PrimaryGreen,
+                                tint = BrandPrimary,
                                 modifier = Modifier.size(22.dp)
                             )
                             Spacer(modifier = Modifier.width(10.dp))
@@ -328,12 +346,12 @@ fun PrivacyDataScreen(
 
                         Switch(
                             checked = cloudBackupEnabled,
-                            onCheckedChange = { cloudBackupEnabled = it },
+                            onCheckedChange = { haptics.perform(HapticKind.Tick); cloudBackupEnabled = it },
                             colors = SwitchDefaults.colors(
-                                checkedThumbColor = Color.White,
-                                checkedTrackColor = PrimaryGreen,
-                                uncheckedThumbColor = Color.White,
-                                uncheckedTrackColor = Color(0xFFCBD5E1)
+                                checkedThumbColor = OnBrand,
+                                checkedTrackColor = BrandPrimary,
+                                uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
                             )
                         )
                     }
@@ -356,7 +374,7 @@ fun PrivacyDataScreen(
 
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = Color.White,
+                color = CardSurface,
                 border = BorderStroke(1.dp, BorderInactive),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -370,7 +388,7 @@ fun PrivacyDataScreen(
                         onCheckedChange = { personalizedAdsEnabled = it }
                     )
 
-                    Divider(color = Color(0xFFF1F5F9), thickness = 1.dp)
+                    Divider(color = BorderInactive, thickness = 1.dp)
 
                     // Anonymous Usage Analytics
                     PrivacyToggleRow(
@@ -381,7 +399,7 @@ fun PrivacyDataScreen(
                         onCheckedChange = { analyticsEnabled = it }
                     )
 
-                    Divider(color = Color(0xFFF1F5F9), thickness = 1.dp)
+                    Divider(color = BorderInactive, thickness = 1.dp)
 
                     // Health Data Connection
                     PrivacyToggleRow(
@@ -411,7 +429,7 @@ fun PrivacyDataScreen(
 
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = Color.White,
+                color = CardSurface,
                 border = BorderStroke(1.dp, BorderInactive),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -422,7 +440,7 @@ fun PrivacyDataScreen(
                         subtitle = "Export archives in JSON or CSV format",
                         onClick = onDownloadData
                     )
-                    Divider(color = Color(0xFFF1F5F9), thickness = 1.dp)
+                    Divider(color = BorderInactive, thickness = 1.dp)
                     ActionRow(
                         icon = Icons.Rounded.Tune,
                         title = "Manage Android Permissions",
@@ -441,8 +459,8 @@ fun PrivacyDataScreen(
 
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = Color(0xFFFFF5F5),
-                border = BorderStroke(1.dp, Color(0xFFFCA5A5)),
+                color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.35f),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.4f)),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -450,7 +468,7 @@ fun PrivacyDataScreen(
                         Icon(
                             imageVector = Icons.Rounded.Warning,
                             contentDescription = null,
-                            tint = Color(0xFFDC2626),
+                            tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -458,7 +476,7 @@ fun PrivacyDataScreen(
                             text = "Delete My Data",
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.5.sp,
-                            color = Color(0xFFDC2626)
+                            color = MaterialTheme.colorScheme.error
                         )
                     }
 
@@ -467,21 +485,21 @@ fun PrivacyDataScreen(
                     Text(
                         text = "Permanently deletes your workout history, streaks, and personalization baseline. This action cannot be undone.",
                         fontSize = 12.sp,
-                        color = Color(0xFF7F1D1D),
+                        color = TextMain,
                         lineHeight = 16.sp
                     )
 
                     Spacer(modifier = Modifier.height(14.dp))
 
                     OutlinedButton(
-                        onClick = onDeleteAccount,
+                        onClick = { haptics.perform(HapticKind.Confirm); onDeleteAccount() },
                         shape = RoundedCornerShape(10.dp),
-                        border = BorderStroke(1.5.dp, Color(0xFFDC2626)),
+                        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.error),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
                             text = "Delete Account & Data",
-                            color = Color(0xFFDC2626),
+                            color = MaterialTheme.colorScheme.error,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.5.sp
                         )
@@ -495,7 +513,7 @@ fun PrivacyDataScreen(
             Text(
                 text = "Fit10 Core v2.4.1 (Clean Architecture Build)",
                 fontSize = 11.5.sp,
-                color = Color(0xFF94A3B8),
+                color = TextMuted,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -512,7 +530,7 @@ private fun SectionHeaderLabel(title: String, isDanger: Boolean = false) {
         fontSize = 11.5.sp,
         fontWeight = FontWeight.Bold,
         letterSpacing = 1.sp,
-        color = if (isDanger) Color(0xFFDC2626) else TextMuted,
+        color = if (isDanger) MaterialTheme.colorScheme.error else TextMuted,
         modifier = Modifier.padding(start = 4.dp)
     )
 }
@@ -521,7 +539,7 @@ private fun SectionHeaderLabel(title: String, isDanger: Boolean = false) {
 private fun SmallBadge(text: String) {
     Surface(
         shape = RoundedCornerShape(6.dp),
-        color = Color(0xFFF1F5F9)
+        color = IconWell
     ) {
         Text(
             text = text,
@@ -537,7 +555,7 @@ private fun SmallBadge(text: String) {
 private fun SecurityCapsule(label: String, modifier: Modifier = Modifier) {
     Surface(
         shape = RoundedCornerShape(8.dp),
-        color = Color.White,
+        color = CardSurface,
         border = BorderStroke(1.dp, BorderInactive),
         modifier = modifier
     ) {
@@ -561,6 +579,7 @@ private fun PrivacyToggleRow(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
+    val haptics = rememberFit10Haptics()
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -579,14 +598,14 @@ private fun PrivacyToggleRow(
                     Spacer(modifier = Modifier.width(6.dp))
                     Surface(
                         shape = RoundedCornerShape(6.dp),
-                        color = LightGreenSurface,
-                        border = BorderStroke(1.dp, PrimaryGreen.copy(alpha = 0.3f))
+                        color = BrandContainer,
+                        border = BorderStroke(1.dp, BrandPrimary.copy(alpha = 0.3f))
                     ) {
                         Text(
                             text = "• $badge",
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
-                            color = DarkGreen,
+                            color = BrandDeep,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         )
                     }
@@ -605,12 +624,12 @@ private fun PrivacyToggleRow(
 
         Switch(
             checked = checked,
-            onCheckedChange = onCheckedChange,
+            onCheckedChange = { haptics.perform(HapticKind.Tick); onCheckedChange(it) },
             colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.White,
-                checkedTrackColor = PrimaryGreen,
-                uncheckedThumbColor = Color.White,
-                uncheckedTrackColor = Color(0xFFCBD5E1)
+                checkedThumbColor = OnBrand,
+                checkedTrackColor = BrandPrimary,
+                uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
             )
         )
     }
@@ -624,10 +643,11 @@ private fun ActionRow(
     isExternal: Boolean = false,
     onClick: () -> Unit
 ) {
+    val haptics = rememberFit10Haptics()
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable { haptics.perform(HapticKind.Tick); onClick() }
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -649,7 +669,7 @@ private fun ActionRow(
         Icon(
             imageVector = if (isExternal) Icons.Rounded.OpenInNew else Icons.Rounded.ChevronRight,
             contentDescription = null,
-            tint = Color(0xFF94A3B8),
+            tint = TextMuted,
             modifier = Modifier.size(18.dp)
         )
     }

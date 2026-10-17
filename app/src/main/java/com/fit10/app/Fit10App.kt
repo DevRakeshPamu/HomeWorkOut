@@ -2,6 +2,9 @@ package com.fit10.app
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BarChart
@@ -63,6 +66,9 @@ fun Fit10App() {
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        // Screens draw their own top bars under the status bar; this Scaffold only reserves the bottom
+        // (bottom nav or gesture bar) and consumes it so screen Scaffolds don't add it a second time.
+        contentWindowInsets = WindowInsets.navigationBars,
         bottomBar = {
             if (showBottomBar) {
                 Fit10BottomNavigation(
@@ -94,7 +100,7 @@ fun Fit10App() {
             container = container,
             isOnboardingCompleted = isOnboardingCompleted,
             startDestination = Fit10Destination.Splash.route,
-            modifier = if (currentRoute == Fit10Destination.Splash.route) Modifier else Modifier.padding(paddingValues)
+            modifier = if (currentRoute == Fit10Destination.Splash.route) Modifier else Modifier.padding(paddingValues).consumeWindowInsets(paddingValues)
         )
     }
 }

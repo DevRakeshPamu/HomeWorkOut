@@ -344,6 +344,7 @@ fun HistoryScreen(
                                         Text(
                                             text = "10m",
                                             fontSize = 9.5.sp,
+                                            lineHeight = 12.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = BrandDeep,
                                             modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
@@ -368,6 +369,7 @@ fun HistoryScreen(
                                 Text(
                                     text = day,
                                     fontSize = 11.5.sp,
+                                    lineHeight = 14.sp,
                                     fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
                                     color = if (isActive) TextMain else TextMuted
                                 )

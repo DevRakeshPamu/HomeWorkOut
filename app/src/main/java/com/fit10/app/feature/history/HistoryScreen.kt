@@ -1,5 +1,9 @@
 package com.fit10.app.feature.history
 
+import com.fit10.app.core.ui.theme.Fit10Theme
+import androidx.compose.runtime.ReadOnlyComposable
+import com.fit10.app.core.feedback.HapticKind
+import com.fit10.app.core.feedback.rememberFit10Haptics
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -58,20 +62,31 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fit10.app.R
 
-private val PrimaryGreen      = Color(0xFF10B981)
-private val VoltGreen         = Color(0xFF00E676)
-private val DarkGreen         = Color(0xFF047857)
-private val DeepForestGreen   = Color(0xFF064E3B)
-private val LightGreenSurface = Color(0xFFECFDF5)
-private val BackgroundSurface = Color(0xFFF8FAF9)
-private val BorderInactive    = Color(0xFFE2E8F0)
-private val TextMain          = Color(0xFF0F172A)
-private val TextMuted         = Color(0xFF64748B)
-private val CardWhite         = Color(0xFFFFFFFF)
+private val BrandPrimary: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
+private val OnBrand: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimary
+private val BrandDeep: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimaryContainer
+private val BrandContainer: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primaryContainer
+private val ScreenBackground: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.background
+private val BorderInactive: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.outlineVariant
+private val TextMain: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurface
+private val TextMuted: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurfaceVariant
+private val CardSurface: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surface
+private val IconWell: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surfaceVariant
 
-private val BarGradient = Brush.verticalGradient(
-    colors = listOf(Color(0xFF00E676), Color(0xFF10B981))
-)
+private val BarGradient: Brush
+    @Composable @ReadOnlyComposable get() = Brush.verticalGradient(
+        colors = listOf(Fit10Theme.extendedColors.brandBright, MaterialTheme.colorScheme.primary)
+    )
 
 @Composable
 fun HistoryScreen(
@@ -80,9 +95,10 @@ fun HistoryScreen(
     onPreviewWorkout: (String) -> Unit = {}
 ) {
     val history by viewModel.history.collectAsStateWithLifecycle()
+    val haptics = rememberFit10Haptics()
 
     Scaffold(
-        containerColor = BackgroundSurface
+        containerColor = ScreenBackground
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -107,13 +123,13 @@ fun HistoryScreen(
                         modifier = Modifier
                             .size(28.dp)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(LightGreenSurface),
+                            .background(BrandContainer),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.FitnessCenter,
                             contentDescription = null,
-                            tint = PrimaryGreen,
+                            tint = BrandPrimary,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -121,7 +137,7 @@ fun HistoryScreen(
                         text = "Fit10",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = DarkGreen
+                        color = BrandDeep
                     )
                 }
 
@@ -130,7 +146,7 @@ fun HistoryScreen(
                         modifier = Modifier
                             .size(34.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .background(Color.White)
+                            .background(CardSurface)
                             .border(1.dp, BorderInactive, RoundedCornerShape(10.dp)),
                         contentAlignment = Alignment.Center
                     ) {
@@ -144,7 +160,7 @@ fun HistoryScreen(
                             modifier = Modifier
                                 .size(7.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFFEF4444))
+                                .background(MaterialTheme.colorScheme.error)
                                 .align(Alignment.TopEnd)
                                 .padding(2.dp)
                         )
@@ -159,7 +175,7 @@ fun HistoryScreen(
                         modifier = Modifier
                             .size(34.dp)
                             .clip(CircleShape)
-                            .border(1.5.dp, PrimaryGreen, CircleShape)
+                            .border(1.5.dp, BrandPrimary, CircleShape)
                     )
                 }
             }
@@ -191,11 +207,11 @@ fun HistoryScreen(
                 // Card 1: Streak
                 StatTile(
                     icon = Icons.Rounded.LocalFireDepartment,
-                    iconTint = Color(0xFFF97316),
-                    iconBg = Color(0xFFFFF7ED),
+                    iconTint = Fit10Theme.extendedColors.streak,
+                    iconBg = Fit10Theme.extendedColors.streakContainer,
                     badge = "+2 d",
-                    badgeColor = LightGreenSurface,
-                    badgeText = DarkGreen,
+                    badgeColor = BrandContainer,
+                    badgeText = BrandDeep,
                     value = "7 Days",
                     label = "Current Streak",
                     modifier = Modifier.weight(1f)
@@ -204,10 +220,10 @@ fun HistoryScreen(
                 // Card 2: Total Workouts
                 StatTile(
                     icon = Icons.Rounded.FitnessCenter,
-                    iconTint = PrimaryGreen,
-                    iconBg = LightGreenSurface,
+                    iconTint = BrandPrimary,
+                    iconBg = BrandContainer,
                     badge = "Jan '25",
-                    badgeColor = Color(0xFFF1F5F9),
+                    badgeColor = IconWell,
                     badgeText = TextMuted,
                     value = "28",
                     label = "Total Workouts",
@@ -224,10 +240,10 @@ fun HistoryScreen(
                 // Card 3: Active Duration
                 StatTile(
                     icon = Icons.Rounded.Schedule,
-                    iconTint = Color(0xFF0284C7),
-                    iconBg = Color(0xFFF0F9FF),
+                    iconTint = Fit10Theme.extendedColors.timer,
+                    iconBg = Fit10Theme.extendedColors.timerContainer,
                     badge = "4.6 hrs",
-                    badgeColor = Color(0xFFF1F5F9),
+                    badgeColor = IconWell,
                     badgeText = TextMuted,
                     value = "280 min",
                     label = "Active Duration",
@@ -237,11 +253,11 @@ fun HistoryScreen(
                 // Card 4: Calories Burned
                 StatTile(
                     icon = Icons.Rounded.Bolt,
-                    iconTint = PrimaryGreen,
-                    iconBg = LightGreenSurface,
+                    iconTint = BrandPrimary,
+                    iconBg = BrandContainer,
                     badge = "Top 8%",
-                    badgeColor = LightGreenSurface,
-                    badgeText = DarkGreen,
+                    badgeColor = BrandContainer,
+                    badgeText = BrandDeep,
                     value = "2,240",
                     label = "Calories Burned",
                     modifier = Modifier.weight(1f)
@@ -253,7 +269,7 @@ fun HistoryScreen(
             // 4. Workouts This Week Card with Bar Chart
             Surface(
                 shape = RoundedCornerShape(18.dp),
-                color = CardWhite,
+                color = CardSurface,
                 shadowElevation = 3.dp,
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -280,14 +296,14 @@ fun HistoryScreen(
 
                         Surface(
                             shape = RoundedCornerShape(6.dp),
-                            color = LightGreenSurface,
-                            border = BorderStroke(1.dp, PrimaryGreen.copy(alpha = 0.3f))
+                            color = BrandContainer,
+                            border = BorderStroke(1.dp, BrandPrimary.copy(alpha = 0.3f))
                         ) {
                             Text(
                                 text = "✓ 4 of 4 Met",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = DarkGreen,
+                                color = BrandDeep,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                             )
                         }
@@ -322,14 +338,14 @@ fun HistoryScreen(
                                 if (index == 4) { // Friday with 10m tag
                                     Surface(
                                         shape = RoundedCornerShape(4.dp),
-                                        color = LightGreenSurface,
-                                        border = BorderStroke(0.5.dp, PrimaryGreen.copy(alpha = 0.4f))
+                                        color = BrandContainer,
+                                        border = BorderStroke(0.5.dp, BrandPrimary.copy(alpha = 0.4f))
                                     ) {
                                         Text(
                                             text = "10m",
                                             fontSize = 9.5.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = DarkGreen,
+                                            color = BrandDeep,
                                             modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
                                         )
                                     }
@@ -343,7 +359,7 @@ fun HistoryScreen(
                                         .clip(RoundedCornerShape(6.dp))
                                         .background(
                                             if (isActive) BarGradient
-                                            else Brush.verticalGradient(listOf(Color(0xFFE2E8F0), Color(0xFFE2E8F0)))
+                                            else Brush.verticalGradient(listOf(BorderInactive, BorderInactive))
                                         )
                                 )
 
@@ -360,7 +376,7 @@ fun HistoryScreen(
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
-                    Divider(color = Color(0xFFF1F5F9), thickness = 1.dp)
+                    Divider(color = BorderInactive, thickness = 1.dp)
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Row(
@@ -373,7 +389,7 @@ fun HistoryScreen(
                                 modifier = Modifier
                                     .size(8.dp)
                                     .clip(CircleShape)
-                                    .background(PrimaryGreen)
+                                    .background(BrandPrimary)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
@@ -387,8 +403,8 @@ fun HistoryScreen(
                             text = "Details ›",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = DarkGreen,
-                            modifier = Modifier.clickable { onExploreWorkouts() }
+                            color = BrandDeep,
+                            modifier = Modifier.clickable { haptics.perform(HapticKind.Tick); onExploreWorkouts() }
                         )
                     }
                 }
@@ -399,7 +415,7 @@ fun HistoryScreen(
             // 5. Habit Stability Score Card
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = Color.White,
+                color = CardSurface,
                 border = BorderStroke(1.dp, BorderInactive),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -415,8 +431,8 @@ fun HistoryScreen(
                         CircularProgressIndicator(
                             progress = { 0.94f },
                             modifier = Modifier.fillMaxSize(),
-                            color = PrimaryGreen,
-                            trackColor = Color(0xFFE2E8F0),
+                            color = BrandPrimary,
+                            trackColor = BorderInactive,
                             strokeWidth = 6.dp,
                             strokeCap = StrokeCap.Round
                         )
@@ -443,7 +459,7 @@ fun HistoryScreen(
                             Icon(
                                 imageVector = Icons.Rounded.Verified,
                                 contentDescription = null,
-                                tint = PrimaryGreen,
+                                tint = BrandPrimary,
                                 modifier = Modifier.size(14.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
@@ -452,7 +468,7 @@ fun HistoryScreen(
                                 fontSize = 10.5.sp,
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 0.8.sp,
-                                color = DarkGreen
+                                color = BrandDeep
                             )
                         }
 
@@ -503,7 +519,7 @@ fun HistoryScreen(
                     text = "See All (9)",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = DarkGreen
+                    color = BrandDeep
                 )
             }
 
@@ -511,7 +527,7 @@ fun HistoryScreen(
 
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = Color.White,
+                color = CardSurface,
                 border = BorderStroke(1.dp, BorderInactive),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -519,39 +535,39 @@ fun HistoryScreen(
                     // Milestone 1: 7-Day Streak
                     MilestoneRow(
                         icon = Icons.Rounded.Shield,
-                        iconTint = PrimaryGreen,
-                        iconBg = LightGreenSurface,
+                        iconTint = BrandPrimary,
+                        iconBg = BrandContainer,
                         title = "7-Day Streak",
                         badge = "New",
                         subtitle = "Completed 7 consecutive days of mo...",
                         date = "Today"
                     )
 
-                    Divider(color = Color(0xFFF1F5F9), thickness = 1.dp, modifier = Modifier.padding(vertical = 10.dp))
+                    Divider(color = BorderInactive, thickness = 1.dp, modifier = Modifier.padding(vertical = 10.dp))
 
                     // Milestone 2: 25 Workouts Club
                     MilestoneRow(
                         icon = Icons.Rounded.EmojiEvents,
-                        iconTint = Color(0xFFF59E0B),
-                        iconBg = Color(0xFFFEF3C7),
+                        iconTint = MaterialTheme.colorScheme.tertiary,
+                        iconBg = MaterialTheme.colorScheme.tertiaryContainer,
                         title = "25 Workouts Club",
                         subtitle = "Quarter-century milestone achieved",
                         date = "Jan 10"
                     )
 
-                    Divider(color = Color(0xFFF1F5F9), thickness = 1.dp, modifier = Modifier.padding(vertical = 10.dp))
+                    Divider(color = BorderInactive, thickness = 1.dp, modifier = Modifier.padding(vertical = 10.dp))
 
                     // Milestone 3: 5 Hours Completed
                     MilestoneRow(
                         icon = Icons.Rounded.Schedule,
-                        iconTint = Color(0xFF0284C7),
-                        iconBg = Color(0xFFF0F9FF),
+                        iconTint = Fit10Theme.extendedColors.timer,
+                        iconBg = Fit10Theme.extendedColors.timerContainer,
                         title = "5 Hours Completed",
                         subtitle = "Accumulated 300+ active minutes",
                         date = "Jan 8"
                     )
 
-                    Divider(color = Color(0xFFF1F5F9), thickness = 1.dp, modifier = Modifier.padding(vertical = 10.dp))
+                    Divider(color = BorderInactive, thickness = 1.dp, modifier = Modifier.padding(vertical = 10.dp))
 
                     // Milestone 4: 30-Day Habit Master with Progress Bar
                     Row(
@@ -562,7 +578,7 @@ fun HistoryScreen(
                             modifier = Modifier
                                 .size(36.dp)
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(Color(0xFFF1F5F9)),
+                                .background(IconWell),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -603,8 +619,8 @@ fun HistoryScreen(
                                     .fillMaxWidth()
                                     .height(6.dp)
                                     .clip(RoundedCornerShape(3.dp)),
-                                color = PrimaryGreen,
-                                trackColor = Color(0xFFE2E8F0),
+                                color = BrandPrimary,
+                                trackColor = BorderInactive,
                                 strokeCap = StrokeCap.Round
                             )
                         }
@@ -614,10 +630,10 @@ fun HistoryScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 7. Daily Protocol Banner (Dark Forest Green)
+            // 7. Daily Protocol Banner 
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = DeepForestGreen,
+                color = BrandPrimary,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -631,20 +647,20 @@ fun HistoryScreen(
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp,
-                            color = PrimaryGreen
+                            color = OnBrand.copy(alpha = 0.75f)
                         )
                         Spacer(modifier = Modifier.height(3.dp))
                         Text(
                             text = "Ready for Saturday's 10m?",
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
-                            color = Color.White
+                            color = OnBrand
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = "Upper Body Flush scheduled for tomorrow morning.",
                             fontSize = 11.5.sp,
-                            color = Color(0xFFA7F3D0),
+                            color = OnBrand.copy(alpha = 0.85f),
                             lineHeight = 15.sp
                         )
                     }
@@ -653,14 +669,14 @@ fun HistoryScreen(
 
                     Surface(
                         shape = RoundedCornerShape(20.dp),
-                        color = Color.White,
-                        modifier = Modifier.clickable { onPreviewWorkout("full_body_ignition") }
+                        color = CardSurface,
+                        modifier = Modifier.clickable { haptics.perform(HapticKind.Confirm); onPreviewWorkout("full_body_ignition") }
                     ) {
                         Text(
                             text = "Preview →",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = DeepForestGreen,
+                            color = BrandPrimary,
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
                         )
                     }
@@ -686,7 +702,7 @@ private fun StatTile(
 ) {
     Surface(
         shape = RoundedCornerShape(16.dp),
-        color = Color.White,
+        color = CardSurface,
         border = BorderStroke(1.dp, BorderInactive),
         modifier = modifier
     ) {
@@ -788,14 +804,14 @@ private fun MilestoneRow(
                     Spacer(modifier = Modifier.width(6.dp))
                     Surface(
                         shape = RoundedCornerShape(6.dp),
-                        color = LightGreenSurface,
-                        border = BorderStroke(1.dp, PrimaryGreen.copy(alpha = 0.3f))
+                        color = BrandContainer,
+                        border = BorderStroke(1.dp, BrandPrimary.copy(alpha = 0.3f))
                     ) {
                         Text(
                             text = badge,
                             fontSize = 9.5.sp,
                             fontWeight = FontWeight.Bold,
-                            color = DarkGreen,
+                            color = BrandDeep,
                             modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
                         )
                     }

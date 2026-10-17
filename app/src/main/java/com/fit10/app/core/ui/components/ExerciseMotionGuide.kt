@@ -44,6 +44,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.fit10.app.core.feedback.rememberFit10Haptics
+import com.fit10.app.core.feedback.HapticKind
+import com.fit10.app.core.ui.theme.Fit10Theme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -54,12 +59,46 @@ import androidx.compose.ui.unit.sp
 import kotlin.math.cos
 import kotlin.math.sin
 
-private val NeonGreen = Color(0xFF10B981)
-private val VoltGreen = Color(0xFF00F59B)
-private val ElectricCyan = Color(0xFF06B6D4)
-private val AmberGlow = Color(0xFFF59E0B)
-private val CanvasDarkBg = Color(0xFF0B132B)
-private val GridLineColor = Color(0x1A64748B)
+private val StageSurface: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surfaceContainerHigh
+private val StageCanvas: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surfaceContainerLowest
+private val StageChip: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surfaceContainerHighest
+private val StageText: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurface
+private val StageTextMuted: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurfaceVariant
+private val BrandPrimary: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
+
+/** Colors for the biomechanics canvas, resolved from the theme before drawing. */
+private class MotionPalette(
+    val bone: Color,
+    val accent: Color,
+    val cool: Color,
+    val warm: Color,
+    val headFill: Color,
+    val ground: Color,
+    val grid: Color,
+)
+
+@Composable
+private fun rememberMotionPalette(): MotionPalette {
+    val scheme = MaterialTheme.colorScheme
+    val extended = Fit10Theme.extendedColors
+    return remember(scheme, extended) {
+        MotionPalette(
+            bone = scheme.onSurface,
+            accent = scheme.primary,
+            cool = extended.timer,
+            warm = extended.streak,
+            headFill = scheme.surfaceContainerHighest,
+            ground = scheme.primary.copy(alpha = 0.2f),
+            grid = scheme.onSurfaceVariant.copy(alpha = 0.1f),
+        )
+    }
+}
 
 /**
  * Exercise motion archetype determining biomechanical rendering logic.
@@ -129,13 +168,16 @@ fun ExerciseMotionGuide(
         label = "MotionCycle"
     )
 
+    val haptics = rememberFit10Haptics()
+    val palette = rememberMotionPalette()
+
     val currentProgress = if (isManuallyPaused) manualProgress else animatedCycle
 
     // Derive active movement phase & joint metrics
     val (phaseText, phaseColor) = when {
-        currentProgress < 0.42f -> "ECCENTRIC (LOWERING) ↓" to ElectricCyan
-        currentProgress < 0.60f -> "PEAK CONTRACTION ⏱" to VoltGreen
-        else -> "CONCENTRIC (DRIVE) ↑" to AmberGlow
+        currentProgress < 0.42f -> "ECCENTRIC (LOWERING) ↓" to palette.cool
+        currentProgress < 0.60f -> "PEAK CONTRACTION ⏱" to palette.accent
+        else -> "CONCENTRIC (DRIVE) ↑" to palette.warm
     }
 
     val primaryMuscles = remember(archetype) {
@@ -155,7 +197,7 @@ fun ExerciseMotionGuide(
 
     Surface(
         shape = RoundedCornerShape(22.dp),
-        color = CanvasDarkBg,
+        color = StageSurface,
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(22.dp))
@@ -206,21 +248,21 @@ fun ExerciseMotionGuide(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(50))
-                            .background(Color(0xFF1E293B))
-                            .clickable { isFrontAngle = !isFrontAngle }
+                            .background(StageChip)
+                            .clickable { haptics.perform(HapticKind.Tick); isFrontAngle = !isFrontAngle }
                             .padding(horizontal = 9.dp, vertical = 4.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Rounded.Visibility,
                                 contentDescription = null,
-                                tint = Color(0xFF94A3B8),
+                                tint = StageTextMuted,
                                 modifier = Modifier.size(12.dp)
                             )
                             Spacer(Modifier.width(4.dp))
                             Text(
                                 text = if (isFrontAngle) "Front" else "Side 90°",
-                                color = Color.White,
+                                color = StageText,
                                 fontSize = 10.5.sp,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -232,22 +274,22 @@ fun ExerciseMotionGuide(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(50))
-                                .background(NeonGreen.copy(alpha = 0.22f))
-                                .border(1.dp, NeonGreen.copy(alpha = 0.5f), RoundedCornerShape(50))
-                                .clickable { onOpenVideoModal() }
+                                .background(BrandPrimary.copy(alpha = 0.22f))
+                                .border(1.dp, BrandPrimary.copy(alpha = 0.5f), RoundedCornerShape(50))
+                                .clickable { haptics.perform(HapticKind.Tick); onOpenVideoModal() }
                                 .padding(horizontal = 9.dp, vertical = 4.dp)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
                                     imageVector = Icons.Rounded.Videocam,
                                     contentDescription = "Video",
-                                    tint = VoltGreen,
+                                    tint = BrandPrimary,
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Spacer(Modifier.width(4.dp))
                                 Text(
                                     text = "Video",
-                                    color = VoltGreen,
+                                    color = BrandPrimary,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -265,12 +307,13 @@ fun ExerciseMotionGuide(
                     .fillMaxWidth()
                     .height(180.dp)
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFF070D1F))
+                    .background(StageCanvas)
             ) {
                 // Kinetic Canvas
                 Canvas(modifier = Modifier.fillMaxSize()) {
-                    drawKineticGrid()
+                    drawKineticGrid(palette)
                     drawExerciseBiomechanics(
+                        palette = palette,
                         archetype = archetype,
                         progress = currentProgress,
                         isFrontAngle = isFrontAngle
@@ -293,12 +336,12 @@ fun ExerciseMotionGuide(
                         .align(Alignment.TopStart)
                         .padding(8.dp)
                         .clip(RoundedCornerShape(6.dp))
-                        .background(Color(0xCC0F172A))
+                        .background(StageSurface.copy(alpha = 0.8f))
                         .padding(horizontal = 7.dp, vertical = 3.dp)
                 ) {
                     Text(
                         text = angleCallout,
-                        color = VoltGreen,
+                        color = BrandPrimary,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -310,13 +353,13 @@ fun ExerciseMotionGuide(
                         .align(Alignment.BottomEnd)
                         .padding(8.dp)
                         .clip(RoundedCornerShape(6.dp))
-                        .background(Color(0xCC0F172A))
+                        .background(StageSurface.copy(alpha = 0.8f))
                         .padding(horizontal = 7.dp, vertical = 3.dp)
                 ) {
                     val depthPct = (currentProgress * 100).toInt()
                     Text(
                         text = "Depth: $depthPct%",
-                        color = Color(0xFFE2E8F0),
+                        color = StageText,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -342,15 +385,15 @@ fun ExerciseMotionGuide(
                             modifier = Modifier
                                 .size(28.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFF1E293B))
-                                .clickable { isManuallyPaused = !isManuallyPaused }
+                                .background(StageChip)
+                                .clickable { haptics.perform(HapticKind.Tick); isManuallyPaused = !isManuallyPaused }
                                 .padding(4.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = if (isManuallyPaused) Icons.Rounded.PlayArrow else Icons.Rounded.Pause,
                                 contentDescription = null,
-                                tint = Color.White,
+                                tint = StageText,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -359,21 +402,21 @@ fun ExerciseMotionGuide(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(50))
-                                .background(if (isSlowMotion) NeonGreen else Color(0xFF1E293B))
-                                .clickable { isSlowMotion = !isSlowMotion }
+                                .background(if (isSlowMotion) BrandPrimary else StageChip)
+                                .clickable { haptics.perform(HapticKind.Tick); isSlowMotion = !isSlowMotion }
                                 .padding(horizontal = 9.dp, vertical = 5.dp)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
                                     imageVector = Icons.Rounded.SlowMotionVideo,
                                     contentDescription = "Slow Motion",
-                                    tint = if (isSlowMotion) Color.Black else Color(0xFFCBD5E1),
+                                    tint = if (isSlowMotion) MaterialTheme.colorScheme.onPrimary else StageTextMuted,
                                     modifier = Modifier.size(12.dp)
                                 )
                                 Spacer(Modifier.width(4.dp))
                                 Text(
                                     text = if (isSlowMotion) "0.5x Slow-Mo" else "1.0x Tempo",
-                                    color = if (isSlowMotion) Color.Black else Color(0xFFCBD5E1),
+                                    color = if (isSlowMotion) MaterialTheme.colorScheme.onPrimary else StageTextMuted,
                                     fontSize = 10.5.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -390,12 +433,12 @@ fun ExerciseMotionGuide(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(4.dp))
-                                    .background(Color(0xFF1E293B))
+                                    .background(StageChip)
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
                                 Text(
                                     text = muscle,
-                                    color = Color(0xFF94A3B8),
+                                    color = StageTextMuted,
                                     fontSize = 9.5.sp,
                                     fontWeight = FontWeight.Medium
                                 )
@@ -412,14 +455,14 @@ fun ExerciseMotionGuide(
 // Biomechanical Canvas Renderers
 // ─────────────────────────────────────────────────────────────────────────────
 
-private fun DrawScope.drawKineticGrid() {
+private fun DrawScope.drawKineticGrid(p: MotionPalette) {
     val width = size.width
     val height = size.height
 
     // Ground plane line
     val groundY = height * 0.85f
     drawLine(
-        color = Color(0x3310B981),
+        color = p.ground,
         start = Offset(0f, groundY),
         end = Offset(width, groundY),
         strokeWidth = 2f,
@@ -430,7 +473,7 @@ private fun DrawScope.drawKineticGrid() {
     for (i in 1..4) {
         val x = width * (i / 5f)
         drawLine(
-            color = GridLineColor,
+            color = p.grid,
             start = Offset(x, 0f),
             end = Offset(x, height),
             strokeWidth = 1f
@@ -439,6 +482,7 @@ private fun DrawScope.drawKineticGrid() {
 }
 
 private fun DrawScope.drawExerciseBiomechanics(
+    palette: MotionPalette,
     archetype: ExerciseArchetype,
     progress: Float,
     isFrontAngle: Boolean
@@ -449,16 +493,16 @@ private fun DrawScope.drawExerciseBiomechanics(
     val groundY = h * 0.85f
 
     when (archetype) {
-        ExerciseArchetype.SQUAT -> drawSquatMotion(cx, groundY, progress, isFrontAngle)
-        ExerciseArchetype.PUSHUP -> drawPushupMotion(cx, groundY, progress)
-        ExerciseArchetype.PLANK -> drawPlankMotion(cx, groundY, progress)
-        ExerciseArchetype.JUMPING_JACKS -> drawJumpingJacksMotion(cx, groundY, progress)
-        ExerciseArchetype.MOUNTAIN_CLIMBER -> drawMountainClimberMotion(cx, groundY, progress)
-        ExerciseArchetype.LUNGE -> drawLungeMotion(cx, groundY, progress)
-        ExerciseArchetype.GLUTE_BRIDGE -> drawGluteBridgeMotion(cx, groundY, progress)
-        ExerciseArchetype.BICYCLE_CRUNCH -> drawBicycleCrunchMotion(cx, groundY, progress)
-        ExerciseArchetype.HIGH_KNEES -> drawHighKneesMotion(cx, groundY, progress)
-        ExerciseArchetype.DEFAULT -> drawSquatMotion(cx, groundY, progress, isFrontAngle)
+        ExerciseArchetype.SQUAT -> drawSquatMotion(palette, cx, groundY, progress, isFrontAngle)
+        ExerciseArchetype.PUSHUP -> drawPushupMotion(palette, cx, groundY, progress)
+        ExerciseArchetype.PLANK -> drawPlankMotion(palette, cx, groundY, progress)
+        ExerciseArchetype.JUMPING_JACKS -> drawJumpingJacksMotion(palette, cx, groundY, progress)
+        ExerciseArchetype.MOUNTAIN_CLIMBER -> drawMountainClimberMotion(palette, cx, groundY, progress)
+        ExerciseArchetype.LUNGE -> drawLungeMotion(palette, cx, groundY, progress)
+        ExerciseArchetype.GLUTE_BRIDGE -> drawGluteBridgeMotion(palette, cx, groundY, progress)
+        ExerciseArchetype.BICYCLE_CRUNCH -> drawBicycleCrunchMotion(palette, cx, groundY, progress)
+        ExerciseArchetype.HIGH_KNEES -> drawHighKneesMotion(palette, cx, groundY, progress)
+        ExerciseArchetype.DEFAULT -> drawSquatMotion(palette, cx, groundY, progress, isFrontAngle)
     }
 }
 
@@ -466,7 +510,7 @@ private fun DrawScope.drawExerciseBiomechanics(
  * Renders Squat motion:
  * Depth drops as progress increases, hip hinges backward, knees flex to 90°.
  */
-private fun DrawScope.drawSquatMotion(cx: Float, groundY: Float, progress: Float, isFrontAngle: Boolean) {
+private fun DrawScope.drawSquatMotion(p: MotionPalette, cx: Float, groundY: Float, progress: Float, isFrontAngle: Boolean) {
     val squatDepth = progress * 48f
     val hipXOffset = if (isFrontAngle) 0f else -progress * 24f
     val torsoLeanX = if (isFrontAngle) 0f else progress * 14f
@@ -491,20 +535,20 @@ private fun DrawScope.drawSquatMotion(cx: Float, groundY: Float, progress: Float
         val head = Offset(cx, chest.y - headRadius - 6f)
 
         // Draw Limbs
-        drawBone(pelvis, leftKnee)
-        drawBone(leftKnee, leftFoot)
-        drawBone(pelvis, rightKnee)
-        drawBone(rightKnee, rightFoot)
-        drawBone(pelvis, chest, strokeWidth = 8f, color = VoltGreen)
-        drawJoint(head, headRadius, isHead = true)
+        drawBone(p, pelvis, leftKnee)
+        drawBone(p, leftKnee, leftFoot)
+        drawBone(p, pelvis, rightKnee)
+        drawBone(p, rightKnee, rightFoot)
+        drawBone(p, pelvis, chest, strokeWidth = 8f, color = p.accent)
+        drawJoint(p, head, headRadius, isHead = true)
 
         // Arms extended forward for balance
-        drawBone(chest, Offset(cx - 24f, chest.y + 12f))
-        drawBone(chest, Offset(cx + 24f, chest.y + 12f))
+        drawBone(p, chest, Offset(cx - 24f, chest.y + 12f))
+        drawBone(p, chest, Offset(cx + 24f, chest.y + 12f))
 
         // Target muscle glow: Quads
-        drawMuscleGlow(leftKnee, 18f, VoltGreen)
-        drawMuscleGlow(rightKnee, 18f, VoltGreen)
+        drawMuscleGlow(leftKnee, 18f, p.accent)
+        drawMuscleGlow(rightKnee, 18f, p.accent)
     } else {
         // Side View Squat
         val foot = Offset(cx, feetY)
@@ -517,20 +561,20 @@ private fun DrawScope.drawSquatMotion(cx: Float, groundY: Float, progress: Float
         val hand = Offset(chest.x + 36f, chest.y + 8f)
 
         // Draw Skeletal Chain
-        drawBone(foot, knee)
-        drawBone(knee, hip)
-        drawBone(hip, chest, strokeWidth = 8f, color = VoltGreen)
-        drawBone(chest, hand)
-        drawJoint(head, headRadius, isHead = true)
+        drawBone(p, foot, knee)
+        drawBone(p, knee, hip)
+        drawBone(p, hip, chest, strokeWidth = 8f, color = p.accent)
+        drawBone(p, chest, hand)
+        drawJoint(p, head, headRadius, isHead = true)
 
         // Joints
-        drawJoint(foot, 5f)
-        drawJoint(knee, 7f, VoltGreen)
-        drawJoint(hip, 7f, VoltGreen)
+        drawJoint(p, foot, 5f)
+        drawJoint(p, knee, 7f, p.accent)
+        drawJoint(p, hip, 7f, p.accent)
 
         // Quad & Glute Muscle Activation Glow
-        drawMuscleGlow(knee, 16f, VoltGreen)
-        drawMuscleGlow(hip, 18f, AmberGlow)
+        drawMuscleGlow(knee, 16f, p.accent)
+        drawMuscleGlow(hip, 18f, p.warm)
     }
 }
 
@@ -538,7 +582,7 @@ private fun DrawScope.drawSquatMotion(cx: Float, groundY: Float, progress: Float
  * Renders Push-up motion:
  * Body lowers toward the floor, elbows flex to 90° at bottom.
  */
-private fun DrawScope.drawPushupMotion(cx: Float, groundY: Float, progress: Float) {
+private fun DrawScope.drawPushupMotion(p: MotionPalette, cx: Float, groundY: Float, progress: Float) {
     val pushDepth = progress * 34f
     val headRadius = 13f
 
@@ -561,25 +605,25 @@ private fun DrawScope.drawPushupMotion(cx: Float, groundY: Float, progress: Floa
     val elbow = Offset(elbowX, elbowY)
 
     // Bones
-    drawBone(feet, hip)
-    drawBone(hip, chest, strokeWidth = 8f, color = VoltGreen)
-    drawBone(chest, elbow)
-    drawBone(elbow, hand)
-    drawJoint(head, headRadius, isHead = true)
+    drawBone(p, feet, hip)
+    drawBone(p, hip, chest, strokeWidth = 8f, color = p.accent)
+    drawBone(p, chest, elbow)
+    drawBone(p, elbow, hand)
+    drawJoint(p, head, headRadius, isHead = true)
 
     // Joints & Muscle Glow (Chest & Triceps)
-    drawJoint(feet, 5f)
-    drawJoint(elbow, 7f, VoltGreen)
-    drawJoint(chest, 8f, VoltGreen)
-    drawMuscleGlow(chest, 20f, VoltGreen)
-    drawMuscleGlow(elbow, 14f, AmberGlow)
+    drawJoint(p, feet, 5f)
+    drawJoint(p, elbow, 7f, p.accent)
+    drawJoint(p, chest, 8f, p.accent)
+    drawMuscleGlow(chest, 20f, p.accent)
+    drawMuscleGlow(elbow, 14f, p.warm)
 }
 
 /**
  * Renders Forearm Plank:
  * Neutral rigid spine, isometric core wave, glowing midsection.
  */
-private fun DrawScope.drawPlankMotion(cx: Float, groundY: Float, progress: Float) {
+private fun DrawScope.drawPlankMotion(p: MotionPalette, cx: Float, groundY: Float, progress: Float) {
     val headRadius = 13f
     val feet = Offset(cx - 75f, groundY - 10f)
     val elbow = Offset(cx + 40f, groundY - 8f)
@@ -590,24 +634,24 @@ private fun DrawScope.drawPlankMotion(cx: Float, groundY: Float, progress: Float
     val head = Offset(cx + 66f, groundY - 42f)
 
     // Core wave glow
-    drawBone(feet, hip)
-    drawBone(hip, shoulder, strokeWidth = 8f, color = VoltGreen)
-    drawBone(shoulder, elbow)
-    drawBone(elbow, forearm)
-    drawJoint(head, headRadius, isHead = true)
+    drawBone(p, feet, hip)
+    drawBone(p, hip, shoulder, strokeWidth = 8f, color = p.accent)
+    drawBone(p, shoulder, elbow)
+    drawBone(p, elbow, forearm)
+    drawJoint(p, head, headRadius, isHead = true)
 
-    drawJoint(elbow, 6f, VoltGreen)
-    drawJoint(shoulder, 6f, VoltGreen)
+    drawJoint(p, elbow, 6f, p.accent)
+    drawJoint(p, shoulder, 6f, p.accent)
 
     // Core lock glow
-    drawMuscleGlow(Offset(cx + 10f, groundY - 42f), 22f + progress * 4f, VoltGreen)
+    drawMuscleGlow(Offset(cx + 10f, groundY - 42f), 22f + progress * 4f, p.accent)
 }
 
 /**
  * Renders Jumping Jacks:
  * Dynamic overhead arm arcs and jumping feet spread.
  */
-private fun DrawScope.drawJumpingJacksMotion(cx: Float, groundY: Float, progress: Float) {
+private fun DrawScope.drawJumpingJacksMotion(p: MotionPalette, cx: Float, groundY: Float, progress: Float) {
     val headRadius = 14f
     val jumpBounce = (sin(progress * 3.1415f) * 16f)
     val feetSpread = 16f + progress * 46f
@@ -627,23 +671,23 @@ private fun DrawScope.drawJumpingJacksMotion(cx: Float, groundY: Float, progress
     val leftHand = Offset(cx - cos(armAngle) * armLength, chest.y - sin(armAngle) * armLength)
     val rightHand = Offset(cx + cos(armAngle) * armLength, chest.y - sin(armAngle) * armLength)
 
-    drawBone(pelvis, leftFoot)
-    drawBone(pelvis, rightFoot)
-    drawBone(pelvis, chest, strokeWidth = 8f, color = VoltGreen)
-    drawBone(chest, leftHand)
-    drawBone(chest, rightHand)
-    drawJoint(head, headRadius, isHead = true)
+    drawBone(p, pelvis, leftFoot)
+    drawBone(p, pelvis, rightFoot)
+    drawBone(p, pelvis, chest, strokeWidth = 8f, color = p.accent)
+    drawBone(p, chest, leftHand)
+    drawBone(p, chest, rightHand)
+    drawJoint(p, head, headRadius, isHead = true)
 
-    drawMuscleGlow(chest, 20f, ElectricCyan)
-    drawMuscleGlow(leftFoot, 12f, VoltGreen)
-    drawMuscleGlow(rightFoot, 12f, VoltGreen)
+    drawMuscleGlow(chest, 20f, p.cool)
+    drawMuscleGlow(leftFoot, 12f, p.accent)
+    drawMuscleGlow(rightFoot, 12f, p.accent)
 }
 
 /**
  * Renders Mountain Climber:
  * Alternating high plank knee drive.
  */
-private fun DrawScope.drawMountainClimberMotion(cx: Float, groundY: Float, progress: Float) {
+private fun DrawScope.drawMountainClimberMotion(p: MotionPalette, cx: Float, groundY: Float, progress: Float) {
     val headRadius = 13f
     val hand = Offset(cx + 42f, groundY - 8f)
     val shoulder = Offset(cx + 38f, groundY - 48f)
@@ -657,23 +701,23 @@ private fun DrawScope.drawMountainClimberMotion(cx: Float, groundY: Float, progr
     val drivingKnee = Offset(drivingKneeX, drivingKneeY)
     val drivingFoot = Offset(drivingKneeX - 18f, groundY - 14f)
 
-    drawBone(hip, shoulder, strokeWidth = 8f, color = VoltGreen)
-    drawBone(shoulder, hand)
-    drawBone(hip, backFoot)
-    drawBone(hip, drivingKnee)
-    drawBone(drivingKnee, drivingFoot)
-    drawJoint(head, headRadius, isHead = true)
+    drawBone(p, hip, shoulder, strokeWidth = 8f, color = p.accent)
+    drawBone(p, shoulder, hand)
+    drawBone(p, hip, backFoot)
+    drawBone(p, hip, drivingKnee)
+    drawBone(p, drivingKnee, drivingFoot)
+    drawJoint(p, head, headRadius, isHead = true)
 
-    drawJoint(hand, 6f)
-    drawJoint(drivingKnee, 7f, VoltGreen)
-    drawMuscleGlow(drivingKnee, 16f, VoltGreen)
+    drawJoint(p, hand, 6f)
+    drawJoint(p, drivingKnee, 7f, p.accent)
+    drawMuscleGlow(drivingKnee, 16f, p.accent)
 }
 
 /**
  * Renders Alternating Lunge:
  * Front knee lowers to 90°, back knee hovers over ground.
  */
-private fun DrawScope.drawLungeMotion(cx: Float, groundY: Float, progress: Float) {
+private fun DrawScope.drawLungeMotion(p: MotionPalette, cx: Float, groundY: Float, progress: Float) {
     val headRadius = 14f
     val lungeDepth = progress * 32f
 
@@ -687,23 +731,23 @@ private fun DrawScope.drawLungeMotion(cx: Float, groundY: Float, progress: Float
     val chest = Offset(cx - 2f, hip.y - 48f)
     val head = Offset(cx, chest.y - headRadius - 6f)
 
-    drawBone(hip, frontKnee)
-    drawBone(frontKnee, frontFoot)
-    drawBone(hip, backKnee)
-    drawBone(backKnee, backFoot)
-    drawBone(hip, chest, strokeWidth = 8f, color = VoltGreen)
-    drawJoint(head, headRadius, isHead = true)
+    drawBone(p, hip, frontKnee)
+    drawBone(p, frontKnee, frontFoot)
+    drawBone(p, hip, backKnee)
+    drawBone(p, backKnee, backFoot)
+    drawBone(p, hip, chest, strokeWidth = 8f, color = p.accent)
+    drawJoint(p, head, headRadius, isHead = true)
 
-    drawJoint(frontKnee, 7f, VoltGreen)
-    drawJoint(backKnee, 7f, AmberGlow)
-    drawMuscleGlow(frontKnee, 18f, VoltGreen)
+    drawJoint(p, frontKnee, 7f, p.accent)
+    drawJoint(p, backKnee, 7f, p.warm)
+    drawMuscleGlow(frontKnee, 18f, p.accent)
 }
 
 /**
  * Renders Glute Bridge:
  * Pelvis rises to bridge extension.
  */
-private fun DrawScope.drawGluteBridgeMotion(cx: Float, groundY: Float, progress: Float) {
+private fun DrawScope.drawGluteBridgeMotion(p: MotionPalette, cx: Float, groundY: Float, progress: Float) {
     val headRadius = 13f
     val shoulders = Offset(cx - 50f, groundY - 14f)
     val head = Offset(cx - 72f, groundY - 14f)
@@ -713,20 +757,20 @@ private fun DrawScope.drawGluteBridgeMotion(cx: Float, groundY: Float, progress:
     val hip = Offset(cx - 6f, groundY - 24f - bridgeHeight)
     val knees = Offset(cx + 34f, groundY - 46f)
 
-    drawBone(shoulders, hip, strokeWidth = 8f, color = VoltGreen)
-    drawBone(hip, knees)
-    drawBone(knees, feet)
-    drawJoint(head, headRadius, isHead = true)
+    drawBone(p, shoulders, hip, strokeWidth = 8f, color = p.accent)
+    drawBone(p, hip, knees)
+    drawBone(p, knees, feet)
+    drawJoint(p, head, headRadius, isHead = true)
 
-    drawJoint(hip, 8f, VoltGreen)
-    drawMuscleGlow(hip, 22f, VoltGreen)
+    drawJoint(p, hip, 8f, p.accent)
+    drawMuscleGlow(hip, 22f, p.accent)
 }
 
 /**
  * Renders Bicycle Crunch:
  * Core rotation and leg extension.
  */
-private fun DrawScope.drawBicycleCrunchMotion(cx: Float, groundY: Float, progress: Float) {
+private fun DrawScope.drawBicycleCrunchMotion(p: MotionPalette, cx: Float, groundY: Float, progress: Float) {
     val headRadius = 13f
     val pelvis = Offset(cx - 10f, groundY - 16f)
     val chest = Offset(cx - 36f, groundY - 32f)
@@ -735,19 +779,19 @@ private fun DrawScope.drawBicycleCrunchMotion(cx: Float, groundY: Float, progres
     val leftKnee = Offset(cx + 6f - progress * 16f, groundY - 46f)
     val rightLegExtended = Offset(cx + 65f, groundY - 26f)
 
-    drawBone(pelvis, chest, strokeWidth = 8f, color = VoltGreen)
-    drawBone(pelvis, leftKnee)
-    drawBone(pelvis, rightLegExtended)
-    drawJoint(head, headRadius, isHead = true)
+    drawBone(p, pelvis, chest, strokeWidth = 8f, color = p.accent)
+    drawBone(p, pelvis, leftKnee)
+    drawBone(p, pelvis, rightLegExtended)
+    drawJoint(p, head, headRadius, isHead = true)
 
-    drawMuscleGlow(pelvis, 20f, VoltGreen)
+    drawMuscleGlow(pelvis, 20f, p.accent)
 }
 
 /**
  * Renders High Knees:
  * Rapid alternating knee drives.
  */
-private fun DrawScope.drawHighKneesMotion(cx: Float, groundY: Float, progress: Float) {
+private fun DrawScope.drawHighKneesMotion(p: MotionPalette, cx: Float, groundY: Float, progress: Float) {
     val headRadius = 14f
     val pelvis = Offset(cx, groundY - 84f)
     val chest = Offset(cx, pelvis.y - 46f)
@@ -757,13 +801,13 @@ private fun DrawScope.drawHighKneesMotion(cx: Float, groundY: Float, progress: F
     val drivenKnee = Offset(cx + 18f, groundY - 68f - progress * 16f)
     val drivenFoot = Offset(cx + 14f, drivenKnee.y + 36f)
 
-    drawBone(pelvis, stanceFoot)
-    drawBone(pelvis, drivenKnee)
-    drawBone(drivenKnee, drivenFoot)
-    drawBone(pelvis, chest, strokeWidth = 8f, color = VoltGreen)
-    drawJoint(head, headRadius, isHead = true)
+    drawBone(p, pelvis, stanceFoot)
+    drawBone(p, pelvis, drivenKnee)
+    drawBone(p, drivenKnee, drivenFoot)
+    drawBone(p, pelvis, chest, strokeWidth = 8f, color = p.accent)
+    drawJoint(p, head, headRadius, isHead = true)
 
-    drawMuscleGlow(drivenKnee, 18f, VoltGreen)
+    drawMuscleGlow(drivenKnee, 18f, p.accent)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -771,10 +815,11 @@ private fun DrawScope.drawHighKneesMotion(cx: Float, groundY: Float, progress: F
 // ─────────────────────────────────────────────────────────────────────────────
 
 private fun DrawScope.drawBone(
+    p: MotionPalette,
     start: Offset,
     end: Offset,
     strokeWidth: Float = 5f,
-    color: Color = Color.White
+    color: Color = p.bone
 ) {
     drawLine(
         color = color,
@@ -786,19 +831,20 @@ private fun DrawScope.drawBone(
 }
 
 private fun DrawScope.drawJoint(
+    p: MotionPalette,
     center: Offset,
     radius: Float,
-    color: Color = Color.White,
+    color: Color = p.bone,
     isHead: Boolean = false
 ) {
     if (isHead) {
         drawCircle(
-            color = Color(0xFF1E293B),
+            color = p.headFill,
             radius = radius,
             center = center
         )
         drawCircle(
-            color = VoltGreen,
+            color = p.accent,
             radius = radius,
             center = center,
             style = Stroke(width = 2.5f)

@@ -48,6 +48,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.fit10.app.core.feedback.rememberFit10Haptics
+import com.fit10.app.core.feedback.HapticKind
+import com.fit10.app.core.ui.theme.Fit10Theme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -219,10 +224,13 @@ fun exerciseFrameSet(exerciseId: String): ExerciseFrameSet = when (exerciseId) {
 // Colors
 // ─────────────────────────────────────────────────────────────────────────────
 
-private val VoltGreen    = Color(0xFF00E676)
-private val NeonEmerald  = Color(0xFF10B981)
-private val ElectricCyan = Color(0xFF06B6D4)
-private val AmberHold    = Color(0xFFF59E0B)
+// Everything here sits on photo frames, so it uses the media scrim colors in both modes.
+private val MediaAccent: Color
+    @Composable @ReadOnlyComposable get() = Fit10Theme.extendedColors.mediaAccent
+private val MediaScrim: Color
+    @Composable @ReadOnlyComposable get() = Fit10Theme.extendedColors.mediaScrim
+private val OnMedia: Color
+    @Composable @ReadOnlyComposable get() = Fit10Theme.extendedColors.onMediaScrim
 
 /**
  * Animated real-model exercise demonstration.
@@ -246,6 +254,7 @@ fun AnimatedExerciseDemo(
     val frameSet = remember(exerciseId) { exerciseFrameSet(exerciseId) }
 
     // User controls
+    val haptics = rememberFit10Haptics()
     var isPlaying by remember { mutableStateOf(true) }
     var isSlowMotion by remember { mutableStateOf(false) }
 
@@ -300,14 +309,14 @@ fun AnimatedExerciseDemo(
 
     // Dynamic phase indicator
     val phaseLabel = if (activeFrame == 0) frameSet.phaseLabelStart else frameSet.phaseLabelPeak
-    val phaseColor = if (frameSet.isIsometric) AmberHold else if (activeFrame == 0) ElectricCyan else VoltGreen
+    val phaseColor = if (frameSet.isIsometric) MediaAccent else if (activeFrame == 0) OnMedia else MediaAccent
 
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(235.dp)
             .clip(RoundedCornerShape(22.dp))
-            .background(Color(0xFF0F172A))
+            .background(MaterialTheme.colorScheme.scrim)
     ) {
         // ── 1. Start / Base Frame ────────────────────────────────────────────
         val baseScale = if (frameSet.isIsometric) isoScale else 1.02f
@@ -348,10 +357,10 @@ fun AnimatedExerciseDemo(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            Color(0xCC090D16),
-                            Color(0x22000000),
-                            Color(0x22000000),
-                            Color(0xEE090D16)
+                            MediaScrim.copy(alpha = 0.8f),
+                            MediaScrim.copy(alpha = 0.13f),
+                            MediaScrim.copy(alpha = 0.13f),
+                            MediaScrim.copy(alpha = 0.93f)
                         )
                     )
                 )
@@ -401,21 +410,21 @@ fun AnimatedExerciseDemo(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(50))
-                        .background(if (isSlowMotion) VoltGreen else Color(0x990F172A))
-                        .clickable { isSlowMotion = !isSlowMotion }
+                        .background(if (isSlowMotion) MediaAccent else MediaScrim.copy(alpha = 0.6f))
+                        .clickable { haptics.perform(HapticKind.Tick); isSlowMotion = !isSlowMotion }
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Rounded.SlowMotionVideo,
                             contentDescription = "Slow Motion",
-                            tint = if (isSlowMotion) Color.Black else Color.White,
+                            tint = if (isSlowMotion) MediaScrim else OnMedia,
                             modifier = Modifier.size(12.dp)
                         )
                         Spacer(Modifier.width(4.dp))
                         Text(
                             text = if (isSlowMotion) "0.5x Form" else "1x Speed",
-                            color = if (isSlowMotion) Color.Black else Color.White,
+                            color = if (isSlowMotion) MediaScrim else OnMedia,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -428,14 +437,14 @@ fun AnimatedExerciseDemo(
                         modifier = Modifier
                             .size(26.dp)
                             .clip(CircleShape)
-                            .background(Color(0x990F172A))
-                            .clickable { isPlaying = !isPlaying },
+                            .background(MediaScrim.copy(alpha = 0.6f))
+                            .clickable { haptics.perform(HapticKind.Tick); isPlaying = !isPlaying },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
                             contentDescription = if (isPlaying) "Pause" else "Play",
-                            tint = Color.White,
+                            tint = OnMedia,
                             modifier = Modifier.size(14.dp)
                         )
                     }
@@ -455,13 +464,13 @@ fun AnimatedExerciseDemo(
                     modifier = Modifier
                         .size(if (activeFrame == 0) 18.dp else 6.dp, 6.dp)
                         .clip(RoundedCornerShape(50))
-                        .background(if (activeFrame == 0) ElectricCyan else Color.White.copy(alpha = 0.35f))
+                        .background(if (activeFrame == 0) OnMedia else OnMedia.copy(alpha = 0.35f))
                 )
                 Box(
                     modifier = Modifier
                         .size(if (activeFrame == 1) 18.dp else 6.dp, 6.dp)
                         .clip(RoundedCornerShape(50))
-                        .background(if (activeFrame == 1) VoltGreen else Color.White.copy(alpha = 0.35f))
+                        .background(if (activeFrame == 1) MediaAccent else OnMedia.copy(alpha = 0.35f))
                 )
             }
         } else {
@@ -471,13 +480,13 @@ fun AnimatedExerciseDemo(
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 54.dp)
                     .clip(RoundedCornerShape(50))
-                    .background(AmberHold.copy(alpha = 0.3f))
-                    .border(1.dp, AmberHold.copy(alpha = 0.8f), RoundedCornerShape(50))
+                    .background(MediaAccent.copy(alpha = 0.3f))
+                    .border(1.dp, MediaAccent.copy(alpha = 0.8f), RoundedCornerShape(50))
                     .padding(horizontal = 12.dp, vertical = 3.dp)
             ) {
                 Text(
                     text = "ISOMETRIC TENSION HOLD",
-                    color = AmberHold,
+                    color = MediaAccent,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 0.6.sp
@@ -492,7 +501,7 @@ fun AnimatedExerciseDemo(
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp, vertical = 8.dp),
             shape = RoundedCornerShape(12.dp),
-            color = Color(0xF20B132B)
+            color = MediaScrim.copy(alpha = 0.95f)
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
@@ -507,12 +516,12 @@ fun AnimatedExerciseDemo(
                     Icon(
                         imageVector = Icons.Rounded.Favorite,
                         contentDescription = null,
-                        tint = NeonEmerald,
+                        tint = MediaAccent,
                         modifier = Modifier.size(13.dp)
                     )
                     Text(
                         text = coachCue,
-                        color = Color(0xFFE2E8F0),
+                        color = OnMedia.copy(alpha = 0.9f),
                         fontSize = 11.5.sp,
                         fontWeight = FontWeight.Medium,
                         maxLines = 1
@@ -525,12 +534,12 @@ fun AnimatedExerciseDemo(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
-                        .background(Color(0x3310B981))
+                        .background(MediaAccent.copy(alpha = 0.2f))
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
                         text = frameSet.tempoCue,
-                        color = VoltGreen,
+                        color = MediaAccent,
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold
                     )

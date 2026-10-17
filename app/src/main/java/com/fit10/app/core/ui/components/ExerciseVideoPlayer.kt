@@ -42,6 +42,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.fit10.app.core.feedback.rememberFit10Haptics
+import com.fit10.app.core.feedback.HapticKind
+import com.fit10.app.core.ui.theme.Fit10Theme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -74,9 +79,13 @@ fun exerciseVideoRes(exerciseId: String): Int = when (exerciseId) {
 // Colors
 // ─────────────────────────────────────────────────────────────────────────────
 
-private val VoltGreen   = Color(0xFF00E676)
-private val NeonEmerald = Color(0xFF10B981)
-private val TextMuted   = Color(0xFF94A3B8)
+// Everything here sits on video, so it uses the media scrim colors in both modes.
+private val MediaAccent: Color
+    @Composable @ReadOnlyComposable get() = Fit10Theme.extendedColors.mediaAccent
+private val MediaScrim: Color
+    @Composable @ReadOnlyComposable get() = Fit10Theme.extendedColors.mediaScrim
+private val OnMedia: Color
+    @Composable @ReadOnlyComposable get() = Fit10Theme.extendedColors.onMediaScrim
 
 /**
  * High-definition looping video player demonstration featuring a real human fitness model.
@@ -96,6 +105,7 @@ fun ExerciseVideoPlayer(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val haptics = rememberFit10Haptics()
     val videoRes = remember(exerciseId) { exerciseVideoRes(exerciseId) }
     val videoUri = remember(videoRes) {
         Uri.parse("android.resource://${context.packageName}/$videoRes")
@@ -122,7 +132,7 @@ fun ExerciseVideoPlayer(
             .fillMaxWidth()
             .height(240.dp)
             .clip(RoundedCornerShape(22.dp))
-            .background(Color.Black)
+            .background(MaterialTheme.colorScheme.scrim)
     ) {
         // ── 1. Native VideoView ──────────────────────────────────────────────
         AndroidView(
@@ -175,10 +185,10 @@ fun ExerciseVideoPlayer(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            Color(0xCC090D16),
+                            MediaScrim.copy(alpha = 0.8f),
                             Color.Transparent,
                             Color.Transparent,
-                            Color(0xEE090D16)
+                            MediaScrim.copy(alpha = 0.93f)
                         )
                     )
                 )
@@ -197,8 +207,8 @@ fun ExerciseVideoPlayer(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
-                    .background(Color(0xBB0F172A))
-                    .border(1.dp, VoltGreen.copy(alpha = 0.6f), RoundedCornerShape(50))
+                    .background(MediaScrim.copy(alpha = 0.73f))
+                    .border(1.dp, MediaAccent.copy(alpha = 0.6f), RoundedCornerShape(50))
                     .padding(horizontal = 10.dp, vertical = 5.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -206,12 +216,12 @@ fun ExerciseVideoPlayer(
                         Modifier
                             .size(7.dp)
                             .clip(CircleShape)
-                            .background(VoltGreen)
+                            .background(MediaAccent)
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(
                         text = "HD VIDEO • REAL MODEL",
-                        color = Color.White,
+                        color = OnMedia,
                         fontSize = 10.5.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.5.sp
@@ -228,8 +238,9 @@ fun ExerciseVideoPlayer(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(50))
-                        .background(if (isSlowMotion) VoltGreen else Color(0x990F172A))
+                        .background(if (isSlowMotion) MediaAccent else MediaScrim.copy(alpha = 0.6f))
                         .clickable {
+                            haptics.perform(HapticKind.Tick)
                             val newSlowMo = !isSlowMotion
                             isSlowMotion = newSlowMo
                             updatePlaybackSpeed(mediaPlayerRef, newSlowMo)
@@ -240,13 +251,13 @@ fun ExerciseVideoPlayer(
                         Icon(
                             imageVector = Icons.Rounded.SlowMotionVideo,
                             contentDescription = "Slow Motion",
-                            tint = if (isSlowMotion) Color.Black else Color.White,
+                            tint = if (isSlowMotion) MediaScrim else OnMedia,
                             modifier = Modifier.size(13.dp)
                         )
                         Spacer(Modifier.width(4.dp))
                         Text(
                             text = if (isSlowMotion) "0.5x Slow-Mo" else "1.0x Speed",
-                            color = if (isSlowMotion) Color.Black else Color.White,
+                            color = if (isSlowMotion) MediaScrim else OnMedia,
                             fontSize = 10.5.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -258,8 +269,9 @@ fun ExerciseVideoPlayer(
                     modifier = Modifier
                         .size(30.dp)
                         .clip(CircleShape)
-                        .background(Color(0x990F172A))
+                        .background(MediaScrim.copy(alpha = 0.6f))
                         .clickable {
+                            haptics.perform(HapticKind.Tick)
                             if (isPlaying) {
                                 videoViewRef?.pause()
                                 isPlaying = false
@@ -273,7 +285,7 @@ fun ExerciseVideoPlayer(
                     Icon(
                         imageVector = if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
                         contentDescription = if (isPlaying) "Pause" else "Play",
-                        tint = Color.White,
+                        tint = OnMedia,
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -287,7 +299,7 @@ fun ExerciseVideoPlayer(
                 .fillMaxWidth()
                 .padding(horizontal = 10.dp, vertical = 8.dp),
             shape = RoundedCornerShape(12.dp),
-            color = Color(0xF20B132B)
+            color = MediaScrim.copy(alpha = 0.95f)
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -297,12 +309,12 @@ fun ExerciseVideoPlayer(
                 Icon(
                     imageVector = Icons.Rounded.Favorite,
                     contentDescription = null,
-                    tint = NeonEmerald,
+                    tint = MediaAccent,
                     modifier = Modifier.size(14.dp)
                 )
                 Text(
                     text = coachCue,
-                    color = Color(0xFFE2E8F0),
+                    color = OnMedia.copy(alpha = 0.9f),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
                     lineHeight = 16.sp,

@@ -1,5 +1,10 @@
 package com.fit10.app.feature.exercise
 
+import com.fit10.app.core.feedback.rememberFit10Haptics
+import com.fit10.app.core.feedback.HapticKind
+import androidx.compose.material3.MaterialTheme
+import com.fit10.app.core.ui.theme.Fit10Theme
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -71,13 +76,26 @@ import com.fit10.app.core.ui.components.ExerciseVideoPlayerSheet
 import com.fit10.app.data.seed.ExerciseCatalog
 import com.fit10.app.domain.model.Exercise
 
-private val PrimaryGreen = Color(0xFF10B981)
-private val VoltGreen = Color(0xFF00F59B)
-private val DarkGreen = Color(0xFF047857)
-private val LightGreenSurface = Color(0xFFECFDF5)
-private val CardBorderColor = Color(0xFFE2E8F0)
-private val TextMain = Color(0xFF0F172A)
-private val TextMuted = Color(0xFF64748B)
+private val BrandPrimary: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
+private val OnBrand: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimary
+private val BrandDeep: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimaryContainer
+private val BrandContainer: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primaryContainer
+private val ScreenBackground: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.background
+private val BorderInactive: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.outlineVariant
+private val TextMain: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurface
+private val TextMuted: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurfaceVariant
+private val CardSurface: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surface
+private val IconWell: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surfaceVariant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,6 +105,7 @@ fun ExerciseDetailScreen(
     onReplace: () -> Unit = {},
     onGotIt: () -> Unit = {}
 ) {
+    val haptics = rememberFit10Haptics()
     var isBookmarked by remember { mutableStateOf(false) }
     var showMotionGuide by remember { mutableStateOf(false) }
     var showVideoPlayerSheet by remember { mutableStateOf(false) }
@@ -119,10 +138,10 @@ fun ExerciseDetailScreen(
     }
 
     Scaffold(
-        containerColor = Color(0xFFF8FAF9),
+        containerColor = ScreenBackground,
         topBar = {
             TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF8FAF9)),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = ScreenBackground),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -137,23 +156,23 @@ fun ExerciseDetailScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(50))
-                            .background(LightGreenSurface)
+                            .background(BrandContainer)
                             .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
                         Text(
                             text = "Form Masterclass",
-                            color = DarkGreen,
+                            color = BrandDeep,
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
                 },
                 actions = {
-                    IconButton(onClick = { isBookmarked = !isBookmarked }) {
+                    IconButton(onClick = { haptics.perform(HapticKind.Tick); isBookmarked = !isBookmarked }) {
                         Icon(
                             imageVector = if (isBookmarked) Icons.Rounded.Bookmark else Icons.Rounded.BookmarkBorder,
                             contentDescription = "Bookmark",
-                            tint = if (isBookmarked) PrimaryGreen else TextMain
+                            tint = if (isBookmarked) BrandPrimary else TextMain
                         )
                     }
                     IconButton(onClick = {}) {
@@ -168,7 +187,7 @@ fun ExerciseDetailScreen(
         },
         bottomBar = {
             Surface(
-                color = Color.White,
+                color = CardSurface,
                 tonalElevation = 6.dp,
                 shadowElevation = 8.dp,
                 modifier = Modifier.fillMaxWidth()
@@ -181,9 +200,9 @@ fun ExerciseDetailScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     OutlinedButton(
-                        onClick = onReplace,
+                        onClick = { haptics.perform(HapticKind.Tick); onReplace() },
                         shape = RoundedCornerShape(50),
-                        border = BorderStroke(1.dp, CardBorderColor),
+                        border = BorderStroke(1.dp, BorderInactive),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = TextMain),
                         modifier = Modifier
                             .weight(1f)
@@ -206,11 +225,11 @@ fun ExerciseDetailScreen(
                     }
 
                     Button(
-                        onClick = onGotIt,
+                        onClick = { haptics.perform(HapticKind.Confirm); onGotIt() },
                         shape = RoundedCornerShape(50),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = PrimaryGreen,
-                            contentColor = Color.White
+                            containerColor = BrandPrimary,
+                            contentColor = OnBrand
                         ),
                         modifier = Modifier
                             .weight(1.5f)
@@ -248,7 +267,7 @@ fun ExerciseDetailScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(50))
-                    .background(Color(0xFFE2E8F0))
+                    .background(IconWell)
                     .padding(3.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
@@ -257,8 +276,8 @@ fun ExerciseDetailScreen(
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(50))
-                        .background(if (!showMotionGuide) PrimaryGreen else Color.Transparent)
-                        .clickable { showMotionGuide = false }
+                        .background(if (!showMotionGuide) BrandPrimary else Color.Transparent)
+                        .clickable { haptics.perform(HapticKind.Tick); showMotionGuide = false }
                         .padding(vertical = 7.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -266,13 +285,13 @@ fun ExerciseDetailScreen(
                         Icon(
                             imageVector = Icons.Rounded.Videocam,
                             contentDescription = null,
-                            tint = if (!showMotionGuide) Color.White else TextMuted,
+                            tint = if (!showMotionGuide) OnBrand else TextMuted,
                             modifier = Modifier.size(15.dp)
                         )
                         Spacer(Modifier.width(5.dp))
                         Text(
                             text = "🎬 Real Video Demo",
-                            color = if (!showMotionGuide) Color.White else TextMuted,
+                            color = if (!showMotionGuide) OnBrand else TextMuted,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -284,8 +303,8 @@ fun ExerciseDetailScreen(
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(50))
-                        .background(if (showMotionGuide) PrimaryGreen else Color.Transparent)
-                        .clickable { showMotionGuide = true }
+                        .background(if (showMotionGuide) BrandPrimary else Color.Transparent)
+                        .clickable { haptics.perform(HapticKind.Tick); showMotionGuide = true }
                         .padding(vertical = 7.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -293,13 +312,13 @@ fun ExerciseDetailScreen(
                         Icon(
                             imageVector = Icons.Rounded.Animation,
                             contentDescription = null,
-                            tint = if (showMotionGuide) Color.White else TextMuted,
+                            tint = if (showMotionGuide) OnBrand else TextMuted,
                             modifier = Modifier.size(15.dp)
                         )
                         Spacer(Modifier.width(5.dp))
                         Text(
                             text = "⚡ Kinetic Skeleton",
-                            color = if (showMotionGuide) Color.White else TextMuted,
+                            color = if (showMotionGuide) OnBrand else TextMuted,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -385,8 +404,8 @@ fun ExerciseDetailScreen(
             // 3. Joint Alignment Coach Alert Box
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = LightGreenSurface,
-                border = BorderStroke(1.dp, PrimaryGreen.copy(alpha = 0.25f)),
+                color = BrandContainer,
+                border = BorderStroke(1.dp, BrandPrimary.copy(alpha = 0.25f)),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -397,13 +416,13 @@ fun ExerciseDetailScreen(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(PrimaryGreen.copy(alpha = 0.2f)),
+                            .background(BrandPrimary.copy(alpha = 0.2f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Security,
                             contentDescription = null,
-                            tint = DarkGreen,
+                            tint = BrandDeep,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -415,19 +434,19 @@ fun ExerciseDetailScreen(
                             text = "Joint Alignment Coach",
                             fontSize = 13.5.sp,
                             fontWeight = FontWeight.Bold,
-                            color = DarkGreen
+                            color = BrandDeep
                         )
                         Text(
                             text = exercise.tips.firstOrNull() ?: "Maintain neutral posture to protect spine and joints",
                             fontSize = 12.sp,
-                            color = DarkGreen.copy(alpha = 0.85f)
+                            color = BrandDeep.copy(alpha = 0.85f)
                         )
                     }
 
                     Icon(
                         imageVector = Icons.Rounded.CheckCircle,
                         contentDescription = null,
-                        tint = PrimaryGreen,
+                        tint = BrandPrimary,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -458,7 +477,7 @@ fun ExerciseDetailScreen(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(50))
-                        .background(Color(0xFFF1F5F9))
+                        .background(IconWell)
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
                     Text(
@@ -474,8 +493,8 @@ fun ExerciseDetailScreen(
 
             Surface(
                 shape = RoundedCornerShape(18.dp),
-                color = Color.White,
-                border = BorderStroke(1.dp, CardBorderColor),
+                color = CardSurface,
+                border = BorderStroke(1.dp, BorderInactive),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -504,12 +523,12 @@ fun ExerciseDetailScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // Optimal Cue Card (Green)
+            // Optimal Cue Card (Brand)
             val optimalTip = exercise.tips.firstOrNull() ?: "Keep core engaged and breathe smoothly throughout."
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = Color.White,
-                border = BorderStroke(1.dp, PrimaryGreen.copy(alpha = 0.3f)),
+                color = CardSurface,
+                border = BorderStroke(1.dp, BrandPrimary.copy(alpha = 0.3f)),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -520,13 +539,13 @@ fun ExerciseDetailScreen(
                         modifier = Modifier
                             .size(28.dp)
                             .clip(CircleShape)
-                            .background(LightGreenSurface),
+                            .background(BrandContainer),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Check,
                             contentDescription = null,
-                            tint = PrimaryGreen,
+                            tint = BrandPrimary,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -538,7 +557,7 @@ fun ExerciseDetailScreen(
                             text = "OPTIMAL CUE",
                             fontSize = 10.5.sp,
                             fontWeight = FontWeight.Bold,
-                            color = PrimaryGreen,
+                            color = BrandPrimary,
                             letterSpacing = 0.8.sp
                         )
                         Spacer(Modifier.height(2.dp))
@@ -564,8 +583,8 @@ fun ExerciseDetailScreen(
             // Common Flaw Card (Red)
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = Color.White,
-                border = BorderStroke(1.dp, Color(0xFFFCA5A5).copy(alpha = 0.5f)),
+                color = CardSurface,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.25f)),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -576,13 +595,13 @@ fun ExerciseDetailScreen(
                         modifier = Modifier
                             .size(28.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFFEE2E2)),
+                            .background(MaterialTheme.colorScheme.errorContainer),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Warning,
                             contentDescription = null,
-                            tint = Color(0xFFEF4444),
+                            tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -594,7 +613,7 @@ fun ExerciseDetailScreen(
                             text = "COMMON FLAW",
                             fontSize = 10.5.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFEF4444),
+                            color = MaterialTheme.colorScheme.error,
                             letterSpacing = 0.8.sp
                         )
                         Spacer(Modifier.height(2.dp))
@@ -630,15 +649,15 @@ private fun SpecCard(
 ) {
     Surface(
         shape = RoundedCornerShape(14.dp),
-        color = Color.White,
-        border = BorderStroke(1.dp, CardBorderColor),
+        color = CardSurface,
+        border = BorderStroke(1.dp, BorderInactive),
         modifier = modifier
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = PrimaryGreen,
+                tint = BrandPrimary,
                 modifier = Modifier.size(18.dp)
             )
             Spacer(Modifier.height(8.dp))
@@ -677,14 +696,14 @@ private fun StepItem(
             modifier = Modifier
                 .size(24.dp)
                 .clip(CircleShape)
-                .background(LightGreenSurface),
+                .background(BrandContainer),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = number.toString(),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                color = DarkGreen
+                color = BrandDeep
             )
         }
 

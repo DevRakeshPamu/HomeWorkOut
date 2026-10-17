@@ -1,5 +1,10 @@
 package com.fit10.app.feature.subscription
 
+import com.fit10.app.core.feedback.rememberFit10Haptics
+import com.fit10.app.core.feedback.HapticKind
+import androidx.compose.material3.MaterialTheme
+import com.fit10.app.core.ui.theme.Fit10Theme
+import androidx.compose.runtime.ReadOnlyComposable
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
@@ -60,12 +65,26 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private val PrimaryGreen = Color(0xFF00C070)
-private val DarkGreen = Color(0xFF065F46)
-private val LightGreenSurface = Color(0xFFE8F7F0)
-private val CardBorderColor = Color(0xFFE2E8F0)
-private val TextMain = Color(0xFF0F172A)
-private val TextMuted = Color(0xFF64748B)
+private val BrandPrimary: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
+private val OnBrand: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimary
+private val BrandDeep: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimaryContainer
+private val BrandContainer: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primaryContainer
+private val ScreenBackground: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.background
+private val BorderInactive: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.outlineVariant
+private val TextMain: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurface
+private val TextMuted: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurfaceVariant
+private val CardSurface: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surface
+private val IconWell: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surfaceVariant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,17 +102,18 @@ fun ManageSubscriptionScreen(
     onCancelSubscription: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val haptics = rememberFit10Haptics()
 
     val sku = entitlement.planId ?: BillingConstants.PRODUCT_ID_ANNUAL
     val deepLinkUrl = "https://play.google.com/store/account/subscriptions?package=com.fit10.app&sku=$sku"
 
     val (badgeText, badgeBg, badgeTextColor) = when (entitlement.subscriptionState) {
-        SubscriptionState.ACTIVE -> Triple("Active", LightGreenSurface, DarkGreen)
-        SubscriptionState.IN_TRIAL -> Triple("Free Trial", Color(0xFFFEF3C7), Color(0xFF92400E))
-        SubscriptionState.GRACE_PERIOD -> Triple("Grace Period", Color(0xFFFEF3C7), Color(0xFFB45309))
-        SubscriptionState.ON_HOLD -> Triple("Account On Hold", Color(0xFFFEE2E2), Color(0xFFB91C1C))
-        SubscriptionState.CANCELED_ACTIVE -> Triple("Canceled (Active)", Color(0xFFEFF6FF), Color(0xFF1D4ED8))
-        SubscriptionState.EXPIRED, SubscriptionState.FREE -> Triple("Free Tier", Color(0xFFF1F5F9), TextMuted)
+        SubscriptionState.ACTIVE -> Triple("Active", BrandContainer, BrandDeep)
+        SubscriptionState.IN_TRIAL -> Triple("Free Trial", MaterialTheme.colorScheme.tertiaryContainer, MaterialTheme.colorScheme.onTertiaryContainer)
+        SubscriptionState.GRACE_PERIOD -> Triple("Grace Period", MaterialTheme.colorScheme.tertiaryContainer, MaterialTheme.colorScheme.onTertiaryContainer)
+        SubscriptionState.ON_HOLD -> Triple("Account On Hold", MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer)
+        SubscriptionState.CANCELED_ACTIVE -> Triple("Canceled (Active)", Fit10Theme.extendedColors.timerContainer, Fit10Theme.extendedColors.timer)
+        SubscriptionState.EXPIRED, SubscriptionState.FREE -> Triple("Free Tier", IconWell, TextMuted)
     }
 
     val expiryFormatted = entitlement.expiryEpochMs?.let {
@@ -101,10 +121,10 @@ fun ManageSubscriptionScreen(
     } ?: "Managed via Google Play"
 
     Scaffold(
-        containerColor = Color(0xFFF8FAF9),
+        containerColor = ScreenBackground,
         topBar = {
             TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF8FAF9)),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = ScreenBackground),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -130,7 +150,7 @@ fun ManageSubscriptionScreen(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .border(1.5.dp, PrimaryGreen, CircleShape)
+                            .border(1.5.dp, BrandPrimary, CircleShape)
                     )
                     Spacer(Modifier.width(16.dp))
                 }
@@ -157,14 +177,14 @@ fun ManageSubscriptionScreen(
                         modifier = Modifier
                             .size(8.dp)
                             .clip(CircleShape)
-                            .background(if (entitlement.isPro()) PrimaryGreen else TextMuted)
+                            .background(if (entitlement.isPro()) BrandPrimary else TextMuted)
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(
                         text = if (entitlement.isPro()) "FIT10 PRO MEMBER" else "FIT10 FREE",
                         fontSize = 11.5.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (entitlement.isPro()) DarkGreen else TextMuted,
+                        color = if (entitlement.isPro()) BrandDeep else TextMuted,
                         letterSpacing = 1.sp
                     )
                 }
@@ -199,7 +219,7 @@ fun ManageSubscriptionScreen(
                 text = if (sku == BillingConstants.PRODUCT_ID_ANNUAL) "₹499 / year" else if (sku == BillingConstants.PRODUCT_ID_MONTHLY) "₹149 / month" else "Free Forever",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (entitlement.isPro()) PrimaryGreen else TextMuted
+                color = if (entitlement.isPro()) BrandPrimary else TextMuted
             )
 
             Spacer(Modifier.height(14.dp))
@@ -207,8 +227,8 @@ fun ManageSubscriptionScreen(
             // Next Renewal / Expiry Info Box
             Surface(
                 shape = RoundedCornerShape(12.dp),
-                color = Color.White,
-                border = BorderStroke(1.dp, CardBorderColor),
+                color = CardSurface,
+                border = BorderStroke(1.dp, BorderInactive),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -238,7 +258,7 @@ fun ManageSubscriptionScreen(
                     Icon(
                         imageVector = Icons.Rounded.Security,
                         contentDescription = null,
-                        tint = PrimaryGreen,
+                        tint = BrandPrimary,
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -269,8 +289,8 @@ fun ManageSubscriptionScreen(
 
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = Color.White,
-                border = BorderStroke(1.dp, CardBorderColor),
+                color = CardSurface,
+                border = BorderStroke(1.dp, BorderInactive),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -280,7 +300,7 @@ fun ManageSubscriptionScreen(
                         value = "Google Play Subscriptions"
                     )
                     Spacer(Modifier.height(14.dp))
-                    HorizontalDivider(color = Color(0xFFF1F5F9))
+                    HorizontalDivider(color = BorderInactive)
                     Spacer(Modifier.height(14.dp))
                     DetailRow(
                         icon = Icons.Rounded.CalendarToday,
@@ -295,14 +315,15 @@ fun ManageSubscriptionScreen(
             // 4. Primary Action: Deep-link directly to Google Play Subscription management
             Button(
                 onClick = {
+                    haptics.perform(HapticKind.Confirm)
                     onManageGooglePlay()
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(deepLinkUrl))
                     context.startActivity(intent)
                 },
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = PrimaryGreen,
-                    contentColor = Color.White
+                    containerColor = BrandPrimary,
+                    contentColor = OnBrand
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -327,9 +348,9 @@ fun ManageSubscriptionScreen(
 
             // 5. Restore Purchases Button
             OutlinedButton(
-                onClick = onRestorePurchases,
+                onClick = { haptics.perform(HapticKind.Tick); onRestorePurchases() },
                 shape = RoundedCornerShape(14.dp),
-                border = BorderStroke(1.dp, CardBorderColor),
+                border = BorderStroke(1.dp, BorderInactive),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = TextMain),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -356,8 +377,8 @@ fun ManageSubscriptionScreen(
             // 6. Security & Policy Information
             Surface(
                 shape = RoundedCornerShape(12.dp),
-                color = LightGreenSurface.copy(alpha = 0.5f),
-                border = BorderStroke(1.dp, PrimaryGreen.copy(alpha = 0.2f)),
+                color = BrandContainer.copy(alpha = 0.5f),
+                border = BorderStroke(1.dp, BrandPrimary.copy(alpha = 0.2f)),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
@@ -365,7 +386,7 @@ fun ManageSubscriptionScreen(
                         text = "How to Cancel or Switch Plans",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = DarkGreen
+                        color = BrandDeep
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(

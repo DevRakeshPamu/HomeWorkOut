@@ -1,5 +1,10 @@
 package com.fit10.app.feature.paywall
 
+import com.fit10.app.core.feedback.rememberFit10Haptics
+import com.fit10.app.core.feedback.HapticKind
+import androidx.compose.material3.MaterialTheme
+import com.fit10.app.core.ui.theme.Fit10Theme
+import androidx.compose.runtime.ReadOnlyComposable
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
@@ -62,12 +67,24 @@ import com.fit10.app.R
 import com.fit10.app.domain.billing.BillingConstants
 import com.fit10.app.domain.billing.SubscriptionPlanDetails
 
-private val PrimaryGreen = Color(0xFF00C070)
-private val DarkGreen = Color(0xFF065F46)
-private val LightGreenSurface = Color(0xFFE8F7F0)
-private val CardBorderColor = Color(0xFFE2E8F0)
-private val TextMain = Color(0xFF0F172A)
-private val TextMuted = Color(0xFF64748B)
+private val BrandPrimary: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
+private val OnBrand: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimary
+private val BrandDeep: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimaryContainer
+private val BrandContainer: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primaryContainer
+private val ScreenBackground: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.background
+private val BorderInactive: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.outlineVariant
+private val TextMain: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurface
+private val TextMuted: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurfaceVariant
+private val CardSurface: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surface
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,6 +102,7 @@ fun PaywallScreen(
     onRestorePurchases: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val haptics = rememberFit10Haptics()
     var selectedPlanIndex by remember { mutableIntStateOf(0) } // 0: Annual, 1: Monthly
 
     val activePlans = plans.ifEmpty {
@@ -97,10 +115,10 @@ fun PaywallScreen(
     val selectedPlan = if (selectedPlanIndex == 0) annualPlan else monthlyPlan
 
     Scaffold(
-        containerColor = Color(0xFFF8FAF9),
+        containerColor = ScreenBackground,
         topBar = {
             TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF8FAF9)),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = ScreenBackground),
                 navigationIcon = {
                     IconButton(onClick = onClose) {
                         Icon(
@@ -115,7 +133,7 @@ fun PaywallScreen(
                         Icon(
                             imageVector = Icons.Rounded.Verified,
                             contentDescription = null,
-                            tint = PrimaryGreen,
+                            tint = BrandPrimary,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(Modifier.width(6.dp))
@@ -134,7 +152,7 @@ fun PaywallScreen(
                         fontWeight = FontWeight.SemiBold,
                         color = TextMuted,
                         modifier = Modifier
-                            .clickable(onClick = onRestorePurchases)
+                            .clickable { haptics.perform(HapticKind.Tick); onRestorePurchases() }
                             .padding(horizontal = 8.dp, vertical = 6.dp)
                     )
                     Image(
@@ -144,7 +162,7 @@ fun PaywallScreen(
                         modifier = Modifier
                             .size(32.dp)
                             .clip(CircleShape)
-                            .border(1.5.dp, PrimaryGreen, CircleShape)
+                            .border(1.5.dp, BrandPrimary, CircleShape)
                     )
                     Spacer(Modifier.width(16.dp))
                 }
@@ -152,7 +170,7 @@ fun PaywallScreen(
         },
         bottomBar = {
             Surface(
-                color = Color.White,
+                color = CardSurface,
                 tonalElevation = 6.dp,
                 shadowElevation = 8.dp,
                 modifier = Modifier.fillMaxWidth()
@@ -164,11 +182,11 @@ fun PaywallScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Button(
-                        onClick = { onSelectPlan(selectedPlan) },
+                        onClick = { haptics.perform(HapticKind.Confirm); onSelectPlan(selectedPlan) },
                         shape = RoundedCornerShape(50),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = PrimaryGreen,
-                            contentColor = Color.White
+                            containerColor = BrandPrimary,
+                            contentColor = OnBrand
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -201,7 +219,7 @@ fun PaywallScreen(
                         fontWeight = FontWeight.SemiBold,
                         color = TextMuted,
                         modifier = Modifier
-                            .clickable(onClick = onClose)
+                            .clickable { haptics.perform(HapticKind.Tick); onClose() }
                             .padding(vertical = 4.dp)
                     )
 
@@ -231,13 +249,13 @@ fun PaywallScreen(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
-                    .background(LightGreenSurface)
-                    .border(1.dp, PrimaryGreen.copy(alpha = 0.3f), RoundedCornerShape(50))
+                    .background(BrandContainer)
+                    .border(1.dp, BrandPrimary.copy(alpha = 0.3f), RoundedCornerShape(50))
                     .padding(horizontal = 14.dp, vertical = 6.dp)
             ) {
                 Text(
                     text = "✦  FIT10 PRO ACCESS  ✦",
-                    color = DarkGreen,
+                    color = BrandDeep,
                     fontSize = 11.5.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp
@@ -268,8 +286,8 @@ fun PaywallScreen(
             // 3. What's included in Pro Card (Copy-accurate, no ungrounded claims)
             Surface(
                 shape = RoundedCornerShape(18.dp),
-                color = Color.White,
-                border = BorderStroke(1.dp, CardBorderColor),
+                color = CardSurface,
+                border = BorderStroke(1.dp, BorderInactive),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -287,14 +305,14 @@ fun PaywallScreen(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(50))
-                                .background(LightGreenSurface)
+                                .background(BrandContainer)
                                 .padding(horizontal = 8.dp, vertical = 3.dp)
                         ) {
                             Text(
                                 text = "All Unlocked",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = DarkGreen
+                                color = BrandDeep
                             )
                         }
                     }
@@ -338,14 +356,14 @@ fun PaywallScreen(
             // 4. Loading or Error Retry States
             if (isLoading) {
                 CircularProgressIndicator(
-                    color = PrimaryGreen,
+                    color = BrandPrimary,
                     modifier = Modifier.padding(16.dp)
                 )
             } else if (hasError) {
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = Color(0xFFFEF2F2),
-                    border = BorderStroke(1.dp, Color(0xFFFCA5A5)),
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.4f)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
@@ -355,7 +373,7 @@ fun PaywallScreen(
                         Text(
                             text = "Could not load real-time prices from Google Play.",
                             fontSize = 13.sp,
-                            color = Color(0xFFB91C1C),
+                            color = MaterialTheme.colorScheme.onErrorContainer,
                             textAlign = TextAlign.Center
                         )
                         Spacer(Modifier.height(8.dp))
@@ -373,14 +391,14 @@ fun PaywallScreen(
             // Option 1: Annual
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = if (selectedPlanIndex == 0) LightGreenSurface.copy(alpha = 0.35f) else Color.White,
+                color = if (selectedPlanIndex == 0) BrandContainer.copy(alpha = 0.35f) else CardSurface,
                 border = BorderStroke(
                     width = if (selectedPlanIndex == 0) 2.dp else 1.dp,
-                    color = if (selectedPlanIndex == 0) PrimaryGreen else CardBorderColor
+                    color = if (selectedPlanIndex == 0) BrandPrimary else BorderInactive
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { selectedPlanIndex = 0 }
+                    .clickable { haptics.perform(HapticKind.Tick); selectedPlanIndex = 0 }
             ) {
                 Column {
                     // Badge: Computed savings from real prices
@@ -388,13 +406,13 @@ fun PaywallScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(DarkGreen)
+                            .background(BrandPrimary)
                             .padding(vertical = 4.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = savingsBadge,
-                            color = Color.White,
+                            color = OnBrand,
                             fontSize = 10.5.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 0.8.sp
@@ -409,10 +427,10 @@ fun PaywallScreen(
                     ) {
                         RadioButton(
                             selected = selectedPlanIndex == 0,
-                            onClick = { selectedPlanIndex = 0 },
+                            onClick = { haptics.perform(HapticKind.Tick); selectedPlanIndex = 0 },
                             colors = RadioButtonDefaults.colors(
-                                selectedColor = PrimaryGreen,
-                                unselectedColor = Color(0xFFCBD5E1)
+                                selectedColor = BrandPrimary,
+                                unselectedColor = MaterialTheme.colorScheme.outline
                             )
                         )
                         Spacer(Modifier.width(8.dp))
@@ -434,12 +452,12 @@ fun PaywallScreen(
                                     Box(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(50))
-                                            .background(PrimaryGreen)
+                                            .background(BrandPrimary)
                                             .padding(horizontal = 6.dp, vertical = 2.dp)
                                     ) {
                                         Text(
                                             text = "${annualPlan.freeTrialDays}-Day Free",
-                                            color = Color.White,
+                                            color = OnBrand,
                                             fontSize = 10.sp,
                                             fontWeight = FontWeight.Bold
                                         )
@@ -469,14 +487,14 @@ fun PaywallScreen(
             // Option 2: Monthly
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = if (selectedPlanIndex == 1) LightGreenSurface.copy(alpha = 0.35f) else Color.White,
+                color = if (selectedPlanIndex == 1) BrandContainer.copy(alpha = 0.35f) else CardSurface,
                 border = BorderStroke(
                     width = if (selectedPlanIndex == 1) 2.dp else 1.dp,
-                    color = if (selectedPlanIndex == 1) PrimaryGreen else CardBorderColor
+                    color = if (selectedPlanIndex == 1) BrandPrimary else BorderInactive
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { selectedPlanIndex = 1 }
+                    .clickable { haptics.perform(HapticKind.Tick); selectedPlanIndex = 1 }
             ) {
                 Row(
                     modifier = Modifier
@@ -486,10 +504,10 @@ fun PaywallScreen(
                 ) {
                     RadioButton(
                         selected = selectedPlanIndex == 1,
-                        onClick = { selectedPlanIndex = 1 },
+                        onClick = { haptics.perform(HapticKind.Tick); selectedPlanIndex = 1 },
                         colors = RadioButtonDefaults.colors(
-                            selectedColor = PrimaryGreen,
-                            unselectedColor = Color(0xFFCBD5E1)
+                            selectedColor = BrandPrimary,
+                            unselectedColor = MaterialTheme.colorScheme.outline
                         )
                     )
                     Spacer(Modifier.width(8.dp))
@@ -522,8 +540,8 @@ fun PaywallScreen(
             // 6. Explicit Subscription Terms (Play Store Requirement)
             Surface(
                 shape = RoundedCornerShape(12.dp),
-                color = Color.White,
-                border = BorderStroke(1.dp, CardBorderColor),
+                color = CardSurface,
+                border = BorderStroke(1.dp, BorderInactive),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
@@ -548,7 +566,7 @@ fun PaywallScreen(
                         text = "Manage in Google Play Store ↗",
                         fontSize = 11.5.sp,
                         fontWeight = FontWeight.Bold,
-                        color = PrimaryGreen,
+                        color = BrandPrimary,
                         modifier = Modifier.clickable {
                             val intent = Intent(
                                 Intent.ACTION_VIEW,
@@ -579,13 +597,13 @@ private fun ProFeatureItem(
                 .padding(top = 2.dp)
                 .size(18.dp)
                 .clip(CircleShape)
-                .background(LightGreenSurface),
+                .background(BrandContainer),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Rounded.Check,
                 contentDescription = null,
-                tint = DarkGreen,
+                tint = BrandDeep,
                 modifier = Modifier.size(12.dp)
             )
         }

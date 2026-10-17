@@ -46,6 +46,8 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.MaterialTheme
+import com.fit10.app.core.ui.theme.Fit10Theme
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
@@ -133,6 +135,10 @@ fun SplashScreen(
         label = "ParticleAngle"
     )
 
+    val mediaScrim = Fit10Theme.extendedColors.mediaScrim
+    val onMedia = Fit10Theme.extendedColors.onMediaScrim
+    val accent = Fit10Theme.extendedColors.mediaAccent
+
     val statusText = when {
         animatedProgress < 0.45f -> "CALIBRATING SESSION..."
         animatedProgress < 0.85f -> "OPTIMIZING 10-MIN ROUTINE..."
@@ -142,7 +148,7 @@ fun SplashScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFF0B0F0D))
+            .background(MaterialTheme.colorScheme.scrim)
     ) {
         // Background fitness photo
         Image(
@@ -159,10 +165,10 @@ fun SplashScreen(
                 .background(
                     Brush.verticalGradient(
                         colorStops = arrayOf(
-                            0.0f to Color(0xDD0E1C19),
-                            0.3f to Color(0x88132521),
-                            0.6f to Color(0xCC0C1714),
-                            1.0f to Color(0xFA08110F)
+                            0.0f to mediaScrim.copy(alpha = 0.87f),
+                            0.3f to mediaScrim.copy(alpha = 0.53f),
+                            0.6f to mediaScrim.copy(alpha = 0.8f),
+                            1.0f to mediaScrim.copy(alpha = 0.98f)
                         )
                     )
                 )
@@ -188,7 +194,7 @@ fun SplashScreen(
                 val endX = startX + (length * cos(angle + Math.PI / 2)).toFloat()
                 val endY = startY + (length * sin(angle + Math.PI / 2)).toFloat()
                 drawLine(
-                    color = Color(0x1534D399),
+                    color = accent.copy(alpha = 0.08f),
                     start = Offset(startX, startY),
                     end = Offset(endX, endY),
                     strokeWidth = 1.5.dp.toPx(),
@@ -211,26 +217,26 @@ fun SplashScreen(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
-                    .background(Color(0x301C2B27))
+                    .background(mediaScrim.copy(alpha = 0.19f))
                     .border(
                         width = 1.dp,
-                        color = Color(0x4034D399),
+                        color = accent.copy(alpha = 0.25f),
                         shape = RoundedCornerShape(50)
                     )
                     .padding(horizontal = 16.dp, vertical = 7.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Animated green dot
+                    // Animated accent dot
                     Box(
                         modifier = Modifier
                             .size(7.dp)
                             .scale(pulseScale)
-                            .background(Color(0xFF34D399), CircleShape)
+                            .background(accent, CircleShape)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "ADAPTIVE FITNESS AI",
-                        color = Color(0xFFB8D4CC),
+                        color = onMedia.copy(alpha = 0.8f),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.8.sp
@@ -251,14 +257,14 @@ fun SplashScreen(
                         .size(130.dp)
                         .scale(pulseScale * 0.85f + 0.15f)
                         .clip(CircleShape)
-                        .background(Color(0x1000E676))
+                        .background(accent.copy(alpha = 0.06f))
                 )
                 // Mid ring
                 Box(
                     modifier = Modifier
                         .size(108.dp)
                         .clip(CircleShape)
-                        .background(Color(0x1800E676))
+                        .background(accent.copy(alpha = 0.09f))
                 )
                 // Icon container
                 Box(
@@ -268,19 +274,19 @@ fun SplashScreen(
                         .clip(RoundedCornerShape(24.dp))
                         .background(
                             Brush.linearGradient(
-                                colors = listOf(Color(0xFF005228), Color(0xFF00391A))
+                                colors = listOf(accent.copy(alpha = 0.35f), accent.copy(alpha = 0.18f))
                             )
                         )
                         .border(
                             width = 1.5.dp,
                             brush = Brush.linearGradient(
-                                colors = listOf(Color(0xFF34D399), Color(0xFF059669))
+                                colors = listOf(accent, accent.copy(alpha = 0.6f))
                             ),
                             shape = RoundedCornerShape(24.dp)
                         )
                         .drawBehind {
                             drawCircle(
-                                color = Color(0x4400E676),
+                                color = accent.copy(alpha = 0.27f),
                                 radius = size.minDimension * 0.55f,
                                 blendMode = androidx.compose.ui.graphics.BlendMode.Screen
                             )
@@ -290,10 +296,10 @@ fun SplashScreen(
                     // F10 wordmark
                     Text(
                         text = buildAnnotatedString {
-                            withStyle(SpanStyle(color = Color.White, fontWeight = FontWeight.Black, fontSize = 28.sp)) {
+                            withStyle(SpanStyle(color = onMedia, fontWeight = FontWeight.Black, fontSize = 28.sp)) {
                                 append("F")
                             }
-                            withStyle(SpanStyle(color = Color(0xFF34D399), fontWeight = FontWeight.Black, fontSize = 28.sp)) {
+                            withStyle(SpanStyle(color = accent, fontWeight = FontWeight.Black, fontSize = 28.sp)) {
                                 append("10")
                             }
                         },
@@ -307,10 +313,10 @@ fun SplashScreen(
             // Title: Fit10 — large impactful wordmark
             Text(
                 text = buildAnnotatedString {
-                    withStyle(style = SpanStyle(color = Color.White, fontWeight = FontWeight.Black)) {
+                    withStyle(style = SpanStyle(color = onMedia, fontWeight = FontWeight.Black)) {
                         append("Fit")
                     }
-                    withStyle(style = SpanStyle(color = Color(0xFF34D399), fontWeight = FontWeight.Black)) {
+                    withStyle(style = SpanStyle(color = accent, fontWeight = FontWeight.Black)) {
                         append("10")
                     }
                 },
@@ -323,7 +329,7 @@ fun SplashScreen(
             // Subtitle
             Text(
                 text = "Personalized Home Workout",
-                color = Color.White.copy(alpha = 0.9f),
+                color = onMedia.copy(alpha = 0.9f),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
@@ -335,7 +341,7 @@ fun SplashScreen(
             // Tagline
             Text(
                 text = "Your workout. Your level.\nYour healthier you.",
-                color = Color(0xFF7FA99C),
+                color = onMedia.copy(alpha = 0.65f),
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Normal,
                 textAlign = TextAlign.Center,
@@ -357,7 +363,7 @@ fun SplashScreen(
                         .width(220.dp)
                         .height(4.dp)
                         .clip(RoundedCornerShape(50))
-                        .background(Color(0x22FFFFFF))
+                        .background(onMedia.copy(alpha = 0.13f))
                 ) {
                     Box(
                         modifier = Modifier
@@ -367,9 +373,9 @@ fun SplashScreen(
                             .background(
                                 Brush.horizontalGradient(
                                     colors = listOf(
-                                        Color(0xFF059669),
-                                        Color(0xFF10B981),
-                                        Color(0xFF34D399)
+                                        accent.copy(alpha = 0.6f),
+                                        accent.copy(alpha = 0.8f),
+                                        accent
                                     )
                                 )
                             )
@@ -377,8 +383,8 @@ fun SplashScreen(
                                 drawRect(
                                     brush = Brush.horizontalGradient(
                                         colors = listOf(
-                                            Color(0x0034D399),
-                                            Color(0x6634D399)
+                                            accent.copy(alpha = 0f),
+                                            accent.copy(alpha = 0.4f)
                                         )
                                     ),
                                     topLeft = Offset(0f, -4f),
@@ -402,7 +408,7 @@ fun SplashScreen(
                     ) {
                         drawArc(
                             brush = Brush.sweepGradient(
-                                colors = listOf(Color.Transparent, Color(0xFF34D399))
+                                colors = listOf(Color.Transparent, accent)
                             ),
                             startAngle = 0f,
                             sweepAngle = 270f,
@@ -413,7 +419,7 @@ fun SplashScreen(
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
                         text = statusText,
-                        color = Color(0xFF7FA99C),
+                        color = onMedia.copy(alpha = 0.65f),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold,
                         letterSpacing = 1.6.sp

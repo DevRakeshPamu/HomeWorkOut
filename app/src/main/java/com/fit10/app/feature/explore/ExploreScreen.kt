@@ -1,5 +1,9 @@
 package com.fit10.app.feature.explore
 
+import com.fit10.app.core.feedback.rememberFit10Haptics
+import com.fit10.app.core.feedback.HapticKind
+import com.fit10.app.core.ui.theme.Fit10Theme
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -47,18 +51,24 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fit10.app.R
 import com.fit10.app.core.ui.components.Fit10Chip
 import com.fit10.app.core.ui.components.Fit10TopBar
-import com.fit10.app.core.ui.theme.Fit10Colors
 import com.fit10.app.core.ui.theme.Fit10Shapes
 import com.fit10.app.domain.model.FocusArea
 import com.fit10.app.domain.model.Workout
 
-private val PrimaryGreen      = Color(0xFF10B981)
-private val DarkGreen         = Color(0xFF047857)
-private val LightGreenSurface = Color(0xFFECFDF5)
-private val BorderInactive    = Color(0xFFE2E8F0)
-private val TextMain          = Color(0xFF0F172A)
-private val TextMuted         = Color(0xFF64748B)
-private val CardWhite         = Color(0xFFFFFFFF)
+private val BrandPrimary: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
+private val BrandStrong: Color
+    @Composable @ReadOnlyComposable get() = Fit10Theme.extendedColors.brandStrong
+private val OnBrand: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimary
+private val ScreenBackground: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.background
+private val TextMain: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurface
+private val TextMuted: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurfaceVariant
+private val CardSurface: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surface
 
 @Composable
 fun ExploreScreen(
@@ -66,9 +76,10 @@ fun ExploreScreen(
     onSelectWorkout: (workoutId: String) -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val haptics = rememberFit10Haptics()
 
     Scaffold(
-        containerColor = Color(0xFFF8FAF9),
+        containerColor = ScreenBackground,
         topBar = {
             Fit10TopBar(title = "Explore Workouts")
         }
@@ -98,7 +109,7 @@ fun ExploreScreen(
                             .fillMaxSize()
                             .background(
                                 Brush.verticalGradient(
-                                    colors = listOf(Color.Transparent, Color(0xCC0F172A)),
+                                    colors = listOf(Color.Transparent, Fit10Theme.extendedColors.mediaScrim),
                                     startY = 60f
                                 )
                             )
@@ -112,32 +123,32 @@ fun ExploreScreen(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(50))
-                                    .background(PrimaryGreen)
+                                    .background(BrandPrimary)
                                     .padding(horizontal = 10.dp, vertical = 3.dp)
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(imageVector = Icons.Rounded.Star, contentDescription = null, tint = Color.White, modifier = Modifier.size(11.dp))
+                                    Icon(imageVector = Icons.Rounded.Star, contentDescription = null, tint = OnBrand, modifier = Modifier.size(11.dp))
                                     Spacer(Modifier.width(4.dp))
-                                    Text(text = "FEATURED", color = Color.White, fontSize = 9.5.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                                    Text(text = "FEATURED", color = OnBrand, fontSize = 9.5.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                                 }
                             }
                         }
                         Spacer(Modifier.height(6.dp))
-                        Text(text = "Full Body Kickstart", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                        Text(text = "10 min • Beginner • No equipment", color = Color.White.copy(0.8f), fontSize = 12.sp)
+                        Text(text = "Full Body Kickstart", color = Fit10Theme.extendedColors.onMediaScrim, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        Text(text = "10 min • Beginner • No equipment", color = Fit10Theme.extendedColors.onMediaScrim.copy(0.8f), fontSize = 12.sp)
                     }
                     // Play button overlay
                     Surface(
-                        onClick = { state.filteredWorkouts.firstOrNull()?.let { onSelectWorkout(it.id) } },
+                        onClick = { haptics.perform(HapticKind.Confirm); state.filteredWorkouts.firstOrNull()?.let { onSelectWorkout(it.id) } },
                         shape = CircleShape,
-                        color = PrimaryGreen,
+                        color = BrandPrimary,
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .padding(16.dp)
                             .size(52.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Icon(imageVector = Icons.Rounded.PlayArrow, contentDescription = "Play", tint = Color.White, modifier = Modifier.size(28.dp))
+                            Icon(imageVector = Icons.Rounded.PlayArrow, contentDescription = "Play", tint = OnBrand, modifier = Modifier.size(28.dp))
                         }
                     }
                 }
@@ -179,7 +190,7 @@ fun ExploreScreen(
             items(state.filteredWorkouts, key = { it.id }) { workout ->
                 WorkoutListItemCard(
                     workout = workout,
-                    onClick = { onSelectWorkout(workout.id) },
+                    onClick = { haptics.perform(HapticKind.Tick); onSelectWorkout(workout.id) },
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
                 )
             }
@@ -198,7 +209,7 @@ private fun WorkoutListItemCard(
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(18.dp),
-        color = CardWhite,
+        color = CardSurface,
         shadowElevation = 3.dp,
         modifier = modifier.fillMaxWidth()
     ) {
@@ -222,7 +233,7 @@ private fun WorkoutListItemCard(
                         .fillMaxSize()
                         .background(
                             Brush.verticalGradient(
-                                colors = listOf(Color.Transparent, Color(0x880F172A)),
+                                colors = listOf(Color.Transparent, Fit10Theme.extendedColors.mediaScrim.copy(alpha = 0.55f)),
                                 startY = 40f
                             )
                         )
@@ -234,13 +245,13 @@ private fun WorkoutListItemCard(
                         .align(Alignment.BottomStart)
                         .clip(RoundedCornerShape(50))
                         .background(
-                            Brush.horizontalGradient(listOf(Color(0xFF059669), PrimaryGreen))
+                            Brush.horizontalGradient(listOf(BrandStrong, BrandPrimary))
                         )
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
                         text = workout.focusArea.name.replace("_", " "),
-                        color = Color.White,
+                        color = OnBrand,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -276,11 +287,11 @@ private fun WorkoutListItemCard(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        MetaPill(icon = Icons.Rounded.Schedule, text = "${workout.estimatedDurationMinutes}m", color = Fit10Colors.TimerCyan)
+                        MetaPill(icon = Icons.Rounded.Schedule, text = "${workout.estimatedDurationMinutes}m", color = Fit10Theme.extendedColors.timer)
                         workout.caloriesBurnEstimate?.let { cal ->
-                            MetaPill(icon = Icons.Rounded.LocalFireDepartment, text = "$cal kcal", color = Fit10Colors.CalorieCoral)
+                            MetaPill(icon = Icons.Rounded.LocalFireDepartment, text = "$cal kcal", color = Fit10Theme.extendedColors.streak)
                         }
-                        MetaPill(icon = Icons.Rounded.FitnessCenter, text = "${workout.exercises.size} moves", color = PrimaryGreen)
+                        MetaPill(icon = Icons.Rounded.FitnessCenter, text = "${workout.exercises.size} moves", color = BrandPrimary)
                     }
                 }
 
@@ -291,13 +302,13 @@ private fun WorkoutListItemCard(
                     modifier = Modifier
                         .size(50.dp)
                         .clip(CircleShape)
-                        .background(Brush.linearGradient(listOf(Color(0xFF059669), PrimaryGreen))),
+                        .background(Brush.linearGradient(listOf(BrandStrong, BrandPrimary))),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.PlayArrow,
                         contentDescription = "Start Workout",
-                        tint = Color.White,
+                        tint = OnBrand,
                         modifier = Modifier.size(26.dp)
                     )
                 }

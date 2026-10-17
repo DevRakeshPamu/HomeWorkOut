@@ -1,5 +1,10 @@
 package com.fit10.app.feature.exercise
 
+import com.fit10.app.core.feedback.rememberFit10Haptics
+import com.fit10.app.core.feedback.HapticKind
+import androidx.compose.material3.MaterialTheme
+import com.fit10.app.core.ui.theme.Fit10Theme
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -51,13 +56,26 @@ import com.fit10.app.core.ui.components.ContextualUpsellSheet
 import com.fit10.app.domain.billing.ProFeature
 import androidx.compose.material.icons.rounded.Lock
 
-private val PrimaryGreen = Color(0xFF10B981)
-private val DarkGreen = Color(0xFF047857)
-private val LightGreenSurface = Color(0xFFECFDF5)
-private val BackgroundSurface = Color(0xFFF8FAF9)
-private val BorderInactive = Color(0xFFE2E8F0)
-private val TextMain = Color(0xFF0F172A)
-private val TextMuted = Color(0xFF64748B)
+private val BrandPrimary: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
+private val OnBrand: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimary
+private val BrandDeep: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimaryContainer
+private val BrandContainer: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primaryContainer
+private val ScreenBackground: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.background
+private val BorderInactive: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.outlineVariant
+private val TextMain: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurface
+private val TextMuted: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurfaceVariant
+private val CardSurface: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surface
+private val IconWell: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surfaceVariant
 
 data class ExerciseVariation(
     val id: String,
@@ -78,6 +96,7 @@ fun ExerciseReplacementScreen(
     onKeepOriginal: () -> Unit = {},
     onNavigateToPaywall: () -> Unit = {}
 ) {
+    val haptics = rememberFit10Haptics()
     var showUpsellSheet by remember { mutableStateOf(false) }
 
     val variations = remember {
@@ -133,10 +152,10 @@ fun ExerciseReplacementScreen(
     }
 
     Scaffold(
-        containerColor = BackgroundSurface,
+        containerColor = ScreenBackground,
         bottomBar = {
             Surface(
-                color = Color.White,
+                color = CardSurface,
                 shadowElevation = 8.dp,
                 border = BorderStroke(1.dp, BorderInactive)
             ) {
@@ -147,8 +166,8 @@ fun ExerciseReplacementScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Button(
-                        onClick = { onSelectVariation(selectedVariationId) },
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                        onClick = { haptics.perform(HapticKind.Confirm); onSelectVariation(selectedVariationId) },
+                        colors = ButtonDefaults.buttonColors(containerColor = BrandPrimary),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -156,7 +175,7 @@ fun ExerciseReplacementScreen(
                     ) {
                         Text(
                             text = "Use ${selectedVariation.name}",
-                            color = Color.White,
+                            color = OnBrand,
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp
                         )
@@ -164,7 +183,7 @@ fun ExerciseReplacementScreen(
 
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    TextButton(onClick = onKeepOriginal) {
+                    TextButton(onClick = { haptics.perform(HapticKind.Tick); onKeepOriginal() }) {
                         Text(
                             text = "Keep Original",
                             color = TextMuted,
@@ -205,8 +224,8 @@ fun ExerciseReplacementScreen(
 
                 Surface(
                     shape = RoundedCornerShape(20.dp),
-                    color = LightGreenSurface,
-                    border = BorderStroke(1.dp, PrimaryGreen.copy(alpha = 0.3f))
+                    color = BrandContainer,
+                    border = BorderStroke(1.dp, BrandPrimary.copy(alpha = 0.3f))
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
@@ -216,14 +235,14 @@ fun ExerciseReplacementScreen(
                             modifier = Modifier
                                 .size(6.dp)
                                 .clip(CircleShape)
-                                .background(PrimaryGreen)
+                                .background(BrandPrimary)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "Adaptive Progression",
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = DarkGreen
+                            color = BrandDeep
                         )
                     }
                 }
@@ -235,7 +254,7 @@ fun ExerciseReplacementScreen(
                     modifier = Modifier
                         .size(34.dp)
                         .clip(CircleShape)
-                        .border(1.5.dp, PrimaryGreen, CircleShape)
+                        .border(1.5.dp, BrandPrimary, CircleShape)
                 )
             }
 
@@ -273,7 +292,7 @@ fun ExerciseReplacementScreen(
                 )
                 Surface(
                     shape = RoundedCornerShape(6.dp),
-                    color = Color(0xFFF1F5F9)
+                    color = IconWell
                 ) {
                     Text(
                         text = "Default",
@@ -289,7 +308,7 @@ fun ExerciseReplacementScreen(
 
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = Color.White,
+                color = CardSurface,
                 border = BorderStroke(1.dp, BorderInactive),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -327,7 +346,7 @@ fun ExerciseReplacementScreen(
                                 modifier = Modifier
                                     .size(5.dp)
                                     .clip(CircleShape)
-                                    .background(Color(0xFF94A3B8))
+                                    .background(TextMuted)
                             )
                             Spacer(modifier = Modifier.width(5.dp))
                             Text(
@@ -356,7 +375,7 @@ fun ExerciseReplacementScreen(
                 )
                 Surface(
                     shape = RoundedCornerShape(6.dp),
-                    color = Color(0xFFF1F5F9)
+                    color = IconWell
                 ) {
                     Text(
                         text = "4 Available",
@@ -380,6 +399,7 @@ fun ExerciseReplacementScreen(
                         isSelected = isSelected,
                         isLocked = isLocked,
                         onClick = {
+                            haptics.perform(HapticKind.Tick)
                             if (isLocked) {
                                 showUpsellSheet = true
                             } else {
@@ -416,10 +436,10 @@ private fun VariationCard(
 ) {
     Surface(
         shape = RoundedCornerShape(16.dp),
-        color = Color.White,
+        color = CardSurface,
         border = BorderStroke(
             width = if (isSelected) 2.dp else 1.dp,
-            color = if (isSelected) PrimaryGreen else BorderInactive
+            color = if (isSelected) BrandPrimary else BorderInactive
         ),
         modifier = Modifier
             .fillMaxWidth()
@@ -455,8 +475,8 @@ private fun VariationCard(
                     if (isLocked) {
                         Surface(
                             shape = RoundedCornerShape(6.dp),
-                            color = Color(0xFFFEF3C7),
-                            border = BorderStroke(1.dp, Color(0xFFF59E0B).copy(alpha = 0.4f))
+                            color = MaterialTheme.colorScheme.tertiaryContainer,
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f))
                         ) {
                             Row(
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
@@ -465,7 +485,7 @@ private fun VariationCard(
                                 Icon(
                                     imageVector = Icons.Rounded.Lock,
                                     contentDescription = "Pro required",
-                                    tint = Color(0xFFB45309),
+                                    tint = MaterialTheme.colorScheme.onTertiaryContainer,
                                     modifier = Modifier.size(10.dp)
                                 )
                                 Spacer(Modifier.width(2.dp))
@@ -473,24 +493,24 @@ private fun VariationCard(
                                     text = "PRO",
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFB45309)
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer
                                 )
                             }
                         }
                     } else {
                         Surface(
                             shape = RoundedCornerShape(6.dp),
-                            color = if (variation.isHarder) Color(0xFFF1F5F9) else LightGreenSurface,
+                            color = if (variation.isHarder) IconWell else BrandContainer,
                             border = BorderStroke(
                                 1.dp,
-                                if (variation.isHarder) BorderInactive else PrimaryGreen.copy(alpha = 0.3f)
+                                if (variation.isHarder) BorderInactive else BrandPrimary.copy(alpha = 0.3f)
                             )
                         ) {
                             Text(
                                 text = variation.difficultyModifier,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (variation.isHarder) Color(0xFF475569) else DarkGreen,
+                                color = if (variation.isHarder) TextMuted else BrandDeep,
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                             )
                         }
@@ -521,13 +541,13 @@ private fun VariationCard(
                     modifier = Modifier
                         .size(24.dp)
                         .clip(CircleShape)
-                        .background(PrimaryGreen),
+                        .background(BrandPrimary),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Check,
                         contentDescription = "Selected",
-                        tint = Color.White,
+                        tint = OnBrand,
                         modifier = Modifier.size(16.dp)
                     )
                 }

@@ -1,5 +1,10 @@
 package com.fit10.app.core.ui.components
 
+import com.fit10.app.core.feedback.rememberFit10Haptics
+import com.fit10.app.core.feedback.HapticKind
+import androidx.compose.material3.MaterialTheme
+import com.fit10.app.core.ui.theme.Fit10Theme
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -36,11 +41,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fit10.app.domain.billing.ProFeature
 
-private val PrimaryGreen = Color(0xFF00C070)
-private val DarkGreen = Color(0xFF065F46)
-private val LightGreenSurface = Color(0xFFE8F7F0)
-private val TextMain = Color(0xFF0F172A)
-private val TextMuted = Color(0xFF64748B)
+private val BrandPrimary: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
+private val OnBrand: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimary
+private val BrandDeep: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimaryContainer
+private val BrandContainer: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primaryContainer
+private val TextMain: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurface
+private val TextMuted: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurfaceVariant
+private val CardSurface: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surface
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,6 +63,7 @@ fun ContextualUpsellSheet(
     onDismiss: () -> Unit,
     onNavigateToPaywall: () -> Unit
 ) {
+    val haptics = rememberFit10Haptics()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val (title, description) = when (feature) {
@@ -85,7 +100,7 @@ fun ContextualUpsellSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = CardSurface,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
     ) {
         Column(
@@ -99,13 +114,13 @@ fun ContextualUpsellSheet(
                 modifier = Modifier
                     .size(56.dp)
                     .clip(CircleShape)
-                    .background(LightGreenSurface),
+                    .background(BrandContainer),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Lock,
                     contentDescription = "Locked Feature",
-                    tint = PrimaryGreen,
+                    tint = BrandPrimary,
                     modifier = Modifier.size(28.dp)
                 )
             }
@@ -115,12 +130,12 @@ fun ContextualUpsellSheet(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
-                    .background(LightGreenSurface)
+                    .background(BrandContainer)
                     .padding(horizontal = 12.dp, vertical = 4.dp)
             ) {
                 Text(
                     text = "FIT10 PRO FEATURE",
-                    color = DarkGreen,
+                    color = BrandDeep,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp
@@ -151,13 +166,14 @@ fun ContextualUpsellSheet(
 
             Button(
                 onClick = {
+                    haptics.perform(HapticKind.Confirm)
                     onDismiss()
                     onNavigateToPaywall()
                 },
                 shape = RoundedCornerShape(50),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = PrimaryGreen,
-                    contentColor = Color.White
+                    containerColor = BrandPrimary,
+                    contentColor = OnBrand
                 ),
                 modifier = Modifier
                     .fillMaxWidth()

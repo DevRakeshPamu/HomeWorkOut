@@ -1,5 +1,9 @@
 package com.fit10.app.feature.plan
 
+import com.fit10.app.core.feedback.rememberFit10Haptics
+import com.fit10.app.core.feedback.HapticKind
+import com.fit10.app.core.ui.theme.Fit10Theme
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -46,12 +50,26 @@ import androidx.compose.ui.unit.sp
 import com.fit10.app.R
 import com.fit10.app.domain.model.UserProfile
 
-private val PrimaryGreen = Color(0xFF10B981)
-private val DarkGreen = Color(0xFF047857)
-private val LightGreenSurface = Color(0xFFECFDF5)
-private val BorderInactive = Color(0xFFE2E8F0)
-private val TextMain = Color(0xFF0F172A)
-private val TextMuted = Color(0xFF64748B)
+private val BrandPrimary: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
+private val OnBrand: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimary
+private val BrandDeep: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimaryContainer
+private val BrandContainer: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primaryContainer
+private val ScreenBackground: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.background
+private val BorderInactive: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.outlineVariant
+private val TextMain: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurface
+private val TextMuted: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurfaceVariant
+private val CardSurface: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surface
+private val IconWell: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surfaceVariant
 
 @Composable
 fun PlanSummaryScreen(
@@ -60,25 +78,26 @@ fun PlanSummaryScreen(
     onEditPlan: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val haptics = rememberFit10Haptics()
     Scaffold(
-        containerColor = Color(0xFFF8FAF9),
+        containerColor = ScreenBackground,
         bottomBar = {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFFF8FAF9))
+                    .background(ScreenBackground)
                     .padding(horizontal = 20.dp, vertical = 14.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Button(
-                    onClick = onStartWorkout,
+                    onClick = { haptics.perform(HapticKind.Confirm); onStartWorkout() },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
                     shape = RoundedCornerShape(50),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = PrimaryGreen,
-                        contentColor = Color.White
+                        containerColor = BrandPrimary,
+                        contentColor = OnBrand
                     )
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -98,7 +117,7 @@ fun PlanSummaryScreen(
 
                 Spacer(Modifier.height(4.dp))
 
-                TextButton(onClick = onEditPlan) {
+                TextButton(onClick = { haptics.perform(HapticKind.Tick); onEditPlan() }) {
                     Text(
                         text = "Edit Plan & Schedule",
                         fontSize = 13.sp,
@@ -123,14 +142,14 @@ fun PlanSummaryScreen(
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .clip(RoundedCornerShape(50))
-                    .background(LightGreenSurface)
-                    .border(1.dp, PrimaryGreen.copy(alpha = 0.3f), RoundedCornerShape(50))
+                    .background(BrandContainer)
+                    .border(1.dp, BrandPrimary.copy(alpha = 0.3f), RoundedCornerShape(50))
                     .padding(horizontal = 14.dp, vertical = 6.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = "✦ 100% PERSONALIZED • ADAPTIVE AI ENGINE ✦",
-                        color = DarkGreen,
+                        color = BrandDeep,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.5.sp
@@ -163,7 +182,7 @@ fun PlanSummaryScreen(
             // 3. Protocol Card: Fit10 Daily Habit Protocol
             Surface(
                 shape = RoundedCornerShape(18.dp),
-                color = Color.White,
+                color = CardSurface,
                 border = BorderStroke(1.dp, BorderInactive),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -190,7 +209,7 @@ fun PlanSummaryScreen(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(50))
-                                .background(LightGreenSurface)
+                                .background(BrandContainer)
                                 .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -198,12 +217,12 @@ fun PlanSummaryScreen(
                                     modifier = Modifier
                                         .size(6.dp)
                                         .clip(CircleShape)
-                                        .background(PrimaryGreen)
+                                        .background(BrandPrimary)
                                 )
                                 Spacer(Modifier.width(5.dp))
                                 Text(
                                     text = "Active",
-                                    color = DarkGreen,
+                                    color = BrandDeep,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -260,7 +279,7 @@ fun PlanSummaryScreen(
             // 4. Weekly Rhythm Section (Week 1)
             Surface(
                 shape = RoundedCornerShape(18.dp),
-                color = Color.White,
+                color = CardSurface,
                 border = BorderStroke(1.dp, BorderInactive),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -280,7 +299,7 @@ fun PlanSummaryScreen(
                             text = "Week 1",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = PrimaryGreen
+                            color = BrandPrimary
                         )
                     }
 
@@ -308,21 +327,21 @@ fun PlanSummaryScreen(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(if (isToday) PrimaryGreen else if (isWorkout) LightGreenSurface else Color(0xFFF1F5F9))
+                                    .background(if (isToday) BrandPrimary else if (isWorkout) BrandContainer else IconWell)
                                     .padding(horizontal = 7.dp, vertical = 8.dp)
                             ) {
                                 Text(
                                     text = day.first,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isToday) Color.White else if (isWorkout) DarkGreen else TextMuted
+                                    color = if (isToday) OnBrand else if (isWorkout) BrandDeep else TextMuted
                                 )
                                 Spacer(Modifier.height(4.dp))
                                 Text(
                                     text = day.second,
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = if (isToday) Color.White else if (isWorkout) DarkGreen else TextMuted
+                                    color = if (isToday) OnBrand else if (isWorkout) BrandDeep else TextMuted
                                 )
                             }
                         }
@@ -340,7 +359,7 @@ fun PlanSummaryScreen(
                                 modifier = Modifier
                                     .size(6.dp)
                                     .clip(CircleShape)
-                                    .background(PrimaryGreen)
+                                    .background(BrandPrimary)
                             )
                             Spacer(Modifier.width(6.dp))
                             Text(
@@ -354,7 +373,7 @@ fun PlanSummaryScreen(
                             text = "Day 1/28",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = PrimaryGreen
+                            color = BrandPrimary
                         )
                     }
 
@@ -383,14 +402,14 @@ fun PlanSummaryScreen(
                             .fillMaxWidth()
                             .height(6.dp)
                             .clip(RoundedCornerShape(50))
-                            .background(Color(0xFFE2E8F0))
+                            .background(BorderInactive)
                     ) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth(0.25f)
                                 .height(6.dp)
                                 .clip(RoundedCornerShape(50))
-                                .background(PrimaryGreen)
+                                .background(BrandPrimary)
                         )
                     }
 
@@ -408,7 +427,7 @@ fun PlanSummaryScreen(
             // 5. HABIT SCIENCE Callout
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = LightGreenSurface,
+                color = BrandContainer,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -419,13 +438,13 @@ fun PlanSummaryScreen(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(PrimaryGreen),
+                            .background(BrandPrimary),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Psychology,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = OnBrand,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -435,7 +454,7 @@ fun PlanSummaryScreen(
                             text = "HABIT SCIENCE",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = DarkGreen,
+                            color = BrandDeep,
                             letterSpacing = 1.sp
                         )
                         Spacer(Modifier.height(2.dp))
@@ -443,14 +462,14 @@ fun PlanSummaryScreen(
                             text = "\"You're 3.8x more likely to stick with 10-minute micro-habits than exhausting 1-hour sessions.\"",
                             fontSize = 12.5.sp,
                             fontWeight = FontWeight.Medium,
-                            color = DarkGreen,
+                            color = BrandDeep,
                             lineHeight = 17.sp
                         )
                         Spacer(Modifier.height(2.dp))
                         Text(
                             text = "Source: Behavioral Habit Mechanics Lab",
                             fontSize = 10.5.sp,
-                            color = DarkGreen.copy(alpha = 0.8f)
+                            color = BrandDeep.copy(alpha = 0.8f)
                         )
                     }
                 }
@@ -461,7 +480,7 @@ fun PlanSummaryScreen(
             // 6. Coach Maya Card
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = Color.White,
+                color = CardSurface,
                 border = BorderStroke(1.dp, BorderInactive),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -476,7 +495,7 @@ fun PlanSummaryScreen(
                         modifier = Modifier
                             .size(44.dp)
                             .clip(CircleShape)
-                            .border(1.5.dp, PrimaryGreen, CircleShape)
+                            .border(1.5.dp, BrandPrimary, CircleShape)
                     )
                     Spacer(Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
@@ -495,7 +514,7 @@ fun PlanSummaryScreen(
                     Icon(
                         imageVector = Icons.Rounded.ChatBubbleOutline,
                         contentDescription = null,
-                        tint = PrimaryGreen,
+                        tint = BrandPrimary,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -510,7 +529,7 @@ fun PlanSummaryScreen(
 private fun ProtocolStatBox(label: String, value: String, modifier: Modifier = Modifier) {
     Surface(
         shape = RoundedCornerShape(10.dp),
-        color = Color(0xFFF8FAF9),
+        color = ScreenBackground,
         border = BorderStroke(1.dp, BorderInactive),
         modifier = modifier
     ) {

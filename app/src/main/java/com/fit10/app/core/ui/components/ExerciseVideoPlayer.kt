@@ -60,18 +60,27 @@ import com.fit10.app.R
 
 @RawRes
 fun exerciseVideoRes(exerciseId: String): Int = when (exerciseId) {
-    "ex_squats", "ex_wall_sit" -> R.raw.video_squats
-    "ex_push_ups", "ex_wide_push_ups", "ex_diamond_push_ups" -> R.raw.video_pushups
-    "ex_lunges", "ex_reverse_lunges" -> R.raw.video_lunges
-    "ex_mountain_climbers" -> R.raw.video_mountain_climber
-    "ex_high_knees" -> R.raw.video_high_knees
-    "ex_shoulder_taps" -> R.raw.video_shoulder_taps
-    "ex_bird_dog", "ex_cat_cow", "ex_childs_pose" -> R.raw.video_bird_dog
-    "ex_bicycle_crunches" -> R.raw.video_bicycle_crunch
-    "ex_jumping_jacks", "ex_arm_circles" -> R.raw.video_jumping_jacks
-    "ex_glute_bridges", "ex_glute_bridge_march" -> R.raw.video_glute_bridge
-    "ex_plank" -> R.raw.video_plank
-    "ex_superman", "ex_prone_ytw" -> R.raw.video_superman
+    "ex_squats"             -> R.raw.video_squats
+    "ex_wall_sit"           -> R.raw.video_wall_sit
+    "ex_push_ups"           -> R.raw.video_push_ups
+    "ex_wide_push_ups"      -> R.raw.video_wide_push_ups
+    "ex_diamond_push_ups"   -> R.raw.video_diamond_push_ups
+    "ex_lunges"             -> R.raw.video_lunges
+    "ex_reverse_lunges"     -> R.raw.video_reverse_lunges
+    "ex_mountain_climbers"  -> R.raw.video_mountain_climbers
+    "ex_high_knees"         -> R.raw.video_high_knees
+    "ex_shoulder_taps"      -> R.raw.video_shoulder_taps
+    "ex_bird_dog"           -> R.raw.video_bird_dog
+    "ex_cat_cow"            -> R.raw.video_cat_cow
+    "ex_childs_pose"        -> R.raw.video_childs_pose
+    "ex_bicycle_crunches"   -> R.raw.video_bicycle_crunches
+    "ex_glute_bridges"      -> R.raw.video_glute_bridges
+    "ex_glute_bridge_march" -> R.raw.video_glute_bridge_march
+    "ex_plank"              -> R.raw.video_plank
+    "ex_superman"           -> R.raw.video_superman
+    "ex_prone_ytw"          -> R.raw.video_prone_ytw
+    "ex_jumping_jacks"      -> R.raw.video_jumping_jacks
+    "ex_arm_circles"        -> R.raw.video_arm_circles
     else -> R.raw.video_squats
 }
 
@@ -88,7 +97,7 @@ private val OnMedia: Color
     @Composable @ReadOnlyComposable get() = Fit10Theme.extendedColors.onMediaScrim
 
 /**
- * High-definition looping video player demonstration featuring a real human fitness model.
+ * Looping exercise demo clip (animated Fit10 Mom coach, rendered by scripts/exercise_videos).
  *
  * Capabilities:
  *  • Continuous loop playback of exact exercise movements
@@ -203,7 +212,7 @@ fun ExerciseVideoPlayer(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // "HD VIDEO • REAL MODEL" Live Badge
+            // "DEMO • LOOP" badge
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
@@ -220,7 +229,7 @@ fun ExerciseVideoPlayer(
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        text = "HD VIDEO • REAL MODEL",
+                        text = "DEMO • LOOP",
                         color = OnMedia,
                         fontSize = 10.5.sp,
                         fontWeight = FontWeight.Bold,

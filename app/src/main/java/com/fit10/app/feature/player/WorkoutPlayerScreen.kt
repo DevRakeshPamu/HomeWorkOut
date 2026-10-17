@@ -434,7 +434,7 @@ private fun ActiveExercisePlayerView(
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = "🎬 Real Video",
+                        text = "🎬 Video",
                         color = if (!useKineticMotion) MaterialTheme.colorScheme.onPrimary else TextMuted,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
@@ -485,7 +485,7 @@ private fun ActiveExercisePlayerView(
             }
         }
 
-        // Active Demonstration: Real Model Video Demo or Kinetic Skeleton Guide
+        // Active Demonstration: Video Demo or Kinetic Skeleton Guide
         if (useKineticMotion) {
             ExerciseMotionGuide(
                 exerciseId = exercise.id,

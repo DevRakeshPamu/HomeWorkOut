@@ -24,3 +24,7 @@ keystore.properties
 
 # Raw stock footage (unlicensed previews; keep out of the repo)
 scratch_videos/
+
+# Exercise video generator
+scripts/exercise_videos/.venv/
+__pycache__/

@@ -262,7 +262,7 @@ fun ExerciseDetailScreen(
         ) {
             Spacer(Modifier.height(8.dp))
 
-            // Mode Selector: Real Model Motion vs Kinetic Skeleton
+            // Mode Selector: Video Demo vs Kinetic Skeleton
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -271,7 +271,7 @@ fun ExerciseDetailScreen(
                     .padding(3.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // Real Model Video Tab (Default)
+                // Video Demo Tab (Default)
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -290,7 +290,7 @@ fun ExerciseDetailScreen(
                         )
                         Spacer(Modifier.width(5.dp))
                         Text(
-                            text = "🎬 Real Video Demo",
+                            text = "🎬 Video Demo",
                             color = if (!showMotionGuide) OnBrand else TextMuted,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
@@ -328,7 +328,7 @@ fun ExerciseDetailScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // 1. Hero Demonstration Card (Real Model Video or Skeleton Guide)
+            // 1. Hero Demonstration Card (Video Demo or Skeleton Guide)
             if (showMotionGuide) {
                 // Live Biomechanical Motion Guide
                 ExerciseMotionGuide(
@@ -338,7 +338,7 @@ fun ExerciseDetailScreen(
                     onOpenVideoModal = { showVideoPlayerSheet = true }
                 )
             } else {
-                // Real Model HD Video Player
+                // Looping Demo Video Player
                 ExerciseVideoPlayer(
                     exerciseId = exercise.id,
                     exerciseName = exercise.name,

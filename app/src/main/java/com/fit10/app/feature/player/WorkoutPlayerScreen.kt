@@ -1,30 +1,25 @@
 package com.fit10.app.feature.player
 
+import android.net.Uri
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.VideoView
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
-import com.fit10.app.core.ui.components.UserAvatar
-import com.fit10.app.core.feedback.rememberFit10Haptics
-import com.fit10.app.core.feedback.HapticKind
-import com.fit10.app.core.ui.theme.Fit10Theme
-import androidx.compose.runtime.ReadOnlyComposable
-import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -33,90 +28,55 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
-import androidx.compose.material.icons.rounded.FastForward
-import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
-import androidx.compose.material.icons.rounded.VolumeUp
-import androidx.compose.material.icons.rounded.WaterDrop
-import androidx.compose.material.icons.rounded.Animation
-import androidx.compose.material.icons.rounded.Videocam
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import com.fit10.app.core.ui.components.AnimatedExerciseDemo
-import com.fit10.app.core.ui.components.ExerciseMotionGuide
-import com.fit10.app.core.ui.components.ExerciseVideoPlayer
-import com.fit10.app.core.ui.components.ExerciseVideoPlayerSheet
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.fit10.app.R
+import com.fit10.app.core.feedback.HapticKind
+import com.fit10.app.core.feedback.rememberFit10Haptics
+import com.fit10.app.core.ui.components.exerciseVideoRes
+import com.fit10.app.domain.model.WorkoutExercise
 import com.fit10.app.domain.workout.WorkoutSessionState
 
-private val BrandPrimary: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
-private val BrandBright: Color
-    @Composable @ReadOnlyComposable get() = Fit10Theme.extendedColors.brandBright
-private val BrandDeep: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimaryContainer
-private val BrandContainer: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primaryContainer
-private val BorderInactive: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.outlineVariant
-private val TextMain: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurface
-private val TextMuted: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurfaceVariant
-private val CardSurface: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surface
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkoutPlayerScreen(
     viewModel: WorkoutPlayerViewModel,
@@ -124,946 +84,296 @@ fun WorkoutPlayerScreen(
     onExit: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    var showExitDialog by remember { mutableStateOf(false) }
-    var videoModalExercise by remember { mutableStateOf<com.fit10.app.domain.model.Exercise?>(null) }
+    val haptics = rememberFit10Haptics()
+    var showExit by remember { mutableStateOf(false) }
+    var showHurt by remember { mutableStateOf(false) }
 
+    val saved by viewModel.savedResult.collectAsStateWithLifecycle()
+    LaunchedEffect(saved) {
+        saved?.let { onWorkoutFinished(it.sessionId, it.workoutId) }
+    }
     LaunchedEffect(state) {
-        if (state is WorkoutSessionState.Completed) {
-            val completed = state as WorkoutSessionState.Completed
-            onWorkoutFinished(completed.result.sessionId, completed.workout.id)
-        } else if (state is WorkoutSessionState.Abandoned) {
-            onExit()
-        }
+        if (state is WorkoutSessionState.Abandoned) onExit()
     }
 
-    androidx.activity.compose.BackHandler { showExitDialog = true }
+    val paused = state is WorkoutSessionState.Paused
+    val shown = (state as? WorkoutSessionState.Paused)?.frozenState ?: state
 
-    if (showExitDialog) {
+    fun askExit() {
+        if (!paused) viewModel.pause()
+        showExit = true
+    }
+    BackHandler { askExit() }
+
+    if (showExit) {
         AlertDialog(
-            onDismissRequest = { showExitDialog = false },
-            containerColor = CardSurface,
-            shape = RoundedCornerShape(24.dp),
-            title = {
-                Text(
-                    text = "End Workout Early?",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
-                )
-            },
+            onDismissRequest = { showExit = false },
+            title = { Text("End this workout?") },
+            text = { Text("You can start again anytime. Every minute you did still counts for your body.") },
+            confirmButton = { TextButton(onClick = { haptics.perform(HapticKind.Tick); showExit = false; viewModel.abandon() }) { Text("End workout") } },
+            dismissButton = { TextButton(onClick = { showExit = false; viewModel.resume() }) { Text("Keep going") } }
+        )
+    }
+    if (showHurt) {
+        AlertDialog(
+            onDismissRequest = { showHurt = false },
+            title = { Text("Let's stop here") },
             text = {
                 Text(
-                    text = "Your completed exercises will be logged, but the session won't count as fully finished.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextMuted
+                    "Pain, pressure in your pelvis, leaking or bleeding are signs to rest. If it doesn't settle, please talk to your doctor or a women's health physiotherapist."
                 )
             },
-            confirmButton = {
-                TextButton(onClick = {
-                    showExitDialog = false
-                    viewModel.abandon()
-                    onExit()
-                }) {
-                    Text(
-                        "End Workout",
-                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showExitDialog = false }) {
-                    Text(
-                        "Keep Going 💪",
-                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                        color = BrandPrimary
-                    )
-                }
-            }
+            confirmButton = { TextButton(onClick = { showHurt = false; viewModel.abandon() }) { Text("End workout") } },
+            dismissButton = { TextButton(onClick = { showHurt = false; viewModel.resume() }) { Text("I feel okay now") } }
         )
-    }
-
-    // Modal Video Player Sheet
-    videoModalExercise?.let { ex ->
-        ExerciseVideoPlayerSheet(
-            exercise = ex,
-            onDismiss = { videoModalExercise = null }
-        )
-    }
-
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
-                title = {},
-                navigationIcon = {
-                    IconButton(onClick = { showExitDialog = true }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                            contentDescription = "Back",
-                            tint = TextMain
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = {}) {
-                        Icon(imageVector = Icons.Rounded.VolumeUp, contentDescription = "Audio", tint = TextMain)
-                    }
-                    IconButton(onClick = {}) {
-                        Icon(imageVector = Icons.Rounded.MoreVert, contentDescription = "Settings", tint = TextMain)
-                    }
-                    UserAvatar(modifier = Modifier
-                            .padding(end = 12.dp)
-                            .size(34.dp)
-                            .border(2.dp, BrandPrimary, CircleShape))
-                }
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            when (val s = state) {
-                is WorkoutSessionState.Countdown       -> CountdownView(countdown = s)
-                is WorkoutSessionState.ActiveExercise  -> ActiveExercisePlayerView(
-                    state = s, isPaused = false,
-                    onPause = viewModel::pause, onSkip = viewModel::skip, onPrevious = viewModel::previous,
-                    onShowVideo = { ex ->
-                        viewModel.pause()
-                        videoModalExercise = ex
-                    }
-                )
-                is WorkoutSessionState.RestInterval    -> RestIntervalPlayerView(
-                    state = s, onSkipRest = viewModel::skip
-                )
-                is WorkoutSessionState.Paused          -> {
-                    val frozen = s.frozenState
-                    when (frozen) {
-                        is WorkoutSessionState.ActiveExercise -> ActiveExercisePlayerView(
-                            state = frozen, isPaused = true,
-                            onPause = viewModel::resume, onSkip = viewModel::skip, onPrevious = viewModel::previous,
-                            onShowVideo = { ex ->
-                                videoModalExercise = ex
-                            }
-                        )
-                        is WorkoutSessionState.RestInterval   -> RestIntervalPlayerView(
-                            state = frozen, onSkipRest = viewModel::skip
-                        )
-                        else -> Unit
-                    }
-                }
-                else -> Unit
-            }
-        }
-    }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Active Exercise Player
-// ─────────────────────────────────────────────────────────────────────────────
-
-@Composable
-private fun ActiveExercisePlayerView(
-    state: WorkoutSessionState.ActiveExercise,
-    isPaused: Boolean,
-    onPause: () -> Unit,
-    onSkip: () -> Unit,
-    onPrevious: () -> Unit,
-    onShowVideo: (com.fit10.app.domain.model.Exercise) -> Unit
-) {
-    val haptics = rememberFit10Haptics()
-    val totalMoves  = state.workout.exercises.size
-    val currentMove = state.exerciseIndex + 1
-    val exercise    = state.currentExercise.exercise
-    val totalSeconds   = state.totalExerciseSeconds.coerceAtLeast(1)
-    val progressFraction = (state.secondsRemaining.toFloat() / totalSeconds.toFloat()).coerceIn(0f, 1f)
-
-    // Animated progress bar value
-    val animatedProgress by animateFloatAsState(
-        targetValue = progressFraction,
-        animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing),
-        label = "ExerciseProgress"
-    )
-
-    // Button interactions
-    val pauseInteraction = remember { MutableInteractionSource() }
-    val isPausePressed by pauseInteraction.collectIsPressedAsState()
-    val pauseScale by animateFloatAsState(
-        targetValue = if (isPausePressed) 0.94f else 1f,
-        animationSpec = spring(stiffness = Spring.StiffnessHigh),
-        label = "PauseScale"
-    )
-
-    // Motion mode state — default to Coach View (real model photo) per user request
-    var useKineticMotion by remember { mutableStateOf(false) }
-
-    /**
-     * Exhaustive exercise ID → drawable mapping.
-     * Every exercise in the catalog resolves to its unique real-model photo.
-     * Falls back to coach_maya for any unlisted exercise.
-     */
-    val coachImageRes = remember(exercise.id) {
-        when {
-            // Push-up family
-            "ex_push_ups" == exercise.id        -> R.drawable.coach_pushup
-            "ex_wide_push_ups" == exercise.id   -> R.drawable.coach_pushup
-            "ex_diamond_push_ups" == exercise.id -> R.drawable.coach_pushup
-            // Squat family
-            "ex_squats" == exercise.id          -> R.drawable.coach_squat
-            // Lunge family
-            "ex_lunges" == exercise.id          -> R.drawable.exercise_lunge
-            "ex_reverse_lunges" == exercise.id  -> R.drawable.exercise_lunge
-            // Glute bridge family
-            "ex_glute_bridges" == exercise.id       -> R.drawable.exercise_glute_bridge
-            "ex_glute_bridge_march" == exercise.id  -> R.drawable.exercise_glute_bridge
-            // Plank family
-            "ex_plank" == exercise.id           -> R.drawable.exercise_plank
-            // Shoulder taps
-            "ex_shoulder_taps" == exercise.id   -> R.drawable.exercise_shoulder_taps
-            // Mountain Climbers
-            "ex_mountain_climbers" == exercise.id -> R.drawable.exercise_mountain_climber
-            // Bird Dog
-            "ex_bird_dog" == exercise.id        -> R.drawable.exercise_bird_dog
-            // Bicycle Crunches
-            "ex_bicycle_crunches" == exercise.id -> R.drawable.exercise_bicycle_crunch
-            // High Knees
-            "ex_high_knees" == exercise.id      -> R.drawable.exercise_high_knees
-            // Jumping Jacks
-            "ex_jumping_jacks" == exercise.id   -> R.drawable.exercise_jumping_jacks
-            // Superman Hold
-            "ex_superman" == exercise.id        -> R.drawable.exercise_superman
-            // Wall Sit — uses squat image (closest posture match)
-            "ex_wall_sit" == exercise.id        -> R.drawable.coach_squat
-            // Prone YTW — uses superman image (both are prone posterior chain)
-            "ex_prone_ytw" == exercise.id       -> R.drawable.exercise_superman
-            // Arm Circles / Warmup / Mobility / Cooldown
-            else -> R.drawable.coach_maya
-        }
     }
 
     Column(
-        modifier = Modifier
+        Modifier
             .fillMaxSize()
-            .padding(horizontal = 20.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(MaterialTheme.colorScheme.background)
+            .statusBarsPadding()
+            .navigationBarsPadding()
     ) {
-        // Exercise tag + segmented progress
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(50))
-                    .background(BrandContainer)
-                    .padding(horizontal = 12.dp, vertical = 5.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(6.dp)
-                            .clip(CircleShape)
-                            .background(BrandPrimary)
-                    )
-                    Spacer(Modifier.width(6.dp))
-                    Text(
-                        text = "EXERCISE $currentMove OF $totalMoves",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = BrandDeep
-                    )
-                }
+        TopBar(shown, onClose = { haptics.perform(HapticKind.Tick); askExit() })
+
+        AnimatedContent(
+            targetState = shown,
+            contentKey = { it::class to ((it as? WorkoutSessionState.ActiveExercise)?.exerciseIndex ?: (it as? WorkoutSessionState.RestInterval)?.exerciseIndex) },
+            transitionSpec = { (fadeIn(tween(350)) + scaleIn(tween(350), initialScale = 0.97f)) togetherWith fadeOut(tween(200)) },
+            modifier = Modifier.weight(1f),
+            label = "phase"
+        ) { s ->
+            when (s) {
+                is WorkoutSessionState.Countdown -> CountdownView(s)
+                is WorkoutSessionState.ActiveExercise -> ExerciseView(s)
+                is WorkoutSessionState.RestInterval -> RestView(s)
+                else -> Box(Modifier.fillMaxSize())
             }
         }
 
-        Spacer(Modifier.height(10.dp))
-
-        // Segmented progress bar with animated glow
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            for (i in 1..totalMoves) {
-                val isActive   = i == currentMove
-                val isComplete = i < currentMove
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(5.dp)
-                        .clip(RoundedCornerShape(50))
-                        .background(
-                            when {
-                                isActive   -> Brush.horizontalGradient(listOf(BrandPrimary, BrandBright))
-                                isComplete -> Brush.horizontalGradient(listOf(BrandPrimary, BrandPrimary))
-                                else       -> Brush.horizontalGradient(listOf(MaterialTheme.colorScheme.outlineVariant, MaterialTheme.colorScheme.outlineVariant))
-                            }
-                        )
-                )
-            }
-        }
-
-        Spacer(Modifier.height(14.dp))
-
-        // Demonstration Mode Toggle & Video Sheet Trigger
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 10.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(50))
-                    .background(MaterialTheme.colorScheme.outlineVariant)
-                    .padding(2.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(50))
-                        .background(if (!useKineticMotion) BrandPrimary else Color.Transparent)
-                        .clickable { haptics.perform(HapticKind.Tick); useKineticMotion = false }
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = "🎬 Real Video",
-                        color = if (!useKineticMotion) MaterialTheme.colorScheme.onPrimary else TextMuted,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(50))
-                        .background(if (useKineticMotion) BrandPrimary else Color.Transparent)
-                        .clickable { haptics.perform(HapticKind.Tick); useKineticMotion = true }
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = "⚡ Skeleton",
-                        color = if (useKineticMotion) MaterialTheme.colorScheme.onPrimary else TextMuted,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            // Quick "Watch Video Tutorial" pill (pauses workout)
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(50))
-                    .background(BrandContainer)
-                    .border(1.dp, BrandPrimary.copy(alpha = 0.4f), RoundedCornerShape(50))
-                    .clickable {
-                        onShowVideo(exercise)
-                    }
-                    .padding(horizontal = 10.dp, vertical = 5.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Rounded.Videocam,
-                        contentDescription = "Video Guide",
-                        tint = BrandDeep,
-                        modifier = Modifier.size(13.dp)
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text(
-                        text = "Video Masterclass",
-                        color = BrandDeep,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
-
-        // Active Demonstration: Real Model Video Demo or Kinetic Skeleton Guide
-        if (useKineticMotion) {
-            ExerciseMotionGuide(
-                exerciseId = exercise.id,
-                exerciseName = exercise.name,
-                showControls = true,
-                onOpenVideoModal = {
-                    onShowVideo(exercise)
-                }
-            )
-        } else {
-            ExerciseVideoPlayer(
-                exerciseId = exercise.id,
-                exerciseName = exercise.name,
-                coachCue = exercise.tips.firstOrNull() ?: "Keep core braced & joints aligned with steady breathing.",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(235.dp)
-            )
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        // Exercise name row
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(
-                    text = exercise.focusArea.name.replace("_", " ").uppercase(),
-                    fontSize = 10.5.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextMuted,
-                    letterSpacing = 1.sp
-                )
-                Text(
-                    text = exercise.name,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextMain
-                )
-            }
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = BrandContainer
-            ) {
-                Column(
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = "${state.currentExercise.reps ?: 14}", fontSize = 22.sp, fontWeight = FontWeight.Black, color = BrandDeep)
-                    Text(text = "REPS", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = BrandDeep, letterSpacing = 0.8.sp)
-                }
-            }
-        }
-
-        Spacer(Modifier.height(14.dp))
-
-        // Timer card with large countdown
-        Surface(
-            shape = RoundedCornerShape(20.dp),
-            color = CardSurface,
-            shadowElevation = 3.dp,
-            modifier = Modifier.fillMaxWidth()
+        AnimatedVisibility(
+            visible = paused,
+            enter = slideInVertically(spring(dampingRatio = 0.8f)) { it } + fadeIn(),
+            exit = slideOutVertically(tween(200)) { it } + fadeOut()
         ) {
             Column(
-                modifier = Modifier.padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .padding(16.dp)
             ) {
-                Text(
-                    text = "REMAINING",
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextMuted,
-                    letterSpacing = 1.5.sp
-                )
-                Spacer(Modifier.height(4.dp))
-
-                // Large animated timer with cross-fade on digit change
-                val seconds = state.secondsRemaining
-                val formattedTime = String.format("%02d:%02d", seconds / 60, seconds % 60)
-                AnimatedContent(
-                    targetState = formattedTime,
-                    transitionSpec = {
-                        fadeIn(tween(200)) + scaleIn(tween(200), initialScale = 0.9f) togetherWith
-                                fadeOut(tween(150))
-                    },
-                    label = "TimerCrossfade"
-                ) { time ->
-                    Text(
-                        text = time,
-                        fontSize = 52.sp,
-                        fontWeight = FontWeight.Black,
-                        color = TextMain,
-                        letterSpacing = (-2).sp
-                    )
-                }
-
-                Spacer(Modifier.height(2.dp))
-                Text(text = "Pace: 3s Down • 1s Up", fontSize = 12.sp, color = BrandPrimary, fontWeight = FontWeight.SemiBold)
-
-                Spacer(Modifier.height(14.dp))
-
-                // Progress bar
-                val glowColor = MaterialTheme.colorScheme.primary
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(8.dp)
-                        .clip(RoundedCornerShape(50))
-                        .background(MaterialTheme.colorScheme.outlineVariant)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(animatedProgress)
-                            .height(8.dp)
-                            .clip(RoundedCornerShape(50))
-                            .background(
-                                Brush.horizontalGradient(
-                                    colors = listOf(BrandPrimary, BrandBright)
-                                )
-                            )
-                            .drawBehind {
-                                drawRect(
-                                    brush = Brush.horizontalGradient(
-                                        colors = listOf(glowColor.copy(alpha = 0f), glowColor.copy(alpha = 0.27f))
-                                    ),
-                                    topLeft = androidx.compose.ui.geometry.Offset(0f, -4f),
-                                    size = this.size.copy(height = this.size.height + 8f)
-                                )
-                            }
-                    )
-                }
-
-                Spacer(Modifier.height(12.dp))
-
-                // Up Next
-                val nextMove = state.workout.exercises.getOrNull(state.exerciseIndex + 1)?.exercise?.name ?: "Cooldown ✨"
-                Surface(
-                    shape = RoundedCornerShape(50),
-                    color = MaterialTheme.colorScheme.background,
-                    border = BorderStroke(1.dp, BorderInactive),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(text = "Up Next: $nextMove", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = TextMain)
-                        Icon(imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = null, tint = BrandPrimary, modifier = Modifier.size(16.dp))
-                    }
-                }
+                Text("Paused", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Text("Baby needs you? Take your time, we'll wait.", fontSize = 14.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
             }
         }
 
-        Spacer(Modifier.height(20.dp))
-
-        // Controls row — Prev | PAUSE | Skip
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Prev
-            ControlButton(
-                onClick = { haptics.perform(HapticKind.Tick); onPrevious() },
-                modifier = Modifier.weight(0.9f)
-            ) {
-                Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                    Icon(imageVector = Icons.Rounded.SkipPrevious, contentDescription = "Previous", tint = TextMain, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.width(4.dp))
-                    Text(text = "Prev", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextMain)
-                }
-            }
-
-            Spacer(Modifier.width(10.dp))
-
-            // Pause / Resume — gradient with press scale
-            Box(
+        if (shown !is WorkoutSessionState.Countdown) {
+            Controls(
+                paused = paused,
+                isRest = shown is WorkoutSessionState.RestInterval,
+                onPrevious = { haptics.perform(HapticKind.Tick); viewModel.previous() },
+                onTogglePause = { haptics.perform(HapticKind.Soft); if (paused) viewModel.resume() else viewModel.pause() },
+                onNext = { haptics.perform(HapticKind.Tick); viewModel.skip() }
+            )
+            Text(
+                "Something hurts?",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
                 modifier = Modifier
-                    .weight(1.3f)
-                    .height(52.dp)
-                    .scale(pauseScale)
-                    .clip(RoundedCornerShape(50))
-                    .background(Brush.horizontalGradient(listOf(Fit10Theme.extendedColors.brandStrong, BrandPrimary)))
-                    .clickable(interactionSource = pauseInteraction, indication = null, onClick = { haptics.perform(HapticKind.Soft); onPause() }),
-                contentAlignment = Alignment.Center
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = if (isPaused) Icons.Rounded.PlayArrow else Icons.Rounded.Pause,
-                        contentDescription = if (isPaused) "Resume" else "Pause",
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(22.dp)
-                    )
-                    Spacer(Modifier.width(6.dp))
-                    Text(
-                        text = if (isPaused) "RESUME" else "PAUSE",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        letterSpacing = 0.5.sp
-                    )
-                }
-            }
-
-            Spacer(Modifier.width(10.dp))
-
-            // Skip
-            ControlButton(
-                onClick = { haptics.perform(HapticKind.Tick); onSkip() },
-                modifier = Modifier.weight(0.9f)
-            ) {
-                Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "Skip", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextMain)
-                    Spacer(Modifier.width(4.dp))
-                    Icon(imageVector = Icons.Rounded.SkipNext, contentDescription = "Skip", tint = TextMain, modifier = Modifier.size(20.dp))
-                }
-            }
+                    .fillMaxWidth()
+                    .clickable { haptics.perform(HapticKind.Reject); if (!paused) viewModel.pause(); showHurt = true }
+                    .padding(vertical = 14.dp)
+            )
         }
-
-        Spacer(Modifier.height(16.dp))
-
-        // Stats footer
-
-        Spacer(Modifier.height(24.dp))
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Rest & Recover View
-// ─────────────────────────────────────────────────────────────────────────────
-
 @Composable
-private fun RestIntervalPlayerView(
-    state: WorkoutSessionState.RestInterval,
-    onSkipRest: () -> Unit
-) {
-    val haptics = rememberFit10Haptics()
-    var extraSeconds by remember { mutableIntStateOf(0) }
-    val displaySeconds = state.secondsRemaining + extraSeconds
-
-    val progressFraction = (displaySeconds.toFloat() / 20f).coerceIn(0f, 1f)
-    val animatedProgress by animateFloatAsState(
-        targetValue = progressFraction,
-        animationSpec = tween(600, easing = FastOutSlowInEasing),
-        label = "RestProgress"
-    )
-
-    // Infinite pulse on the circle
-    val infiniteTransition = rememberInfiniteTransition(label = "RestPulse")
-    val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.06f,
-        animationSpec = infiniteRepeatable(tween(1000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-        label = "CirclePulse"
-    )
-
-    val skipInteraction = remember { MutableInteractionSource() }
-    val isSkipPressed by skipInteraction.collectIsPressedAsState()
-    val skipScale by animateFloatAsState(
-        targetValue = if (isSkipPressed) 0.96f else 1f,
-        animationSpec = spring(stiffness = Spring.StiffnessHigh),
-        label = "SkipScale"
-    )
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 20.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(Modifier.height(10.dp))
-
-        // PULSE RESET tag
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(50))
-                .background(BrandContainer)
-                .padding(horizontal = 14.dp, vertical = 6.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(BrandPrimary))
-                Spacer(Modifier.width(8.dp))
-                Text(text = "PULSE RESET", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = BrandDeep, letterSpacing = 0.8.sp)
+private fun TopBar(state: WorkoutSessionState, onClose: () -> Unit) {
+    val total = when (state) {
+        is WorkoutSessionState.ActiveExercise -> state.workout.exercises.size
+        is WorkoutSessionState.RestInterval -> state.workout.exercises.size
+        is WorkoutSessionState.Countdown -> state.workout.exercises.size
+        else -> 0
+    }
+    val index = when (state) {
+        is WorkoutSessionState.ActiveExercise -> state.exerciseIndex
+        is WorkoutSessionState.RestInterval -> state.exerciseIndex + 1
+        else -> -1
+    }
+    Row(Modifier.fillMaxWidth().height(56.dp).padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        IconButton(onClick = onClose) { Icon(Icons.Rounded.Close, contentDescription = "End workout") }
+        Spacer(Modifier.weight(1f))
+        if (index >= 0 && total > 0) {
+            Text("${(index + 1).coerceAtMost(total)} of $total", fontSize = 15.sp, fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.width(48.dp))
+    }
+    if (total > 0) {
+        Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            repeat(total) { i ->
+                val done = i < index || (state is WorkoutSessionState.RestInterval && i <= state.exerciseIndex)
+                val current = i == index && state is WorkoutSessionState.ActiveExercise
+                val fill by animateFloatAsState(if (done) 1f else if (current) 0.5f else 0f, tween(400), label = "seg")
+                Box(
+                    Modifier.weight(1f).height(4.dp).clip(CircleShape).background(MaterialTheme.colorScheme.outlineVariant)
+                ) {
+                    Box(Modifier.fillMaxWidth(fill).height(4.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
+                }
             }
         }
+    }
+}
 
-        Spacer(Modifier.height(14.dp))
+@Composable
+private fun CountdownView(s: WorkoutSessionState.Countdown) {
+    Column(Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+        Text("Get ready", fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(12.dp))
+        AnimatedContent(
+            targetState = s.secondsRemaining,
+            transitionSpec = { (scaleIn(spring(dampingRatio = 0.5f), initialScale = 0.6f) + fadeIn()) togetherWith (scaleOut(targetScale = 1.3f) + fadeOut()) },
+            label = "count"
+        ) { n ->
+            Text("$n", fontSize = 120.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        }
+        Spacer(Modifier.height(12.dp))
+        s.workout.exercises.firstOrNull()?.let {
+            Text("First up: ${it.exercise.name}", fontSize = 17.sp, color = MaterialTheme.colorScheme.onBackground)
+        }
+    }
+}
 
-        Text(text = "Rest & Recover", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = TextMain)
+@Composable
+private fun ExerciseView(s: WorkoutSessionState.ActiveExercise) {
+    val ex = s.currentExercise
+    Column(Modifier.fillMaxSize().padding(horizontal = 20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Spacer(Modifier.height(16.dp))
+        ExerciseMedia(ex, Modifier.fillMaxWidth().weight(1f, fill = false).aspectRatio(1f))
+        Spacer(Modifier.height(20.dp))
+        Text(ex.exercise.name, fontSize = 26.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground, textAlign = TextAlign.Center)
         Spacer(Modifier.height(4.dp))
         Text(
-            text = "Superb form! Catch your breath, drop your shoulders, and hydrate.",
-            fontSize = 13.5.sp, color = TextMuted, textAlign = TextAlign.Center, lineHeight = 19.sp
+            ex.reps?.let { "$it reps · at your pace" } ?: "Hold steady, keep breathing",
+            fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-
-        Spacer(Modifier.height(24.dp))
-
-        // Pulsing circular countdown with gradient stroke
-        Box(
-            modifier = Modifier
-                .size(200.dp)
-                .scale(pulseScale),
-            contentAlignment = Alignment.Center
-        ) {
-            // Gradient ring — drawn via Canvas
-            val trackColor = MaterialTheme.colorScheme.outlineVariant
-            val ringColors = listOf(Fit10Theme.extendedColors.brandStrong, BrandBright, Fit10Theme.extendedColors.brandStrong)
-            androidx.compose.foundation.Canvas(modifier = Modifier.size(200.dp)) {
-                val strokeWidth = 14.dp.toPx()
-                val radius = (size.minDimension - strokeWidth) / 2
-
-                // Track ring
-                drawCircle(
-                    color = trackColor,
-                    radius = radius,
-                    style = Stroke(strokeWidth, cap = StrokeCap.Round)
-                )
-                // Progress arc (gradient via rotating sweep)
-                drawArc(
-                    brush = Brush.sweepGradient(
-                        colors = ringColors
-                    ),
-                    startAngle = -90f,
-                    sweepAngle = 360f * animatedProgress,
-                    useCenter = false,
-                    style = Stroke(strokeWidth, cap = StrokeCap.Round)
-                )
-            }
-
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                val formattedTime = String.format("%02d:%02d", displaySeconds / 60, displaySeconds % 60)
-                Text(
-                    text = formattedTime,
-                    fontSize = 42.sp,
-                    fontWeight = FontWeight.Black,
-                    color = TextMain,
-                    letterSpacing = (-1).sp
-                )
-                Text(text = "SECONDS LEFT", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = TextMuted, letterSpacing = 1.5.sp)
-            }
+        cueFor(ex)?.let {
+            Spacer(Modifier.height(10.dp))
+            Text(it, fontSize = 14.sp, lineHeight = 20.sp, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.primary)
         }
-
-        Spacer(Modifier.height(24.dp))
-
-        // Up Next card
-        Surface(
-            shape = RoundedCornerShape(18.dp),
-            color = CardSurface,
-            shadowElevation = 3.dp,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                UserAvatar(modifier = Modifier.size(68.dp).clip(RoundedCornerShape(14.dp)))
-                Spacer(Modifier.width(14.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "UP NEXT", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = BrandPrimary, letterSpacing = 0.8.sp)
-                    Text(text = state.nextExercise.exercise.name, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextMain)
-                    Text(text = "${state.nextExercise.durationSeconds}s • Upper Body & Chest", fontSize = 12.sp, color = TextMuted)
-                    Spacer(Modifier.height(6.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        PillBadge("Low Impact")
-                        PillBadge("Posture Focus")
-                    }
-                }
-            }
-        }
-
-        Spacer(Modifier.height(14.dp))
-
-        // Hydration tip
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = BrandContainer,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                Icon(imageVector = Icons.Rounded.WaterDrop, contentDescription = null, tint = BrandPrimary, modifier = Modifier.size(22.dp))
-                Spacer(Modifier.width(10.dp))
-                Text(text = "Take 3 deep belly breaths and a sip of water before your next push.", fontSize = 12.sp, color = BrandDeep, lineHeight = 17.sp)
-            }
-        }
-
-        Spacer(Modifier.height(20.dp))
-
-        // +10s & Skip Rest buttons
-        Surface(
-            onClick = { haptics.perform(HapticKind.Tick); extraSeconds += 10 },
-            shape = RoundedCornerShape(50),
-            color = CardSurface,
-            border = BorderStroke(1.5.dp, BorderInactive),
-            modifier = Modifier.fillMaxWidth().height(48.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Text(text = "+ 10 sec recovery", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = TextMain)
-            }
-        }
-
-        Spacer(Modifier.height(12.dp))
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp)
-                .scale(skipScale)
-                .clip(RoundedCornerShape(50))
-                .background(Brush.horizontalGradient(listOf(Fit10Theme.extendedColors.brandStrong, BrandPrimary)))
-                .clickable(interactionSource = skipInteraction, indication = null, onClick = { haptics.perform(HapticKind.Confirm); onSkipRest() }),
-            contentAlignment = Alignment.Center
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(imageVector = Icons.Rounded.FastForward, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(8.dp))
-                Text(text = "Skip Rest & Begin", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
-            }
-        }
-
-        Spacer(Modifier.height(28.dp))
+        Spacer(Modifier.height(16.dp))
+        TimerRing(s.secondsRemaining, s.totalExerciseSeconds, 132.dp)
+        Spacer(Modifier.height(8.dp))
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Countdown View
-// ─────────────────────────────────────────────────────────────────────────────
-
 @Composable
-private fun CountdownView(countdown: WorkoutSessionState.Countdown) {
-    val infiniteTransition = rememberInfiniteTransition(label = "CountdownPulse")
-    val outerRingScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue  = 1.15f,
-        animationSpec = infiniteRepeatable(
-            animation   = tween(700, easing = FastOutSlowInEasing),
-            repeatMode  = RepeatMode.Reverse
-        ),
-        label = "OuterRing"
-    )
-    val innerRingScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue  = 1.08f,
-        animationSpec = infiniteRepeatable(
-            animation   = tween(700, easing = FastOutSlowInEasing, delayMillis = 150),
-            repeatMode  = RepeatMode.Reverse
-        ),
-        label = "InnerRing"
-    )
-
+private fun RestView(s: WorkoutSessionState.RestInterval) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
+        Modifier.fillMaxSize().padding(horizontal = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(50))
-                .background(BrandContainer)
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+        Text("Rest", fontSize = 34.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+        Text("Breathe out slowly. Shake it out.", fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(28.dp))
+        TimerRing(s.secondsRemaining, s.totalRestSeconds, 180.dp)
+        Spacer(Modifier.height(32.dp))
+        Row(
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(MaterialTheme.colorScheme.surface).padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "⚡ GET READY", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = BrandDeep, letterSpacing = 1.5.sp)
-        }
-
-        Spacer(modifier = Modifier.height(36.dp))
-
-        // Pulsing concentric rings
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.size(200.dp)
-        ) {
-            // Outer pulse ring
-            Box(
-                modifier = Modifier
-                    .size(200.dp)
-                    .scale(outerRingScale)
-                    .clip(CircleShape)
-                    .background(BrandPrimary.copy(alpha = 0.08f))
-            )
-            // Middle ring
-            Box(
-                modifier = Modifier
-                    .size(165.dp)
-                    .scale(innerRingScale)
-                    .clip(CircleShape)
-                    .background(BrandPrimary.copy(alpha = 0.14f))
-            )
-            // Inner circle with countdown
-            Box(
-                modifier = Modifier
-                    .size(130.dp)
-                    .clip(CircleShape)
-                    .background(
-                        Brush.linearGradient(listOf(Fit10Theme.extendedColors.brandStrong, BrandPrimary))
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                AnimatedContent(
-                    targetState = countdown.secondsRemaining,
-                    transitionSpec = {
-                        (scaleIn(tween(200)) + fadeIn(tween(200))) togetherWith
-                                (scaleOut(tween(150)) + fadeOut(tween(150)))
-                    },
-                    label = "CountdownDigit"
-                ) { count ->
-                    Text(
-                        text = "$count",
-                        fontSize = 72.sp,
-                        fontWeight = FontWeight.Black,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
+            ExerciseMedia(s.nextExercise, Modifier.size(72.dp))
+            Spacer(Modifier.width(14.dp))
+            Column {
+                Text("Up next", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(s.nextExercise.exercise.name, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
             }
         }
+    }
+}
 
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Text(
-            text = countdown.workout.title,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextMain,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        val firstMove = countdown.workout.exercises.firstOrNull()?.exercise?.name ?: "Warmup"
-        Surface(
-            shape = RoundedCornerShape(50),
-            color = MaterialTheme.colorScheme.background,
-            border = BorderStroke(1.dp, BorderInactive)
-        ) {
-            Text(
-                text = "First move: $firstMove",
-                fontSize = 13.sp,
-                color = TextMuted,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-            )
+@Composable
+private fun TimerRing(secondsRemaining: Int, total: Int, size: Dp) {
+    val target = if (total > 0) secondsRemaining / total.toFloat() else 0f
+    val progress by animateFloatAsState(target, tween(1000, easing = LinearEasing), label = "ring")
+    val track = MaterialTheme.colorScheme.outlineVariant
+    val color = MaterialTheme.colorScheme.primary
+    Box(Modifier.size(size), contentAlignment = Alignment.Center) {
+        Canvas(Modifier.fillMaxSize()) {
+            val stroke = Stroke(10.dp.toPx(), cap = StrokeCap.Round)
+            drawArc(track, -90f, 360f, false, style = stroke)
+            drawArc(color, -90f, 360f * progress, false, style = stroke)
         }
+        Text(
+            "%d:%02d".format(secondsRemaining / 60, secondsRemaining % 60),
+            fontSize = (size.value / 4.2f).sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground
+        )
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Shared components
-// ─────────────────────────────────────────────────────────────────────────────
-
 @Composable
-private fun ControlButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.94f else 1f,
-        animationSpec = spring(stiffness = Spring.StiffnessHigh),
-        label = "ControlBtnScale"
-    )
-
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(50),
-        color = CardSurface,
-        border = BorderStroke(1.5.dp, BorderInactive),
-        modifier = modifier.height(52.dp).scale(scale)
+private fun Controls(paused: Boolean, isRest: Boolean, onPrevious: () -> Unit, onTogglePause: () -> Unit, onNext: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().padding(top = 12.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(contentAlignment = Alignment.Center) { content() }
+        RoundButton(Icons.Rounded.SkipPrevious, "Previous", 56.dp, primary = false, onClick = onPrevious)
+        RoundButton(if (paused) Icons.Rounded.PlayArrow else Icons.Rounded.Pause, if (paused) "Resume" else "Pause", 80.dp, primary = true, onClick = onTogglePause)
+        RoundButton(Icons.Rounded.SkipNext, if (isRest) "Skip rest" else "Next", 56.dp, primary = false, onClick = onNext)
     }
 }
 
 @Composable
-private fun PillBadge(text: String) {
+private fun RoundButton(icon: ImageVector, label: String, size: Dp, primary: Boolean, onClick: () -> Unit) {
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val scale by animateFloatAsState(if (pressed) 0.9f else 1f, spring(dampingRatio = 0.5f), label = "btn")
     Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(50))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .padding(horizontal = 9.dp, vertical = 3.dp)
+        Modifier
+            .size(size)
+            .scale(scale)
+            .clip(CircleShape)
+            .background(if (primary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
+            .clickable(interactionSource = interaction, indication = null, onClick = onClick),
+        contentAlignment = Alignment.Center
     ) {
-        Text(text = text, fontSize = 10.5.sp, color = TextMuted, fontWeight = FontWeight.SemiBold)
+        Icon(
+            icon, contentDescription = label,
+            tint = if (primary) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.size(size * 0.45f)
+        )
     }
 }
 
+@Composable
+private fun ExerciseMedia(ex: WorkoutExercise, modifier: Modifier) {
+    val res = remember(ex.exercise.id) { exerciseVideoRes(ex.exercise.id) }
+    Box(modifier.clip(RoundedCornerShape(24.dp)).background(MaterialTheme.colorScheme.surfaceVariant)) {
+        AndroidView(
+            factory = { ctx ->
+                VideoView(ctx).apply {
+                    layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+                }
+            },
+            update = { view ->
+                if (view.tag != res) {
+                    view.tag = res
+                    view.setVideoURI(Uri.parse("android.resource://${view.context.packageName}/$res"))
+                    view.setOnPreparedListener { mp -> mp.isLooping = true; mp.setVolume(0f, 0f); mp.start() }
+                }
+            },
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
+private fun cueFor(ex: WorkoutExercise): String? =
+    ex.exercise.tips.firstOrNull() ?: ex.exercise.instructions.firstOrNull()

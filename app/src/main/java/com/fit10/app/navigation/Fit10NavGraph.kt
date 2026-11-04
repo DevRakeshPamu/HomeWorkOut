@@ -332,6 +332,7 @@ fun Fit10NavGraph(
                 factory = WorkoutPlayerViewModel.provideFactory(
                     workoutId = workoutId,
                     workoutRepository = container.workoutRepository,
+                    historyRepository = container.historyRepository,
                     feedbackCoordinator = container.feedbackCoordinator
                 )
             )

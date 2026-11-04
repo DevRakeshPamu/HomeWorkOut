@@ -1,6 +1,11 @@
 package com.fit10.app.feature.player
 
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import com.fit10.app.domain.model.WorkoutResult
+import com.fit10.app.domain.repository.HistoryRepository
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.fit10.app.core.feedback.WorkoutFeedbackCoordinator
@@ -16,8 +21,12 @@ import kotlinx.coroutines.launch
 class WorkoutPlayerViewModel(
     private val workoutId: String,
     private val workoutRepository: WorkoutRepository,
+    private val historyRepository: HistoryRepository,
     feedbackCoordinator: WorkoutFeedbackCoordinator
 ) : ViewModel() {
+
+    private val _savedResult = MutableStateFlow<WorkoutResult?>(null)
+    val savedResult: StateFlow<WorkoutResult?> = _savedResult.asStateFlow()
 
     private val engine = WorkoutSessionEngine(
         scope = viewModelScope,
@@ -28,6 +37,11 @@ class WorkoutPlayerViewModel(
 
     init {
         loadAndStartWorkout()
+        viewModelScope.launch {
+            val completed = engine.state.filterIsInstance<WorkoutSessionState.Completed>().first()
+            historyRepository.saveWorkoutResult(completed.result)
+            _savedResult.value = completed.result
+        }
     }
 
     private fun loadAndStartWorkout() {
@@ -55,6 +69,7 @@ class WorkoutPlayerViewModel(
         fun provideFactory(
             workoutId: String,
             workoutRepository: WorkoutRepository,
+            historyRepository: HistoryRepository,
             feedbackCoordinator: WorkoutFeedbackCoordinator
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -62,6 +77,7 @@ class WorkoutPlayerViewModel(
                 return WorkoutPlayerViewModel(
                     workoutId,
                     workoutRepository,
+                    historyRepository,
                     feedbackCoordinator
                 ) as T
             }

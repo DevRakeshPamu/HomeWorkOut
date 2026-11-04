@@ -1,1691 +1,526 @@
 package com.fit10.app.feature.onboarding
 
-import com.fit10.app.core.ui.theme.Fit10Theme
-import androidx.compose.runtime.ReadOnlyComposable
-import com.fit10.app.core.feedback.HapticKind
-import com.fit10.app.core.feedback.rememberFit10Haptics
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.automirrored.rounded.ArrowForward
-import androidx.compose.material.icons.automirrored.rounded.DirectionsRun
-import androidx.compose.material.icons.automirrored.rounded.TrendingUp
 import androidx.compose.material.icons.rounded.Bolt
-import androidx.compose.material.icons.rounded.CalendarToday
 import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.ChildCare
+import androidx.compose.material.icons.rounded.DirectionsWalk
+import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FitnessCenter
-import androidx.compose.material.icons.rounded.Lightbulb
-import androidx.compose.material.icons.rounded.RadioButtonChecked
-import androidx.compose.material.icons.rounded.RadioButtonUnchecked
+import androidx.compose.material.icons.rounded.HealthAndSafety
+import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.SelfImprovement
-import androidx.compose.material.icons.rounded.Shield
-import androidx.compose.material.icons.rounded.Speed
-import androidx.compose.material.icons.rounded.Timer
+import androidx.compose.material.icons.rounded.Spa
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.fit10.app.domain.model.Equipment
-import com.fit10.app.domain.model.FitnessGoal
-import com.fit10.app.domain.model.FitnessLevel
-import com.fit10.app.domain.model.FocusArea
-import com.fit10.app.domain.model.IntensityPreference
+import com.fit10.app.core.feedback.HapticKind
+import com.fit10.app.core.feedback.rememberFit10Haptics
+import com.fit10.app.domain.model.BodySignal
+import com.fit10.app.domain.model.ClearanceStatus
+import com.fit10.app.domain.model.DeliveryType
+import com.fit10.app.domain.model.MomGoal
+import com.fit10.app.domain.model.PostpartumProfile
+import com.fit10.app.domain.model.PriorActivity
+import com.fit10.app.domain.model.StartingPoint
+import kotlin.math.roundToInt
 
-private val BrandPrimary: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
-private val BrandStrong: Color
-    @Composable @ReadOnlyComposable get() = Fit10Theme.extendedColors.brandStrong
-private val OnBrand: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimary
-private val BrandDeep: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimaryContainer
-private val BrandContainer: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primaryContainer
-private val BorderInactive: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.outlineVariant
-private val TextMain: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurface
-private val TextMuted: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurfaceVariant
-private val CardSurface: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surface
-private val IconWell: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surfaceVariant
-private val ScreenBackground: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.background
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OnboardingScreen(
     viewModel: OnboardingViewModel,
     onOnboardingFinished: () -> Unit
 ) {
-    val haptics = rememberFit10Haptics()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val haptics = rememberFit10Haptics()
 
     LaunchedEffect(state.isCompleted) {
-        if (state.isCompleted) {
-            onOnboardingFinished()
+        if (state.isCompleted) onOnboardingFinished()
+    }
+    BackHandler(enabled = state.step != OnboardingStep.WELCOME) { viewModel.back() }
+
+    val progress by animateFloatAsState(state.progress, spring(stiffness = 300f), label = "progress")
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .imePadding()
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().height(56.dp).padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(Modifier.size(48.dp)) {
+                if (state.step != OnboardingStep.WELCOME) {
+                    IconButton(onClick = { haptics.perform(HapticKind.Tick); viewModel.back() }) {
+                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            }
+            AnimatedVisibility(
+                visible = state.progress > 0f,
+                modifier = Modifier.weight(1f).padding(end = 20.dp)
+            ) {
+                LinearProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier.fillMaxWidth().height(6.dp).clip(CircleShape),
+                    trackColor = MaterialTheme.colorScheme.outlineVariant,
+                    drawStopIndicator = {}
+                )
+            }
+        }
+
+        AnimatedContent(
+            targetState = state.step,
+            transitionSpec = {
+                val dir = if (state.forward) 1 else -1
+                (slideInHorizontally(tween(320)) { it / 4 * dir } + fadeIn(tween(320)))
+                    .togetherWith(slideOutHorizontally(tween(220)) { -it / 4 * dir } + fadeOut(tween(220)))
+            },
+            modifier = Modifier.weight(1f),
+            label = "step"
+        ) { step ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 24.dp, vertical = 8.dp)
+            ) {
+                StepContent(step, state, viewModel, onSelect = { haptics.perform(HapticKind.Tick) })
+            }
+        }
+
+        if (state.step != OnboardingStep.NOT_PREGNANCY_READY) {
+            PrimaryButton(
+                text = when (state.step) {
+                    OnboardingStep.WELCOME -> "Let's begin"
+                    OnboardingStep.PLAN -> "Start 2-minute breathing"
+                    else -> "Continue"
+                },
+                enabled = state.canContinue && !state.isSaving,
+                onClick = { haptics.perform(HapticKind.Confirm); viewModel.next() }
+            )
         }
     }
+}
 
-    Scaffold(
-        containerColor = ScreenBackground,
-        topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = ScreenBackground),
-                title = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = when (state.step) {
-                                1 -> "Fit10"
-                                2 -> "Activity Level"
-                                3 -> "Fitness Goal"
-                                4 -> "Daily Time Commitment"
-                                5 -> "Home Equipment"
-                                else -> "Personalize Workouts"
-                            },
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = TextMain
-                            )
-                        )
-                    }
-                },
-                navigationIcon = {
-                    if (state.step > 1) {
-                        IconButton(onClick = viewModel::previousStep) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                                contentDescription = "Back",
-                                tint = TextMain
-                            )
-                        }
-                    }
-                },
-                actions = {
-                    TextButton(onClick = viewModel::skipOnboarding) {
-                        Text(
-                            text = "Skip",
-                            color = BrandPrimary,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
-            )
-        },
-        bottomBar = {
-            androidx.compose.material3.Surface(
-                color = CardSurface,
-                shadowElevation = 8.dp,
-                border = androidx.compose.foundation.BorderStroke(1.dp, BorderInactive)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 14.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(54.dp)
-                            .clip(RoundedCornerShape(50))
-                            .background(
-                                if (!state.isLoading)
-                                    androidx.compose.ui.graphics.Brush.horizontalGradient(
-                                        listOf(BrandStrong, BrandPrimary)
-                                    )
-                                else
-                                    androidx.compose.ui.graphics.Brush.horizontalGradient(
-                                        listOf(TextMuted.copy(alpha = 0.38f), TextMuted.copy(alpha = 0.38f))
-                                    )
-                            )
-                            .clickable(enabled = !state.isLoading, onClick = { haptics.perform(HapticKind.Confirm); viewModel.nextStep() }),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (state.isLoading) {
-                            CircularProgressIndicator(
-                                color = OnBrand,
-                                modifier = Modifier.size(24.dp),
-                                strokeWidth = 2.5.dp
-                            )
-                        } else {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = when (state.step) {
-                                        1 -> "Build My Workout"
-                                        6 -> "Continue"
-                                        else -> "Next Step"
-                                    },
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = OnBrand
-                                )
-                                Spacer(Modifier.width(6.dp))
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp),
-                                    tint = OnBrand
-                                )
-                            }
-                        }
-                    }
+@Composable
+private fun StepContent(
+    step: OnboardingStep,
+    state: OnboardingUiState,
+    vm: OnboardingViewModel,
+    onSelect: () -> Unit
+) {
+    val p = state.profile
+    when (step) {
+        OnboardingStep.WELCOME -> WelcomeStep(p.name, vm::setName, vm::next)
 
-                    Spacer(Modifier.height(10.dp))
-
-                    Text(
-                        text = when (state.step) {
-                            1 -> "Already have an account? Sign in"
-                            2 -> "2 of 6 completed • Almost ready to move!"
-                            3 -> "3 of 6 completed • Calibrating plan"
-                            4 -> "You can adjust your time in your profile settings"
-                            5 -> "Step 5 of 6 • You can update equipment anytime in settings"
-                            else -> "Step 6 of 6 • Almost ready to generate your plan"
-                        },
-                        fontSize = 12.sp,
-                        color = TextMuted,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
+        OnboardingStep.PREGNANCY -> Question("First, are you pregnant right now?", "This app is built for after birth.") {
+            Option("No, my baby is here", null, Icons.Rounded.ChildCare, state.isPregnant == false) { onSelect(); vm.setPregnant(false) }
+            Option("Yes, I'm pregnant", null, Icons.Rounded.Favorite, state.isPregnant == true) { onSelect(); vm.setPregnant(true) }
         }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+
+        OnboardingStep.BABY_AGE -> BabyAgeStep(p.babyAgeWeeks, onSelect, vm::setBabyAgeWeeks)
+
+        OnboardingStep.DELIVERY -> Question("How was your baby born?", "C-section recovery needs extra care for your core.") {
+            Option("Vaginal birth", null, null, p.delivery == DeliveryType.VAGINAL) { onSelect(); vm.setDelivery(DeliveryType.VAGINAL) }
+            Option("C-section", null, null, p.delivery == DeliveryType.C_SECTION) { onSelect(); vm.setDelivery(DeliveryType.C_SECTION) }
+            Option("Prefer not to say", "We'll use the gentler C-section plan", null, p.delivery == DeliveryType.PREFER_NOT_TO_SAY) { onSelect(); vm.setDelivery(DeliveryType.PREFER_NOT_TO_SAY) }
+        }
+
+        OnboardingStep.CLEARANCE -> Question(
+            "Has your doctor said it's okay to exercise?",
+            "Usually around ${p.minWeeksBeforeJourney} weeks after birth, but your doctor's advice comes first."
         ) {
-            // Top Step Progress Indicator (Steps 2..6) — gradient filled
-            if (state.step > 1) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    for (i in 1..6) {
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(5.dp)
-                                .clip(RoundedCornerShape(50))
-                                .background(
-                                    if (i <= state.step)
-                                        androidx.compose.ui.graphics.Brush.horizontalGradient(
-                                            listOf(BrandStrong, BrandPrimary)
-                                        )
-                                    else
-                                        androidx.compose.ui.graphics.Brush.horizontalGradient(
-                                            listOf(BorderInactive, BorderInactive)
-                                        )
-                                )
-                        )
-                    }
-                }
+            Option("Yes, I'm cleared", null, null, p.clearance == ClearanceStatus.YES) { onSelect(); vm.setClearance(ClearanceStatus.YES) }
+            Option("Not yet", "We'll start with gentle breathing and posture", null, p.clearance == ClearanceStatus.NOT_YET) { onSelect(); vm.setClearance(ClearanceStatus.NOT_YET) }
+            Option("I'm not sure", "Ask at your next check-up. Gentle basics until then", null, p.clearance == ClearanceStatus.NOT_SURE) { onSelect(); vm.setClearance(ClearanceStatus.NOT_SURE) }
+        }
+
+        OnboardingStep.BODY_CHECK -> Question("Do you notice any of these?", "Choose all that apply. Your answers stay on this phone.") {
+            val signals = listOf(
+                BodySignal.PAIN to "Pain in your belly, scar or pelvis",
+                BodySignal.BLEEDING to "Bleeding that's new or getting heavier",
+                BodySignal.LEAKING to "Leaking when you cough, laugh or jump",
+                BodySignal.HEAVINESS to "Heaviness or pressure in your pelvis",
+                BodySignal.DOMING to "A bulge or gap down the middle of your belly",
+            )
+            signals.forEach { (signal, label) ->
+                Option(label, null, null, signal in p.signals, multi = true) { onSelect(); vm.toggleSignal(signal) }
             }
+            Option("None of these", null, null, state.signalsAnswered && p.signals.isEmpty(), multi = true) { onSelect(); vm.toggleSignal(null) }
+        }
 
-            AnimatedContent(
-                targetState = state.step,
-                transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(180)) },
-                label = "OnboardingStepAnimation"
-            ) { targetStep ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 20.dp)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    Spacer(Modifier.height(12.dp))
+        OnboardingStep.ACTIVITY -> Question("How active were you before pregnancy?", "This sets how fast we build up.") {
+            Option("Not very active", null, Icons.Rounded.SelfImprovement, p.priorActivity == PriorActivity.INACTIVE) { onSelect(); vm.setActivity(PriorActivity.INACTIVE) }
+            Option("Somewhat active", "Walks, yoga, the odd workout", Icons.Rounded.DirectionsWalk, p.priorActivity == PriorActivity.SOMEWHAT_ACTIVE) { onSelect(); vm.setActivity(PriorActivity.SOMEWHAT_ACTIVE) }
+            Option("Very active", "Regular workouts or sport", Icons.Rounded.FitnessCenter, p.priorActivity == PriorActivity.VERY_ACTIVE) { onSelect(); vm.setActivity(PriorActivity.VERY_ACTIVE) }
+        }
 
-                    when (targetStep) {
-                        1 -> WelcomeStep(onStart = viewModel::nextStep)
-                        2 -> FitnessLevelStep(
-                            selected = state.selectedLevel,
-                            onSelect = viewModel::selectLevel
-                        )
-                        3 -> GoalStep(
-                            selected = state.selectedGoal,
-                            onSelect = viewModel::selectGoal
-                        )
-                        4 -> DurationStep(
-                            selectedMinutes = state.targetDurationMinutes,
-                            onSelect = viewModel::selectDuration
-                        )
-                        5 -> EquipmentStep(
-                            selectedEquipment = state.selectedEquipment,
-                            onToggleEquipment = viewModel::toggleEquipment,
-                            avoidList = state.exercisesToAvoid,
-                            onToggleAvoid = viewModel::toggleExerciseToAvoid
-                        )
-                        6 -> PersonalizeStep(
-                            intensity = state.intensityPreference,
-                            onSelectIntensity = viewModel::selectIntensity,
-                            preferredDays = state.preferredDays,
-                            onToggleDay = viewModel::toggleDay,
-                            recovery = state.recoveryPreference,
-                            onSelectRecovery = viewModel::selectRecovery,
-                            focusAreas = state.preferredFocusAreas,
-                            onToggleFocusArea = viewModel::toggleFocusArea
-                        )
-                    }
+        OnboardingStep.GOAL -> Question("What matters most to you right now?", null) {
+            Option("More energy", "Feel less drained through the day", Icons.Rounded.Bolt, p.goal == MomGoal.ENERGY) { onSelect(); vm.setGoal(MomGoal.ENERGY) }
+            Option("A stronger core", "Rebuild from the inside out", Icons.Rounded.Spa, p.goal == MomGoal.CORE_STRENGTH) { onSelect(); vm.setGoal(MomGoal.CORE_STRENGTH) }
+            Option("Less back and neck pain", "From feeding and carrying", Icons.Rounded.SelfImprovement, p.goal == MomGoal.BACK_RELIEF) { onSelect(); vm.setGoal(MomGoal.BACK_RELIEF) }
+            Option("Overall fitness", "Feel like yourself again", Icons.Rounded.FitnessCenter, p.goal == MomGoal.OVERALL_FITNESS) { onSelect(); vm.setGoal(MomGoal.OVERALL_FITNESS) }
+        }
 
-                    Spacer(Modifier.height(24.dp))
-                }
+        OnboardingStep.SCHEDULE -> ScheduleStep(p.daysPerWeek, onSelect, vm::setDaysPerWeek)
+
+        OnboardingStep.PLAN -> PlanStep(p)
+
+        OnboardingStep.NOT_PREGNANCY_READY -> NotForPregnancyStep { vm.back() }
+    }
+}
+
+@Composable
+private fun WelcomeStep(name: String, onNameChange: (String) -> Unit, onDone: () -> Unit) {
+    Spacer(Modifier.height(32.dp))
+    Box(
+        modifier = Modifier.size(72.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(Icons.Rounded.Spa, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(36.dp))
+    }
+    Spacer(Modifier.height(28.dp))
+    Text("Feel like yourself again", fontSize = 32.sp, lineHeight = 38.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+    Spacer(Modifier.height(12.dp))
+    Text(
+        "Safe 10-minute workouts to rebuild your strength and energy after baby. Built around your recovery, your sleep and your day.",
+        fontSize = 16.sp, lineHeight = 24.sp, color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+    Spacer(Modifier.height(32.dp))
+    OutlinedTextField(
+        value = name,
+        onValueChange = onNameChange,
+        label = { Text("What should we call you?") },
+        singleLine = true,
+        shape = RoundedCornerShape(16.dp),
+        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Next),
+        keyboardActions = KeyboardActions(onNext = { onDone() }),
+        modifier = Modifier.fillMaxWidth()
+    )
+    Spacer(Modifier.height(20.dp))
+    Note(Icons.Rounded.Lock, "Private by design. No account, no ads, and your answers never leave this phone.")
+}
+
+@Composable
+private fun BabyAgeStep(weeks: Int, onSelect: () -> Unit, onChange: (Int) -> Unit) {
+    Question("How old is your baby?", "We'll match your plan to where you are in recovery.") {
+        Text(
+            formatBabyAge(weeks),
+            fontSize = 40.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), textAlign = TextAlign.Center
+        )
+        Slider(
+            value = weeks.toFloat(),
+            onValueChange = {
+                val w = it.roundToInt()
+                if (w != weeks) { onSelect(); onChange(w) }
+            },
+            valueRange = 0f..104f
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            listOf(6 to "6 weeks", 13 to "3 months", 26 to "6 months", 52 to "1 year").forEach { (w, label) ->
+                QuickChip(label, weeks == w, Modifier.weight(1f)) { onSelect(); onChange(w) }
             }
         }
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SCREEN 1: Welcome & Benefits
-// ─────────────────────────────────────────────────────────────────────────────
+@Composable
+private fun ScheduleStep(days: Int, onSelect: () -> Unit, onChange: (Int) -> Unit) {
+    Question("How many days a week feels doable?", "10 minutes each. Missed days are okay; 5 a week counts as a full week.") {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+            (3..6).forEach { d ->
+                val selected = d == days
+                val scale by animateFloatAsState(if (selected) 1.08f else 1f, spring(dampingRatio = 0.5f), label = "day")
+                Surface(
+                    onClick = { onSelect(); onChange(d) },
+                    shape = CircleShape,
+                    color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                    border = BorderStroke(1.dp, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant),
+                    modifier = Modifier.weight(1f).height(64.dp).scale(scale)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            "$d", fontSize = 22.sp, fontWeight = FontWeight.Bold,
+                            color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+        Text("days a week", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+    }
+}
 
 @Composable
-private fun WelcomeStep(onStart: () -> Unit) {
-    Column {
-        // Tag badge
+private fun PlanStep(p: PostpartumProfile) {
+    val greeting = p.name.trim().ifBlank { null }?.let { "$it, your plan is ready" } ?: "Your plan is ready"
+    Spacer(Modifier.height(16.dp))
+    Text(greeting, fontSize = 28.sp, lineHeight = 34.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+    Spacer(Modifier.height(20.dp))
+
+    val (title, body) = when (p.startingPoint) {
+        StartingPoint.SEE_DOCTOR -> "Please check with your doctor first" to
+            "Pain or new bleeding should be looked at before exercise. Until then, gentle breathing is safe to try and can help you relax."
+        StartingPoint.GENTLE_BASICS -> "Gentle recovery basics" to
+            "Breathing, pelvic floor and posture, 10 minutes a day. Once your doctor clears you, we'll move you into Phase 1."
+        StartingPoint.PHASE_ONE -> "Phase 1 · Reconnect" to
+            "3 weeks of breathing, deep core and pelvic floor work to rebuild your foundation."
+    }
+    val warning = p.startingPoint == StartingPoint.SEE_DOCTOR
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = if (warning) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(Modifier.padding(20.dp)) {
+            Icon(
+                if (warning) Icons.Rounded.HealthAndSafety else Icons.Rounded.Spa, null,
+                tint = if (warning) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer
+            )
+            Spacer(Modifier.height(10.dp))
+            Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold,
+                color = if (warning) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer)
+            Spacer(Modifier.height(6.dp))
+            Text(body, fontSize = 15.sp, lineHeight = 22.sp,
+                color = if (warning) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer)
+        }
+    }
+    Spacer(Modifier.height(20.dp))
+    PlanPoint("10 minutes, ${p.daysPerWeek} days a week")
+    if (p.avoidImpact) PlanPoint("No jumping or impact until your pelvic floor is ready")
+    if (p.protectCore) PlanPoint("No crunches. Deep core first, to protect your belly")
+    PlanPoint("Every session adapts to how you slept")
+    PlanPoint("Pause anytime. Your progress waits for you")
+    Spacer(Modifier.height(20.dp))
+    Note(Icons.Rounded.SelfImprovement, "Let's start with a 2-minute breathing session. It's the first step of every recovery plan.")
+}
+
+@Composable
+private fun NotForPregnancyStep(onBack: () -> Unit) {
+    Spacer(Modifier.height(40.dp))
+    Icon(Icons.Rounded.Favorite, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(40.dp))
+    Spacer(Modifier.height(20.dp))
+    Text("Congratulations", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+    Spacer(Modifier.height(12.dp))
+    Text(
+        "Fit10 Mom is designed for recovery after birth, so it isn't safe to use during pregnancy. Ask your doctor about exercise that suits you now, and come back after your baby arrives. We'll be here.",
+        fontSize = 16.sp, lineHeight = 24.sp, color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+    Spacer(Modifier.height(28.dp))
+    Button(onClick = onBack, shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth().height(52.dp)) {
+        Text("Go back", fontWeight = FontWeight.SemiBold)
+    }
+}
+
+@Composable
+private fun Question(title: String, subtitle: String?, content: @Composable () -> Unit) {
+    Spacer(Modifier.height(16.dp))
+    Text(title, fontSize = 26.sp, lineHeight = 32.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+    if (subtitle != null) {
+        Spacer(Modifier.height(8.dp))
+        Text(subtitle, fontSize = 15.sp, lineHeight = 22.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+    Spacer(Modifier.height(24.dp))
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) { content() }
+}
+
+@Composable
+private fun Option(
+    title: String,
+    subtitle: String?,
+    icon: ImageVector?,
+    selected: Boolean,
+    multi: Boolean = false,
+    onClick: () -> Unit
+) {
+    val scheme = MaterialTheme.colorScheme
+    val border by animateColorAsState(if (selected) scheme.primary else scheme.outlineVariant, label = "border")
+    val bg by animateColorAsState(if (selected) scheme.primaryContainer else scheme.surface, label = "bg")
+    val width by animateDpAsState(if (selected) 2.dp else 1.dp, label = "width")
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val scale by animateFloatAsState(if (pressed) 0.97f else 1f, spring(dampingRatio = 0.6f), label = "press")
+
+    Surface(
+        shape = RoundedCornerShape(18.dp),
+        color = bg,
+        border = BorderStroke(width, border),
+        modifier = Modifier
+            .fillMaxWidth()
+            .scale(scale)
+            .clip(RoundedCornerShape(18.dp))
+            .clickable(interactionSource = interaction, indication = null, onClick = onClick)
+    ) {
+        Row(Modifier.padding(horizontal = 18.dp, vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (icon != null) {
+                Icon(icon, null, tint = if (selected) scheme.onPrimaryContainer else scheme.primary, modifier = Modifier.size(24.dp))
+                Spacer(Modifier.width(14.dp))
+            }
+            Column(Modifier.weight(1f)) {
+                Text(title, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = if (selected) scheme.onPrimaryContainer else scheme.onSurface)
+                if (subtitle != null) {
+                    Spacer(Modifier.height(2.dp))
+                    Text(subtitle, fontSize = 13.sp, color = if (selected) scheme.onPrimaryContainer else scheme.onSurfaceVariant)
+                }
+            }
+            Spacer(Modifier.width(12.dp))
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .clip(if (multi) RoundedCornerShape(7.dp) else CircleShape)
+                    .background(if (selected) scheme.primary else scheme.surface)
+                    .then(if (selected) Modifier else Modifier.background(scheme.surface)),
+                contentAlignment = Alignment.Center
+            ) {
+                if (selected) Icon(Icons.Rounded.Check, null, tint = scheme.onPrimary, modifier = Modifier.size(16.dp))
+                else Surface(
+                    shape = if (multi) RoundedCornerShape(7.dp) else CircleShape,
+                    color = scheme.surface,
+                    border = BorderStroke(1.5.dp, scheme.outline),
+                    modifier = Modifier.size(24.dp)
+                ) {}
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuickChip(label: String, selected: Boolean, modifier: Modifier, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant),
+        modifier = modifier.height(40.dp)
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(label, fontSize = 12.sp, fontWeight = FontWeight.Medium,
+                color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface)
+        }
+    }
+}
+
+@Composable
+private fun PlanPoint(text: String) {
+    Row(Modifier.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
         Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(50))
-                .background(BrandContainer)
-                .padding(horizontal = 12.dp, vertical = 6.dp)
+            Modifier.size(22.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "⚡ 10-min Workout Routine",
-                color = BrandDeep,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold
-            )
+            Icon(Icons.Rounded.Check, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
         }
-
-        Spacer(Modifier.height(12.dp))
-
-        Text(
-            text = "Get fitter in 10 minutes",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextMain
-        )
-        Spacer(Modifier.height(4.dp))
-        Text(
-            text = "Personalized home workouts that adapt to you.",
-            fontSize = 15.sp,
-            color = TextMuted
-        )
-
-        Spacer(Modifier.height(18.dp))
-
-        // Daily Spark Card
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = CardSurface,
-            border = BorderStroke(1.dp, BorderInactive),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.padding(14.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(BrandContainer),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Bolt,
-                        contentDescription = null,
-                        tint = BrandPrimary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-                Spacer(Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Daily Spark",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp,
-                        color = TextMain
-                    )
-                    Text(
-                        text = "Calibrated for your morning",
-                        fontSize = 13.sp,
-                        color = TextMuted
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(50))
-                        .background(BrandContainer)
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = "10:00",
-                        color = BrandDeep,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        // 4 Value Proposition Cards
-        BenefitRow(
-            icon = Icons.Rounded.Shield,
-            title = "No equipment required",
-            subtitle = "Work out anywhere, anytime with zero gear"
-        )
-        BenefitRow(
-            icon = Icons.Rounded.Speed,
-            title = "Workouts for your level",
-            subtitle = "Paced to your current fitness, never overwhelming"
-        )
-        BenefitRow(
-            icon = Icons.AutoMirrored.Rounded.TrendingUp,
-            title = "Adapts as you improve",
-            subtitle = "Smart progression that evolves with your stamina"
-        )
-        BenefitRow(
-            icon = Icons.Rounded.CalendarToday,
-            title = "Build healthy habits",
-            subtitle = "Short daily sessions that seamlessly fit your schedule"
-        )
-
-        Spacer(Modifier.height(14.dp))
-
-        // Social Proof Stack
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Row(horizontalArrangement = Arrangement.spacedBy((-8).dp)) {
-                Fit10Theme.extendedColors.celebration.take(3).forEach { col ->
-                    Box(
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clip(CircleShape)
-                            .background(col)
-                            .border(1.5.dp, CardSurface, CircleShape)
-                    )
-                }
-            }
-            Spacer(Modifier.width(12.dp))
-            Text(
-                text = "Private, offline, no ads. Built for busy moms",
-                fontSize = 12.5.sp,
-                fontWeight = FontWeight.Medium,
-                color = TextMuted
-            )
-        }
+        Spacer(Modifier.width(12.dp))
+        Text(text, fontSize = 15.sp, color = MaterialTheme.colorScheme.onBackground)
     }
 }
 
 @Composable
-private fun BenefitRow(icon: ImageVector, title: String, subtitle: String) {
-    Surface(
-        shape = RoundedCornerShape(14.dp),
-        color = CardSurface,
-        border = BorderStroke(1.dp, BorderInactive),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 5.dp)
+private fun Note(icon: ImageVector, text: String) {
+    Row(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(IconWell),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = BrandPrimary,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-            Spacer(Modifier.width(12.dp))
-            Column {
-                Text(
-                    text = title,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.5.sp,
-                    color = TextMain
-                )
-                Text(
-                    text = subtitle,
-                    fontSize = 12.5.sp,
-                    color = TextMuted
-                )
-            }
-        }
-    }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SCREEN 2: Fitness Level
-// ─────────────────────────────────────────────────────────────────────────────
-
-@Composable
-private fun FitnessLevelStep(
-    selected: FitnessLevel,
-    onSelect: (FitnessLevel) -> Unit
-) {
-    Column {
-        Text(
-            text = "What's your fitness level?",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextMain
-        )
-        Spacer(Modifier.height(6.dp))
-        Text(
-            text = "This helps us personalize your workouts to build sustainable, lifelong momentum.",
-            fontSize = 14.sp,
-            color = TextMuted,
-            lineHeight = 20.sp
-        )
-
-        Spacer(Modifier.height(18.dp))
-
-        LevelCard(
-            title = "Beginner",
-            subtitle = "Gentle introductory movements to safely wake up muscles and build baseline endurance.",
-            paceLabel = "Low Pace",
-            barsFilled = 1,
-            isSelected = selected == FitnessLevel.BEGINNER,
-            onClick = { onSelect(FitnessLevel.BEGINNER) }
-        )
-
-        LevelCard(
-            title = "Intermediate",
-            badge = "🔥 Most Popular",
-            subtitle = "Balanced mix of strength, cardio intervals, and dynamic movement to challenge you.",
-            paceLabel = "Moderate Pace",
-            barsFilled = 2,
-            isSelected = selected == FitnessLevel.INTERMEDIATE,
-            onClick = { onSelect(FitnessLevel.INTERMEDIATE) }
-        )
-
-        LevelCard(
-            title = "Advanced",
-            subtitle = "High-intensity circuits and targeted progressions to maximize performance and power.",
-            paceLabel = "High Intensity",
-            barsFilled = 3,
-            isSelected = selected == FitnessLevel.ADVANCED,
-            onClick = { onSelect(FitnessLevel.ADVANCED) }
-        )
-
-        Spacer(Modifier.height(12.dp))
-
-        // Tip Card
-        Surface(
-            shape = RoundedCornerShape(14.dp),
-            color = BrandContainer,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.padding(14.dp),
-                verticalAlignment = Alignment.Top
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Lightbulb,
-                    contentDescription = null,
-                    tint = BrandPrimary,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(Modifier.width(10.dp))
-                Text(
-                    text = "Not sure? You can safely adjust your difficulty benchmark or swap out exercises anytime in settings.",
-                    fontSize = 12.5.sp,
-                    color = BrandDeep,
-                    lineHeight = 18.sp
-                )
-            }
-        }
+        Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+        Spacer(Modifier.width(12.dp))
+        Text(text, fontSize = 13.sp, lineHeight = 19.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
 @Composable
-private fun LevelCard(
-    title: String,
-    subtitle: String,
-    paceLabel: String,
-    barsFilled: Int,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    badge: String? = null
-) {
-    val haptics = rememberFit10Haptics()
-    Surface(
-        onClick = { haptics.perform(HapticKind.Tick); onClick() },
-        shape = RoundedCornerShape(16.dp),
-        color = if (isSelected) BrandContainer else CardSurface,
-        border = BorderStroke(
-            width = if (isSelected) 1.8.dp else 1.dp,
-            color = if (isSelected) BrandPrimary else BorderInactive
+private fun PrimaryButton(text: String, enabled: Boolean, onClick: () -> Unit) {
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val scale by animateFloatAsState(if (pressed) 0.96f else 1f, spring(dampingRatio = 0.6f), label = "cta")
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        interactionSource = interaction,
+        shape = RoundedCornerShape(18.dp),
+        colors = ButtonDefaults.buttonColors(
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp)
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp).height(56.dp).scale(scale)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = title,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 17.sp,
-                    color = TextMain
-                )
-                if (badge != null) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(50))
-                            .background(BrandPrimary)
-                            .padding(horizontal = 8.dp, vertical = 3.dp)
-                    ) {
-                        Text(
-                            text = badge,
-                            color = OnBrand,
-                            fontSize = 10.5.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(6.dp))
-
-            Text(
-                text = subtitle,
-                fontSize = 13.sp,
-                color = TextMuted,
-                lineHeight = 18.sp
-            )
-
-            Spacer(Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                // Pace meter bars
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    for (i in 1..3) {
-                        Box(
-                            modifier = Modifier
-                                .width(22.dp)
-                                .height(5.dp)
-                                .clip(RoundedCornerShape(50))
-                                .background(
-                                    if (i <= barsFilled) BrandPrimary else BorderInactive
-                                )
-                        )
-                    }
-                }
-
-                Text(
-                    text = paceLabel,
-                    fontSize = 12.sp,
-                    color = if (isSelected) BrandDeep else TextMuted,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-        }
+        Text(text, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SCREEN 3: Fitness Goal
-// ─────────────────────────────────────────────────────────────────────────────
-
-@Composable
-private fun GoalStep(
-    selected: FitnessGoal,
-    onSelect: (FitnessGoal) -> Unit
-) {
-    Column {
-        Text(
-            text = "What's your goal?",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextMain
-        )
-        Spacer(Modifier.height(6.dp))
-        Text(
-            text = "Choose one to personalize your daily micro-habits.",
-            fontSize = 14.sp,
-            color = TextMuted
-        )
-
-        Spacer(Modifier.height(18.dp))
-
-        GoalRow(
-            goal = FitnessGoal.LOSE_WEIGHT,
-            title = "Lose weight",
-            subtitle = "Burn calories and shed fat with high-efficiency intervals.",
-            icon = Icons.Rounded.Speed,
-            isSelected = selected == FitnessGoal.LOSE_WEIGHT,
-            onClick = { onSelect(FitnessGoal.LOSE_WEIGHT) }
-        )
-
-        GoalRow(
-            goal = FitnessGoal.BUILD_STRENGTH,
-            title = "Build strength",
-            badge = "Recommended",
-            subtitle = "Tone muscle and improve core full-body functional power.",
-            icon = Icons.Rounded.FitnessCenter,
-            isSelected = selected == FitnessGoal.BUILD_STRENGTH,
-            onClick = { onSelect(FitnessGoal.BUILD_STRENGTH) }
-        )
-
-        GoalRow(
-            goal = FitnessGoal.IMPROVE_FITNESS,
-            title = "Improve fitness",
-            subtitle = "Boost daily stamina, heart health, and energy levels.",
-            icon = Icons.Rounded.Bolt,
-            isSelected = selected == FitnessGoal.IMPROVE_FITNESS,
-            onClick = { onSelect(FitnessGoal.IMPROVE_FITNESS) }
-        )
-
-        GoalRow(
-            goal = FitnessGoal.FLEXIBILITY,
-            title = "Improve flexibility",
-            subtitle = "Release tension, improve posture, and feel agile.",
-            icon = Icons.Rounded.SelfImprovement,
-            isSelected = selected == FitnessGoal.FLEXIBILITY,
-            onClick = { onSelect(FitnessGoal.FLEXIBILITY) }
-        )
-
-        GoalRow(
-            goal = FitnessGoal.STAY_ACTIVE,
-            title = "Stay active",
-            subtitle = "Keep moving consistently with enjoyable daily momentum.",
-            icon = Icons.AutoMirrored.Rounded.DirectionsRun,
-            isSelected = selected == FitnessGoal.STAY_ACTIVE,
-            onClick = { onSelect(FitnessGoal.STAY_ACTIVE) }
-        )
-
-        Spacer(Modifier.height(12.dp))
-
-        // Fit10 Adaptive Engine card
-        Surface(
-            shape = RoundedCornerShape(14.dp),
-            color = BrandContainer,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.padding(14.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Lightbulb,
-                    contentDescription = null,
-                    tint = BrandPrimary,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(Modifier.width(10.dp))
-                Column {
-                    Text(
-                        text = "Fit10 Adaptive Engine",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp,
-                        color = BrandDeep
-                    )
-                    Text(
-                        text = "Workouts calibrate dynamically to your choices.",
-                        fontSize = 12.sp,
-                        color = BrandDeep
-                    )
-                }
-            }
-        }
+private fun formatBabyAge(weeks: Int): String = when {
+    weeks == 0 -> "Newborn"
+    weeks < 13 -> if (weeks == 1) "1 week" else "$weeks weeks"
+    weeks < 52 -> "${(weeks / 4.345).roundToInt()} months"
+    weeks < 104 -> {
+        val months = ((weeks - 52) / 4.345).roundToInt()
+        if (months == 0) "1 year" else "1 year $months mo"
     }
-}
-
-@Composable
-private fun GoalRow(
-    goal: FitnessGoal,
-    title: String,
-    subtitle: String,
-    icon: ImageVector,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    badge: String? = null
-) {
-    val haptics = rememberFit10Haptics()
-    Surface(
-        onClick = { haptics.perform(HapticKind.Tick); onClick() },
-        shape = RoundedCornerShape(16.dp),
-        color = if (isSelected) BrandContainer else CardSurface,
-        border = BorderStroke(
-            width = if (isSelected) 1.8.dp else 1.dp,
-            color = if (isSelected) BrandPrimary else BorderInactive
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 5.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(if (isSelected) BrandPrimary else IconWell),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = if (isSelected) OnBrand else BrandPrimary,
-                    modifier = Modifier.size(22.dp)
-                )
-            }
-
-            Spacer(Modifier.width(14.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = title,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 15.5.sp,
-                        color = TextMain
-                    )
-                    if (badge != null) {
-                        Spacer(Modifier.width(8.dp))
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(50))
-                                .background(BrandPrimary)
-                                .padding(horizontal = 7.dp, vertical = 2.dp)
-                        ) {
-                            Text(
-                                text = badge,
-                                color = OnBrand,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    text = subtitle,
-                    fontSize = 12.5.sp,
-                    color = TextMuted,
-                    lineHeight = 17.sp
-                )
-            }
-
-            if (isSelected) {
-                Spacer(Modifier.width(8.dp))
-                Icon(
-                    imageVector = Icons.Rounded.CheckCircle,
-                    contentDescription = "Selected",
-                    tint = BrandPrimary,
-                    modifier = Modifier.size(22.dp)
-                )
-            }
-        }
-    }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SCREEN 4: Time Commitment
-// ─────────────────────────────────────────────────────────────────────────────
-
-@Composable
-private fun DurationStep(
-    selectedMinutes: Int,
-    onSelect: (Int) -> Unit
-) {
-    Column {
-        Text(
-            text = "How much time do you have?",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextMain
-        )
-        Spacer(Modifier.height(6.dp))
-        Text(
-            text = "Even 5 minutes can make a noticeable difference.",
-            fontSize = 14.sp,
-            color = TextMuted
-        )
-
-        Spacer(Modifier.height(18.dp))
-
-        DurationCard(
-            minutes = 5,
-            tag = "Quick Energizer",
-            subtitle = "Fast reset between tasks or a crisp morning kickoff.",
-            isSelected = selectedMinutes == 5,
-            onClick = { onSelect(5) }
-        )
-
-        DurationCard(
-            minutes = 10,
-            tag = null,
-            badge = "FIT10 SIGNATURE",
-            subtitle = "The scientifically proven sweet spot for daily consistency and sustained metabolic boost.",
-            socialStat = "Chosen by 81% of new members",
-            isSelected = selectedMinutes == 10,
-            onClick = { onSelect(10) }
-        )
-
-        DurationCard(
-            minutes = 15,
-            tag = "Balanced Burn",
-            subtitle = "Deeper strength building, steady calorie burn, and muscle conditioning.",
-            isSelected = selectedMinutes == 15,
-            onClick = { onSelect(15) }
-        )
-
-        DurationCard(
-            minutes = 20,
-            tag = "Full Sweat",
-            subtitle = "Comprehensive full-body burn complete with dynamic warmup and cool-down.",
-            isSelected = selectedMinutes == 20,
-            onClick = { onSelect(20) }
-        )
-
-        DurationCard(
-            minutes = 30,
-            tag = "Max Performance",
-            subtitle = "High-intensity exercise targets for maximum cardiovascular endurance.",
-            isSelected = selectedMinutes == 30,
-            onClick = { onSelect(30) }
-        )
-
-        Spacer(Modifier.height(12.dp))
-
-        // Habit Science insight card
-        Surface(
-            shape = RoundedCornerShape(14.dp),
-            color = BrandContainer,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(modifier = Modifier.padding(14.dp)) {
-                Text(
-                    text = "HABIT SCIENCE",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = BrandPrimary,
-                    letterSpacing = 1.sp
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = "Fit10 members who commit to 10 minutes daily are 3.4x more likely to maintain their streak after 90 days.",
-                    fontSize = 12.5.sp,
-                    color = BrandDeep,
-                    lineHeight = 18.sp
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun DurationCard(
-    minutes: Int,
-    subtitle: String,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    tag: String? = null,
-    badge: String? = null,
-    socialStat: String? = null
-) {
-    val haptics = rememberFit10Haptics()
-    Surface(
-        onClick = { haptics.perform(HapticKind.Tick); onClick() },
-        shape = RoundedCornerShape(16.dp),
-        color = if (isSelected) BrandContainer else CardSurface,
-        border = BorderStroke(
-            width = if (isSelected) 1.8.dp else 1.dp,
-            color = if (isSelected) BrandPrimary else BorderInactive
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 5.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = if (isSelected) Icons.Rounded.RadioButtonChecked else Icons.Rounded.RadioButtonUnchecked,
-                        contentDescription = null,
-                        tint = if (isSelected) BrandPrimary else TextMuted,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(Modifier.width(10.dp))
-                    Text(
-                        text = "$minutes minutes",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = TextMain
-                    )
-                    if (tag != null) {
-                        Text(
-                            text = " • $tag",
-                            fontSize = 13.sp,
-                            color = TextMuted,
-                            fontWeight = FontWeight.Normal
-                        )
-                    }
-                }
-
-                if (badge != null) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(50))
-                            .background(BrandPrimary)
-                            .padding(horizontal = 8.dp, vertical = 3.dp)
-                    ) {
-                        Text(
-                            text = badge,
-                            color = OnBrand,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(6.dp))
-
-            Text(
-                text = subtitle,
-                fontSize = 13.sp,
-                color = TextMuted,
-                lineHeight = 18.sp
-            )
-
-            if (socialStat != null) {
-                Spacer(Modifier.height(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(6.dp)
-                            .clip(CircleShape)
-                            .background(BrandPrimary)
-                    )
-                    Spacer(Modifier.width(6.dp))
-                    Text(
-                        text = socialStat,
-                        color = BrandDeep,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
-        }
-    }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SCREEN 5: Equipment & Exercises to Avoid
-// ─────────────────────────────────────────────────────────────────────────────
-
-@Composable
-private fun EquipmentStep(
-    selectedEquipment: Set<Equipment>,
-    onToggleEquipment: (Equipment) -> Unit,
-    avoidList: Set<String>,
-    onToggleAvoid: (String) -> Unit
-) {
-    val haptics = rememberFit10Haptics()
-    Column {
-        Text(
-            text = "What do you have at home?",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextMain
-        )
-        Spacer(Modifier.height(6.dp))
-        Text(
-            text = "Select all the equipment you have available for your micro-sessions.",
-            fontSize = 14.sp,
-            color = TextMuted
-        )
-
-        Spacer(Modifier.height(16.dp))
-
-        EquipmentCheckRow(
-            title = "No equipment",
-            subtitle = "Bodyweight only — perfect for anywhere",
-            icon = Icons.AutoMirrored.Rounded.DirectionsRun,
-            isSelected = selectedEquipment.contains(Equipment.NONE),
-            onClick = { onToggleEquipment(Equipment.NONE) }
-        )
-
-        EquipmentCheckRow(
-            title = "Yoga mat",
-            subtitle = "Comfort for floor exercises & mobility",
-            icon = Icons.Rounded.SelfImprovement,
-            isSelected = selectedEquipment.contains(Equipment.MAT),
-            onClick = { onToggleEquipment(Equipment.MAT) }
-        )
-
-        EquipmentCheckRow(
-            title = "Dumbbells",
-            subtitle = "Light to medium hand weights",
-            icon = Icons.Rounded.FitnessCenter,
-            isSelected = selectedEquipment.contains(Equipment.DUMBBELLS),
-            onClick = { onToggleEquipment(Equipment.DUMBBELLS) }
-        )
-
-        EquipmentCheckRow(
-            title = "Resistance bands",
-            subtitle = "Versatile loop or tube bands",
-            icon = Icons.Rounded.Speed,
-            isSelected = selectedEquipment.contains(Equipment.RESISTANCE_BANDS),
-            onClick = { onToggleEquipment(Equipment.RESISTANCE_BANDS) }
-        )
-
-        Spacer(Modifier.height(10.dp))
-
-        // 10-Min Session Highlight
-        Surface(
-            shape = RoundedCornerShape(14.dp),
-            color = BrandContainer,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.padding(14.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(BrandPrimary),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Bolt,
-                        contentDescription = null,
-                        tint = OnBrand,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                Spacer(Modifier.width(12.dp))
-                Column {
-                    Text(
-                        text = "Every session is 10 minutes",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        color = BrandDeep
-                    )
-                    Text(
-                        text = "We adapt rest intervals and intensity to your exact gear.",
-                        fontSize = 12.sp,
-                        color = BrandDeep
-                    )
-                }
-            }
-        }
-
-        Spacer(Modifier.height(18.dp))
-
-        // Exercises to avoid section
-        Text(
-            text = "Exercises to avoid",
-            fontWeight = FontWeight.Bold,
-            fontSize = 16.sp,
-            color = TextMain
-        )
-        Text(
-            text = "We'll tailor your routines to protect joints and prevent pain.",
-            fontSize = 13.sp,
-            color = TextMuted
-        )
-
-        Spacer(Modifier.height(10.dp))
-
-        val avoidOptions = listOf("None", "Jumping", "Knee-intensive", "High-impact", "Back-intensive")
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            avoidOptions.forEach { option ->
-                val isSelected = avoidList.contains(option)
-                Surface(
-                    onClick = { haptics.perform(HapticKind.Tick); onToggleAvoid(option) },
-                    shape = RoundedCornerShape(50),
-                    color = if (isSelected) BrandContainer else CardSurface,
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color = if (isSelected) BrandPrimary else BorderInactive
-                    )
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = if (isSelected) Icons.Rounded.Check else Icons.Rounded.Close,
-                            contentDescription = null,
-                            tint = if (isSelected) BrandPrimary else TextMuted,
-                            modifier = Modifier.size(15.dp)
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        Text(
-                            text = option,
-                            fontSize = 13.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isSelected) BrandDeep else TextMain
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun EquipmentCheckRow(
-    title: String,
-    subtitle: String,
-    icon: ImageVector,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    val haptics = rememberFit10Haptics()
-    Surface(
-        onClick = { haptics.perform(HapticKind.Tick); onClick() },
-        shape = RoundedCornerShape(16.dp),
-        color = if (isSelected) BrandContainer else CardSurface,
-        border = BorderStroke(
-            width = if (isSelected) 1.8.dp else 1.dp,
-            color = if (isSelected) BrandPrimary else BorderInactive
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 5.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(38.dp)
-                    .clip(CircleShape)
-                    .background(IconWell),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = BrandPrimary,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-
-            Spacer(Modifier.width(14.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.5.sp,
-                    color = TextMain
-                )
-                Text(
-                    text = subtitle,
-                    fontSize = 12.5.sp,
-                    color = TextMuted
-                )
-            }
-
-            if (isSelected) {
-                Box(
-                    modifier = Modifier
-                        .size(22.dp)
-                        .clip(CircleShape)
-                        .background(BrandPrimary),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Check,
-                        contentDescription = "Selected",
-                        tint = OnBrand,
-                        modifier = Modifier.size(14.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SCREEN 6: Personalization
-// ─────────────────────────────────────────────────────────────────────────────
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun PersonalizeStep(
-    intensity: IntensityPreference,
-    onSelectIntensity: (IntensityPreference) -> Unit,
-    preferredDays: Set<Int>,
-    onToggleDay: (Int) -> Unit,
-    recovery: String,
-    onSelectRecovery: (String) -> Unit,
-    focusAreas: Set<FocusArea>,
-    onToggleFocusArea: (FocusArea) -> Unit
-) {
-    val haptics = rememberFit10Haptics()
-    Column {
-        Text(
-            text = "Let's personalize your workouts",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextMain
-        )
-        Spacer(Modifier.height(4.dp))
-        Text(
-            text = "Fine-tune your training style to match your daily rhythm and body needs.",
-            fontSize = 14.sp,
-            color = TextMuted
-        )
-
-        Spacer(Modifier.height(20.dp))
-
-        // 1. Workout intensity preference
-        Text(
-            text = "Workout intensity preference",
-            fontWeight = FontWeight.Bold,
-            fontSize = 15.5.sp,
-            color = TextMain
-        )
-        Text(
-            text = "Paced that aligns with your energy bandwidth",
-            fontSize = 12.5.sp,
-            color = TextMuted
-        )
-        Spacer(Modifier.height(10.dp))
-
-        IntensityChoiceCard(
-            title = "Gentle",
-            subtitle = "Low-impact, mindful pacing",
-            isSelected = intensity == IntensityPreference.EASY,
-            onClick = { onSelectIntensity(IntensityPreference.EASY) }
-        )
-        IntensityChoiceCard(
-            title = "Moderate",
-            subtitle = "Steady calorie burn & toning",
-            isSelected = intensity == IntensityPreference.MODERATE,
-            onClick = { onSelectIntensity(IntensityPreference.MODERATE) }
-        )
-        IntensityChoiceCard(
-            title = "High Energy",
-            subtitle = "Quick peak heart-rate intervals",
-            isSelected = intensity == IntensityPreference.CHALLENGING,
-            onClick = { onSelectIntensity(IntensityPreference.CHALLENGING) }
-        )
-
-        Spacer(Modifier.height(20.dp))
-
-        // 2. Preferred workout days
-        Text(
-            text = "Preferred workout days",
-            fontWeight = FontWeight.Bold,
-            fontSize = 15.5.sp,
-            color = TextMain
-        )
-        Text(
-            text = "Select the days you are ready for a 10-minute micro-session",
-            fontSize = 12.5.sp,
-            color = TextMuted
-        )
-        Spacer(Modifier.height(12.dp))
-
-        val daysOfWeek = listOf("M", "T", "W", "T", "F", "S", "S")
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            daysOfWeek.forEachIndexed { index, label ->
-                val dayNum = index + 1
-                val isSelected = preferredDays.contains(dayNum)
-                Box(
-                    modifier = Modifier
-                        .size(42.dp)
-                        .clip(CircleShape)
-                        .background(if (isSelected) BrandPrimary else CardSurface)
-                        .border(1.dp, if (isSelected) BrandPrimary else BorderInactive, CircleShape)
-                        .clickable { haptics.perform(HapticKind.Tick); onToggleDay(dayNum) },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = label,
-                        color = if (isSelected) OnBrand else TextMain,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp
-                    )
-                }
-            }
-        }
-        Spacer(Modifier.height(6.dp))
-        Text(
-            text = "${preferredDays.size} days selected • Optimal for habit formation",
-            fontSize = 12.sp,
-            color = BrandDeep,
-            fontWeight = FontWeight.Medium
-        )
-
-        Spacer(Modifier.height(20.dp))
-
-        // 3. Recovery preference
-        Text(
-            text = "Recovery preference",
-            fontWeight = FontWeight.Bold,
-            fontSize = 15.5.sp,
-            color = TextMain
-        )
-        Text(
-            text = "How you rest on off-days",
-            fontSize = 12.5.sp,
-            color = TextMuted
-        )
-        Spacer(Modifier.height(10.dp))
-
-        RecoveryCard(
-            title = "Active Recovery",
-            subtitle = "Light mobility & guided breathwork on rest days",
-            isSelected = recovery == "ACTIVE_RECOVERY",
-            onClick = { onSelectRecovery("ACTIVE_RECOVERY") }
-        )
-        RecoveryCard(
-            title = "Complete Rest",
-            subtitle = "No scheduled movement or reminders",
-            isSelected = recovery == "COMPLETE_REST",
-            onClick = { onSelectRecovery("COMPLETE_REST") }
-        )
-
-        Spacer(Modifier.height(20.dp))
-
-        // 4. Focus areas
-        Text(
-            text = "Focus areas",
-            fontWeight = FontWeight.Bold,
-            fontSize = 15.5.sp,
-            color = TextMain
-        )
-        Text(
-            text = "Choose where you want to feel the strongest",
-            fontSize = 12.5.sp,
-            color = TextMuted
-        )
-        Spacer(Modifier.height(10.dp))
-
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            FocusArea.entries.forEach { area ->
-                val isSelected = focusAreas.contains(area)
-                val label = when (area) {
-                    FocusArea.FULL_BODY -> "Full Body"
-                    FocusArea.CORE -> "Core"
-                    FocusArea.UPPER_BODY -> "Upper Body"
-                    FocusArea.LOWER_BODY -> "Lower Body"
-                    FocusArea.MOBILITY -> "Mobility"
-                }
-                Surface(
-                    onClick = { haptics.perform(HapticKind.Tick); onToggleFocusArea(area) },
-                    shape = RoundedCornerShape(50),
-                    color = if (isSelected) BrandContainer else CardSurface,
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color = if (isSelected) BrandPrimary else BorderInactive
-                    )
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (isSelected) {
-                            Icon(
-                                imageVector = Icons.Rounded.Check,
-                                contentDescription = null,
-                                tint = BrandPrimary,
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Spacer(Modifier.width(6.dp))
-                        }
-                        Text(
-                            text = label,
-                            fontSize = 13.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isSelected) BrandDeep else TextMain
-                        )
-                    }
-                }
-            }
-        }
-
-        Spacer(Modifier.height(18.dp))
-
-        // 5. Adaptive Micro-Cycles Info Banner
-        Surface(
-            shape = RoundedCornerShape(14.dp),
-            color = BrandContainer,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.padding(14.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(BrandPrimary),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Bolt,
-                        contentDescription = null,
-                        tint = OnBrand,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                Spacer(Modifier.width(12.dp))
-                Column {
-                    Text(
-                        text = "Adaptive Micro-Cycles",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp,
-                        color = BrandDeep
-                    )
-                    Text(
-                        text = "Fit10 modulates workout intensity automatically if your sleep or recovery signals low readiness.",
-                        fontSize = 12.sp,
-                        color = BrandDeep,
-                        lineHeight = 17.sp
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun IntensityChoiceCard(
-    title: String,
-    subtitle: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    val haptics = rememberFit10Haptics()
-    Surface(
-        onClick = { haptics.perform(HapticKind.Tick); onClick() },
-        shape = RoundedCornerShape(14.dp),
-        color = if (isSelected) BrandContainer else CardSurface,
-        border = BorderStroke(
-            width = if (isSelected) 1.8.dp else 1.dp,
-            color = if (isSelected) BrandPrimary else BorderInactive
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = if (isSelected) Icons.Rounded.RadioButtonChecked else Icons.Rounded.RadioButtonUnchecked,
-                contentDescription = null,
-                tint = if (isSelected) BrandPrimary else TextMuted,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(Modifier.width(12.dp))
-            Column {
-                Text(
-                    text = title,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
-                    color = TextMain
-                )
-                Text(
-                    text = subtitle,
-                    fontSize = 12.5.sp,
-                    color = TextMuted
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun RecoveryCard(
-    title: String,
-    subtitle: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    val haptics = rememberFit10Haptics()
-    Surface(
-        onClick = { haptics.perform(HapticKind.Tick); onClick() },
-        shape = RoundedCornerShape(14.dp),
-        color = if (isSelected) BrandContainer else CardSurface,
-        border = BorderStroke(
-            width = if (isSelected) 1.8.dp else 1.dp,
-            color = if (isSelected) BrandPrimary else BorderInactive
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = if (isSelected) Icons.Rounded.RadioButtonChecked else Icons.Rounded.RadioButtonUnchecked,
-                contentDescription = null,
-                tint = if (isSelected) BrandPrimary else TextMuted,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(Modifier.width(12.dp))
-            Column {
-                Text(
-                    text = title,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
-                    color = TextMain
-                )
-                Text(
-                    text = subtitle,
-                    fontSize = 12.5.sp,
-                    color = TextMuted
-                )
-            }
-        }
-    }
+    else -> "2 years+"
 }

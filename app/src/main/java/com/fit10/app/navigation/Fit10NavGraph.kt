@@ -21,6 +21,7 @@ import com.fit10.app.feature.history.HistoryViewModel
 import com.fit10.app.feature.home.HomeScreen
 import com.fit10.app.feature.home.HomeViewModel
 import com.fit10.app.feature.onboarding.OnboardingScreen
+import com.fit10.app.feature.breathing.BreathingSessionScreen
 import com.fit10.app.feature.onboarding.OnboardingViewModel
 import com.fit10.app.feature.plan.PlanSummaryScreen
 import com.fit10.app.feature.player.WorkoutPlayerScreen
@@ -74,13 +75,23 @@ fun Fit10NavGraph(
 
         composable(Fit10Destination.Onboarding.route) {
             val viewModel: OnboardingViewModel = viewModel(
-                factory = OnboardingViewModel.provideFactory(container.userRepository)
+                factory = OnboardingViewModel.provideFactory(container.userRepository, container.preferencesDataSource)
             )
             OnboardingScreen(
                 viewModel = viewModel,
                 onOnboardingFinished = {
-                    navController.navigate(Fit10Destination.PlanSummary.route) {
+                    navController.navigate(Fit10Destination.Breathing.route) {
                         popUpTo(Fit10Destination.Onboarding.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Fit10Destination.Breathing.route) {
+            BreathingSessionScreen(
+                onFinished = {
+                    navController.navigate(Fit10Destination.Home.route) {
+                        popUpTo(Fit10Destination.Breathing.route) { inclusive = true }
                     }
                 }
             )

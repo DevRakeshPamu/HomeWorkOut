@@ -4,6 +4,7 @@ sealed class Fit10Destination(val route: String) {
     object Splash : Fit10Destination("splash")
     object Onboarding : Fit10Destination("onboarding")
     object PlanSummary : Fit10Destination("plan_summary")
+    object Breathing : Fit10Destination("breathing")
     object Home : Fit10Destination("home")
     object Explore : Fit10Destination("explore")
     object History : Fit10Destination("history")

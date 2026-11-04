@@ -3,11 +3,17 @@ package com.fit10.app.feature.onboarding
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.fit10.app.domain.model.Equipment
+import com.fit10.app.data.preferences.UserPreferencesDataSource
+import com.fit10.app.domain.model.BodySignal
+import com.fit10.app.domain.model.ClearanceStatus
+import com.fit10.app.domain.model.DeliveryType
 import com.fit10.app.domain.model.FitnessGoal
 import com.fit10.app.domain.model.FitnessLevel
 import com.fit10.app.domain.model.FocusArea
 import com.fit10.app.domain.model.IntensityPreference
+import com.fit10.app.domain.model.MomGoal
+import com.fit10.app.domain.model.PostpartumProfile
+import com.fit10.app.domain.model.PriorActivity
 import com.fit10.app.domain.model.UserProfile
 import com.fit10.app.domain.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,161 +23,132 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.UUID
 
+enum class OnboardingStep {
+    WELCOME, PREGNANCY, BABY_AGE, DELIVERY, CLEARANCE, BODY_CHECK, ACTIVITY, GOAL, SCHEDULE, PLAN, NOT_PREGNANCY_READY;
+
+    companion object {
+        val questionSteps = listOf(PREGNANCY, BABY_AGE, DELIVERY, CLEARANCE, BODY_CHECK, ACTIVITY, GOAL, SCHEDULE)
+    }
+}
+
 data class OnboardingUiState(
-    val step: Int = 1, // 1..6
-    val selectedLevel: FitnessLevel = FitnessLevel.INTERMEDIATE,
-    val selectedGoal: FitnessGoal = FitnessGoal.BUILD_STRENGTH,
-    val targetDurationMinutes: Int = 10,
-    val selectedEquipment: Set<Equipment> = setOf(Equipment.NONE),
-    val exercisesToAvoid: Set<String> = setOf("None"),
-    val intensityPreference: IntensityPreference = IntensityPreference.MODERATE,
-    val preferredDays: Set<Int> = setOf(1, 2, 3, 4, 5), // Mon-Fri
-    val recoveryPreference: String = "ACTIVE_RECOVERY", // ACTIVE_RECOVERY, COMPLETE_REST
-    val preferredFocusAreas: Set<FocusArea> = setOf(FocusArea.FULL_BODY, FocusArea.CORE),
-    val isLoading: Boolean = false,
-    val isCompleted: Boolean = false
-)
+    val step: OnboardingStep = OnboardingStep.WELCOME,
+    val profile: PostpartumProfile = PostpartumProfile(),
+    val isPregnant: Boolean? = null,
+    val signalsAnswered: Boolean = false,
+    val forward: Boolean = true,
+    val isSaving: Boolean = false,
+    val isCompleted: Boolean = false,
+) {
+    val progress: Float
+        get() {
+            val index = OnboardingStep.questionSteps.indexOf(step)
+            return when {
+                step == OnboardingStep.PLAN -> 1f
+                index < 0 -> 0f
+                else -> (index + 1f) / (OnboardingStep.questionSteps.size + 1)
+            }
+        }
+
+    val canContinue: Boolean
+        get() = when (step) {
+            OnboardingStep.PREGNANCY -> isPregnant != null
+            OnboardingStep.BODY_CHECK -> signalsAnswered
+            else -> true
+        }
+}
 
 class OnboardingViewModel(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val preferences: UserPreferencesDataSource,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(OnboardingUiState())
     val uiState: StateFlow<OnboardingUiState> = _uiState.asStateFlow()
 
-    fun selectLevel(level: FitnessLevel) {
-        _uiState.update { it.copy(selectedLevel = level) }
-    }
+    private fun updateProfile(block: (PostpartumProfile) -> PostpartumProfile) =
+        _uiState.update { it.copy(profile = block(it.profile)) }
 
-    fun selectGoal(goal: FitnessGoal) {
-        _uiState.update { it.copy(selectedGoal = goal) }
-    }
+    fun setName(name: String) = updateProfile { it.copy(name = name.take(30)) }
+    fun setPregnant(pregnant: Boolean) = _uiState.update { it.copy(isPregnant = pregnant) }
+    fun setBabyAgeWeeks(weeks: Int) = updateProfile { it.copy(babyAgeWeeks = weeks.coerceIn(0, 104)) }
+    fun setDelivery(type: DeliveryType) = updateProfile { it.copy(delivery = type) }
+    fun setClearance(status: ClearanceStatus) = updateProfile { it.copy(clearance = status) }
+    fun setActivity(activity: PriorActivity) = updateProfile { it.copy(priorActivity = activity) }
+    fun setGoal(goal: MomGoal) = updateProfile { it.copy(goal = goal) }
+    fun setDaysPerWeek(days: Int) = updateProfile { it.copy(daysPerWeek = days) }
 
-    fun selectDuration(minutes: Int) {
-        _uiState.update { it.copy(targetDurationMinutes = minutes) }
-    }
-
-    fun toggleEquipment(equipment: Equipment) {
-        _uiState.update { state ->
-            val current = state.selectedEquipment.toMutableSet()
-            if (equipment == Equipment.NONE) {
-                current.clear()
-                current.add(Equipment.NONE)
-            } else {
-                current.remove(Equipment.NONE)
-                if (current.contains(equipment)) {
-                    current.remove(equipment)
-                    if (current.isEmpty()) current.add(Equipment.NONE)
-                } else {
-                    current.add(equipment)
-                }
-            }
-            state.copy(selectedEquipment = current)
+    fun toggleSignal(signal: BodySignal?) = _uiState.update { state ->
+        val signals = when {
+            signal == null -> emptySet()
+            signal in state.profile.signals -> state.profile.signals - signal
+            else -> state.profile.signals + signal
         }
+        state.copy(profile = state.profile.copy(signals = signals), signalsAnswered = signal == null || signals.isNotEmpty())
     }
 
-    fun toggleExerciseToAvoid(tag: String) {
-        _uiState.update { state ->
-            val current = state.exercisesToAvoid.toMutableSet()
-            if (tag == "None") {
-                current.clear()
-                current.add("None")
-            } else {
-                current.remove("None")
-                if (current.contains(tag)) {
-                    current.remove(tag)
-                    if (current.isEmpty()) current.add("None")
-                } else {
-                    current.add(tag)
-                }
-            }
-            state.copy(exercisesToAvoid = current)
-        }
-    }
-
-    fun selectIntensity(intensity: IntensityPreference) {
-        _uiState.update { it.copy(intensityPreference = intensity) }
-    }
-
-    fun toggleDay(day: Int) {
-        _uiState.update { state ->
-            val current = state.preferredDays.toMutableSet()
-            if (current.contains(day)) {
-                if (current.size > 1) { // keep at least 1 day
-                    current.remove(day)
-                }
-            } else {
-                current.add(day)
-            }
-            state.copy(preferredDays = current)
-        }
-    }
-
-    fun selectRecovery(recovery: String) {
-        _uiState.update { it.copy(recoveryPreference = recovery) }
-    }
-
-    fun toggleFocusArea(area: FocusArea) {
-        _uiState.update { state ->
-            val current = state.preferredFocusAreas.toMutableSet()
-            if (current.contains(area)) {
-                if (current.size > 1) current.remove(area)
-            } else {
-                current.add(area)
-            }
-            state.copy(preferredFocusAreas = current)
-        }
-    }
-
-    fun nextStep() {
-        if (_uiState.value.step < 6) {
-            _uiState.update { it.copy(step = it.step + 1) }
-        } else {
-            completeOnboarding()
-        }
-    }
-
-    fun previousStep() {
-        if (_uiState.value.step > 1) {
-            _uiState.update { it.copy(step = it.step - 1) }
-        }
-    }
-
-    fun skipOnboarding() {
-        completeOnboarding()
-    }
-
-    fun completeOnboarding() {
+    fun next() {
         val state = _uiState.value
-        _uiState.update { it.copy(isLoading = true) }
+        val nextStep = when (state.step) {
+            OnboardingStep.WELCOME -> OnboardingStep.PREGNANCY
+            OnboardingStep.PREGNANCY -> if (state.isPregnant == true) OnboardingStep.NOT_PREGNANCY_READY else OnboardingStep.BABY_AGE
+            OnboardingStep.BABY_AGE -> OnboardingStep.DELIVERY
+            OnboardingStep.DELIVERY -> OnboardingStep.CLEARANCE
+            OnboardingStep.CLEARANCE -> OnboardingStep.BODY_CHECK
+            OnboardingStep.BODY_CHECK -> OnboardingStep.ACTIVITY
+            OnboardingStep.ACTIVITY -> OnboardingStep.GOAL
+            OnboardingStep.GOAL -> OnboardingStep.SCHEDULE
+            OnboardingStep.SCHEDULE -> OnboardingStep.PLAN
+            OnboardingStep.PLAN -> return complete()
+            OnboardingStep.NOT_PREGNANCY_READY -> return
+        }
+        _uiState.update { it.copy(step = nextStep, forward = true) }
+    }
 
+    fun back(): Boolean {
+        val state = _uiState.value
+        val previous = when (state.step) {
+            OnboardingStep.WELCOME -> return false
+            OnboardingStep.NOT_PREGNANCY_READY -> OnboardingStep.PREGNANCY
+            OnboardingStep.PLAN -> OnboardingStep.SCHEDULE
+            OnboardingStep.PREGNANCY -> OnboardingStep.WELCOME
+            else -> OnboardingStep.questionSteps[OnboardingStep.questionSteps.indexOf(state.step) - 1]
+        }
+        _uiState.update { it.copy(step = previous, forward = false) }
+        return true
+    }
+
+    private fun complete() {
+        val profile = _uiState.value.profile
+        _uiState.update { it.copy(isSaving = true) }
         viewModelScope.launch {
-            val userProfile = UserProfile(
-                id = UUID.randomUUID().toString(),
-                name = "Athlete",
-                fitnessGoal = state.selectedGoal,
-                fitnessLevel = state.selectedLevel,
-                availableEquipment = state.selectedEquipment,
-                targetWorkoutDurationMinutes = state.targetDurationMinutes,
-                workoutsPerWeek = state.preferredDays.size,
-                preferredFocusAreas = state.preferredFocusAreas,
-                intensityPreference = state.intensityPreference,
-                isReminderEnabled = false
+            preferences.setPostpartumProfile(profile)
+            userRepository.saveUserProfile(
+                UserProfile(
+                    id = UUID.randomUUID().toString(),
+                    name = profile.name.trim(),
+                    fitnessGoal = when (profile.goal) {
+                        MomGoal.CORE_STRENGTH -> FitnessGoal.BUILD_STRENGTH
+                        else -> FitnessGoal.IMPROVE_FITNESS
+                    },
+                    fitnessLevel = FitnessLevel.BEGINNER,
+                    targetWorkoutDurationMinutes = 10,
+                    workoutsPerWeek = profile.daysPerWeek,
+                    preferredFocusAreas = setOf(FocusArea.CORE, FocusArea.MOBILITY),
+                    intensityPreference = IntensityPreference.EASY,
+                )
             )
-
-            userRepository.saveUserProfile(userProfile)
             userRepository.setOnboardingCompleted(true)
-            _uiState.update { it.copy(isLoading = false, isCompleted = true) }
+            _uiState.update { it.copy(isSaving = false, isCompleted = true) }
         }
     }
 
     companion object {
-        fun provideFactory(userRepository: UserRepository): ViewModelProvider.Factory =
+        fun provideFactory(userRepository: UserRepository, preferences: UserPreferencesDataSource): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
-                override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    return OnboardingViewModel(userRepository) as T
-                }
+                override fun <T : ViewModel> create(modelClass: Class<T>): T =
+                    OnboardingViewModel(userRepository, preferences) as T
             }
     }
 }

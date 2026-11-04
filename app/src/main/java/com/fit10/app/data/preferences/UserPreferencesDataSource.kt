@@ -8,6 +8,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.fit10.app.core.ui.theme.ThemeMode
+import com.fit10.app.domain.model.PostpartumProfile
+import kotlinx.serialization.json.Json
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -20,6 +22,7 @@ class UserPreferencesDataSource(private val context: Context) {
         val ACTIVE_USER_ID = stringPreferencesKey("active_user_id")
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val HAPTICS_ENABLED = booleanPreferencesKey("haptics_enabled")
+        val POSTPARTUM_PROFILE = stringPreferencesKey("postpartum_profile")
     }
 
     val isOnboardingCompleted: Flow<Boolean> = context.dataStore.data.map { preferences ->
@@ -61,6 +64,18 @@ class UserPreferencesDataSource(private val context: Context) {
     suspend fun setHapticsEnabled(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.HAPTICS_ENABLED] = enabled
+        }
+    }
+
+    private val json = Json { ignoreUnknownKeys = true }
+
+    val postpartumProfile: Flow<PostpartumProfile?> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.POSTPARTUM_PROFILE]?.let { runCatching { json.decodeFromString<PostpartumProfile>(it) }.getOrNull() }
+    }
+
+    suspend fun setPostpartumProfile(profile: PostpartumProfile) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.POSTPARTUM_PROFILE] = json.encodeToString(PostpartumProfile.serializer(), profile)
         }
     }
 

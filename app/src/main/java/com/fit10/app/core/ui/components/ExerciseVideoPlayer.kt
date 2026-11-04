@@ -1,6 +1,38 @@
 package com.fit10.app.core.ui.components
 
+import android.media.MediaPlayer
 import android.net.Uri
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.SlowMotionVideo
+import androidx.compose.material.icons.rounded.Speed
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.fit10.app.core.feedback.HapticKind
+import com.fit10.app.core.feedback.rememberFit10Haptics
+import kotlinx.coroutines.delay
 import android.view.Gravity
 import android.widget.FrameLayout
 import android.widget.VideoView
@@ -29,9 +61,29 @@ fun exerciseVideoRes(exerciseId: String): Int? = when (exerciseId) {
     else -> null
 }
 
+private const val REAL_SPEED = 2.0f
+private const val SLOW_SPEED = 1.0f
+
 @Composable
-fun ExerciseVideo(res: Int, modifier: Modifier = Modifier) {
-    Box(modifier.background(MaterialTheme.colorScheme.surfaceVariant)) {
+fun ExerciseVideo(res: Int, modifier: Modifier = Modifier, slowFirstMs: Long = 8000) {
+    var slow by remember(res) { mutableStateOf(true) }
+    var player by remember(res) { mutableStateOf<MediaPlayer?>(null) }
+    val haptics = rememberFit10Haptics()
+
+    LaunchedEffect(res) {
+        delay(slowFirstMs)
+        slow = false
+    }
+    LaunchedEffect(player, slow) {
+        player?.let { mp ->
+            runCatching { mp.playbackParams = mp.playbackParams.setSpeed(if (slow) SLOW_SPEED else REAL_SPEED) }
+        }
+    }
+
+    Box(
+        modifier.background(MaterialTheme.colorScheme.surfaceVariant)
+            .clickable { haptics.perform(HapticKind.Tick); slow = !slow }
+    ) {
         AndroidView(
             factory = { ctx ->
                 FrameLayout(ctx).apply {
@@ -54,10 +106,29 @@ fun ExerciseVideo(res: Int, modifier: Modifier = Modifier) {
                             video.layoutParams = FrameLayout.LayoutParams((vw * scale).toInt(), (vh * scale).toInt(), Gravity.CENTER)
                         }
                         mp.start()
+                        player = mp
                     }
                 }
             },
             modifier = Modifier.fillMaxSize()
         )
+        AnimatedContent(
+            targetState = slow,
+            transitionSpec = { fadeIn(tween(250)) togetherWith fadeOut(tween(150)) },
+            modifier = Modifier.align(Alignment.TopStart).padding(12.dp),
+            label = "speed"
+        ) { isSlow ->
+            Row(
+                Modifier.clip(CircleShape).background(Color.Black.copy(alpha = 0.55f)).padding(horizontal = 12.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    if (isSlow) Icons.Rounded.SlowMotionVideo else Icons.Rounded.Speed, null,
+                    tint = Color.White, modifier = Modifier.size(16.dp)
+                )
+                Spacer(Modifier.width(6.dp))
+                Text(if (isSlow) "Slow motion · learn the form" else "Real speed", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Color.White)
+            }
+        }
     }
 }

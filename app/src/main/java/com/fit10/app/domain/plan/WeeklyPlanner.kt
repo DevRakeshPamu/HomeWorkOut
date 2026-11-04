@@ -49,6 +49,8 @@ enum class ReviewOutcome { UP, STAY, DOWN }
 
 object WeeklyPlanner {
 
+    private fun WorkoutResult.counts() = status == WorkoutStatus.COMPLETED && durationSeconds >= 180
+
     private class Move(val id: String, val minLevel: Int, val focuses: Set<PlanFocus>, val coreLoad: Boolean = false, val impact: Boolean = false)
 
     private val warmUp = listOf("ex_arm_circles", "ex_cat_cow")
@@ -82,7 +84,7 @@ object WeeklyPlanner {
     fun startLevel(p: PostpartumProfile): Int = if (p.priorActivity == PriorActivity.INACTIVE) 1 else 2
 
     fun review(p: PostpartumProfile, level: Int, window: List<WorkoutResult>): Pair<Int, ReviewOutcome> {
-        val done = window.count { it.status == WorkoutStatus.COMPLETED }
+        val done = window.count { it.counts() }
         val hard = window.count { it.feedback == WorkoutFeedback.TOO_HARD }
         val easy = window.count { it.feedback == WorkoutFeedback.TOO_EASY }
         val target = p.daysPerWeek * 2
@@ -118,7 +120,7 @@ object WeeklyPlanner {
         today: LocalDate = LocalDate.now(),
     ): WeekPlan {
         val zone = ZoneId.systemDefault()
-        val doneDates = results.filter { it.status == WorkoutStatus.COMPLETED }
+        val doneDates = results.filter { it.counts() }
             .map { Instant.ofEpochMilli(it.completedAtEpochMs).atZone(zone).toLocalDate() }.toSet()
         val monday = today.with(DayOfWeek.MONDAY)
         val training = trainingDays(p.daysPerWeek)

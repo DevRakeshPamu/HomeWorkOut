@@ -34,6 +34,7 @@ import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -196,7 +197,10 @@ fun ExerciseDemo(exerciseId: String, modifier: Modifier = Modifier, showSpeed: B
         modifier.background(bg)
             .then(if (showSpeed) Modifier.clickable { haptics.perform(HapticKind.Tick); slow = !slow } else Modifier)
     ) {
-        ExerciseFigure(exerciseId, Modifier.fillMaxSize().padding(16.dp), slow)
+        val context = LocalContext.current
+        val video = remember(exerciseId) { exerciseVideoRes(context, exerciseId) }
+        if (video != null) ExerciseVideo(exerciseId, video, slow, Modifier.fillMaxSize())
+        else ExerciseFigure(exerciseId, Modifier.fillMaxSize().padding(16.dp), slow)
         if (showSpeed) {
             AnimatedContent(
                 targetState = slow,

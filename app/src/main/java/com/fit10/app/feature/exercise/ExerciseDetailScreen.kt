@@ -1,9 +1,5 @@
 package com.fit10.app.feature.exercise
 
-import android.net.Uri
-import android.view.ViewGroup
-import android.widget.FrameLayout
-import android.widget.VideoView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,9 +29,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import com.fit10.app.core.ui.components.BackBar
 import com.fit10.app.core.ui.components.SectionLabel
+import com.fit10.app.core.ui.components.ExerciseVideo
 import com.fit10.app.core.ui.components.exerciseVideoRes
 import com.fit10.app.data.seed.ExerciseCatalog
 
@@ -51,18 +47,7 @@ fun ExerciseDetailScreen(
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).statusBarsPadding().navigationBarsPadding()) {
         BackBar(onBack)
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 20.dp)) {
-            Box(Modifier.fillMaxWidth().aspectRatio(1.2f).clip(RoundedCornerShape(24.dp)).background(MaterialTheme.colorScheme.surfaceVariant)) {
-                AndroidView(
-                    factory = { ctx ->
-                        VideoView(ctx).apply {
-                            layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-                            setVideoURI(Uri.parse("android.resource://${ctx.packageName}/$res"))
-                            setOnPreparedListener { mp -> mp.isLooping = true; mp.setVolume(0f, 0f); mp.start() }
-                        }
-                    },
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+            res?.let { ExerciseVideo(it, Modifier.fillMaxWidth().aspectRatio(1.2f).clip(RoundedCornerShape(24.dp))) }
             Spacer(Modifier.height(20.dp))
             Text(exercise.name, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
             if (exercise.targetMuscles.isNotEmpty()) {

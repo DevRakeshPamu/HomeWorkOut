@@ -25,6 +25,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -74,7 +75,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fit10.app.core.feedback.HapticKind
 import com.fit10.app.core.feedback.rememberFit10Haptics
+import com.fit10.app.core.ui.components.ExerciseVideo
 import com.fit10.app.core.ui.components.IconTile
+import com.fit10.app.core.ui.components.exerciseVideoRes
 import com.fit10.app.domain.model.WorkoutExercise
 import com.fit10.app.domain.workout.WorkoutSessionState
 
@@ -261,14 +264,40 @@ private fun ExerciseView(s: WorkoutSessionState.ActiveExercise) {
     val glow by pulse.animateFloat(0.92f, 1.06f, infiniteRepeatable(tween(4000), RepeatMode.Reverse), label = "glow")
     val glowColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
 
-    Column(Modifier.fillMaxSize().padding(horizontal = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    val video = remember(ex.exercise.id) { exerciseVideoRes(ex.exercise.id) }
+    val subtitle = ex.reps?.let { "$it reps · at your pace" } ?: (cueFor(ex) ?: "Breathe slowly")
+
+    if (video != null) {
+        Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+            ExerciseVideo(
+                video,
+                Modifier.padding(horizontal = 16.dp, vertical = 8.dp).fillMaxWidth().weight(1f, fill = false).aspectRatio(1f).clip(RoundedCornerShape(28.dp))
+            )
+            Spacer(Modifier.height(16.dp))
+            Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(ex.exercise.name, fontSize = 26.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+                    Text(subtitle, fontSize = 15.sp, lineHeight = 20.sp, maxLines = 2, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Spacer(Modifier.width(16.dp))
+                TimerRing(s.secondsRemaining, s.totalExerciseSeconds, 96.dp)
+            }
+            Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                if (ex.exercise.instructions.isNotEmpty()) {
+                    TextButton(onClick = { showHow = true }) { Text("How to do it", fontSize = 15.sp) }
+                }
+                Spacer(Modifier.weight(1f))
+                next?.let {
+                    Text("Next · ${it.exercise.name}", fontSize = 14.sp, maxLines = 1, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(end = 12.dp))
+                }
+            }
+        }
+    } else Column(Modifier.fillMaxSize().padding(horizontal = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Spacer(Modifier.weight(1f))
         Text(ex.exercise.name, fontSize = 30.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground, textAlign = TextAlign.Center)
         Spacer(Modifier.height(6.dp))
-        Text(
-            ex.reps?.let { "$it reps · at your pace" } ?: (cueFor(ex) ?: "Breathe slowly"),
-            fontSize = 16.sp, lineHeight = 22.sp, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        Text(subtitle, fontSize = 16.sp, lineHeight = 22.sp, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.weight(0.6f))
         Box(contentAlignment = Alignment.Center) {
             Box(Modifier.size(260.dp).scale(glow).clip(CircleShape).background(glowColor))

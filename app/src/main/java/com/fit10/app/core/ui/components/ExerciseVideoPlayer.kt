@@ -1,6 +1,11 @@
 package com.fit10.app.core.ui.components
 
+import android.graphics.Matrix
+import android.graphics.SurfaceTexture
 import android.media.MediaPlayer
+import android.view.Surface
+import android.view.TextureView
+import androidx.compose.runtime.key
 import android.net.Uri
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
@@ -33,9 +38,6 @@ import androidx.compose.ui.unit.sp
 import com.fit10.app.core.feedback.HapticKind
 import com.fit10.app.core.feedback.rememberFit10Haptics
 import kotlinx.coroutines.delay
-import android.view.Gravity
-import android.widget.FrameLayout
-import android.widget.VideoView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -61,6 +63,8 @@ fun exerciseVideoRes(exerciseId: String): Int? = when (exerciseId) {
     else -> null
 }
 
+private val alternatingSides = setOf(R.raw.video_bird_dog, R.raw.video_lunges, R.raw.video_shoulder_taps)
+
 private const val REAL_SPEED = 2.0f
 private const val SLOW_SPEED = 1.0f
 
@@ -80,38 +84,68 @@ fun ExerciseVideo(res: Int, modifier: Modifier = Modifier, slowFirstMs: Long = 8
         }
     }
 
+    var mirrored by remember(res) { mutableStateOf(false) }
+    if (res in alternatingSides) {
+        LaunchedEffect(player) {
+            val mp = player ?: return@LaunchedEffect
+            var last = 0
+            while (true) {
+                delay(80)
+                val pos = runCatching { mp.currentPosition }.getOrNull() ?: break
+                if (pos < last - 300) mirrored = !mirrored
+                last = pos
+            }
+        }
+    }
+
     Box(
         modifier.background(MaterialTheme.colorScheme.surfaceVariant)
             .clickable { haptics.perform(HapticKind.Tick); slow = !slow }
     ) {
-        AndroidView(
-            factory = { ctx ->
-                FrameLayout(ctx).apply {
-                    clipChildren = true
-                    addView(VideoView(ctx), FrameLayout.LayoutParams(1, 1, Gravity.CENTER))
-                }
-            },
-            update = { container ->
-                val video = container.getChildAt(0) as VideoView
-                if (video.tag != res) {
-                    video.tag = res
-                    video.setVideoURI(Uri.parse("android.resource://${container.context.packageName}/$res"))
-                    video.setOnPreparedListener { mp ->
-                        mp.isLooping = true
-                        mp.setVolume(0f, 0f)
-                        container.post {
-                            val vw = mp.videoWidth.coerceAtLeast(1).toFloat()
-                            val vh = mp.videoHeight.coerceAtLeast(1).toFloat()
-                            val scale = maxOf(container.width / vw, container.height / vh)
-                            video.layoutParams = FrameLayout.LayoutParams((vw * scale).toInt(), (vh * scale).toInt(), Gravity.CENTER)
+        key(res) {
+            var videoSize by remember { mutableStateOf(1 to 1) }
+            AndroidView(
+                factory = { ctx ->
+                    TextureView(ctx).apply {
+                        surfaceTextureListener = object : TextureView.SurfaceTextureListener {
+                            override fun onSurfaceTextureAvailable(st: SurfaceTexture, w: Int, h: Int) {
+                                val mp = MediaPlayer()
+                                runCatching {
+                                    mp.setDataSource(ctx, Uri.parse("android.resource://${ctx.packageName}/$res"))
+                                    mp.setSurface(Surface(st))
+                                    mp.isLooping = true
+                                    mp.setVolume(0f, 0f)
+                                    mp.setOnPreparedListener {
+                                        videoSize = it.videoWidth.coerceAtLeast(1) to it.videoHeight.coerceAtLeast(1)
+                                        it.start()
+                                        player = it
+                                    }
+                                    mp.prepareAsync()
+                                }
+                                tag = mp
+                            }
+                            override fun onSurfaceTextureSizeChanged(st: SurfaceTexture, w: Int, h: Int) {}
+                            override fun onSurfaceTextureDestroyed(st: SurfaceTexture): Boolean {
+                                (tag as? MediaPlayer)?.release()
+                                player = null
+                                return true
+                            }
+                            override fun onSurfaceTextureUpdated(st: SurfaceTexture) {}
                         }
-                        mp.start()
-                        player = mp
                     }
-                }
-            },
-            modifier = Modifier.fillMaxSize()
-        )
+                },
+                update = { view ->
+                    val (vw, vh) = videoSize
+                    val w = view.width.toFloat().coerceAtLeast(1f)
+                    val h = view.height.toFloat().coerceAtLeast(1f)
+                    val k = maxOf(w / vw, h / vh)
+                    val sx = vw * k / w
+                    val sy = vh * k / h
+                    view.setTransform(Matrix().apply { setScale(if (mirrored) -sx else sx, sy, w / 2f, h / 2f) })
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
         AnimatedContent(
             targetState = slow,
             transitionSpec = { fadeIn(tween(250)) togetherWith fadeOut(tween(150)) },

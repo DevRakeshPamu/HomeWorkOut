@@ -1,6 +1,7 @@
 package com.fit10.app.feature.paywall
 
 import com.fit10.app.core.feedback.rememberFit10Haptics
+import com.fit10.app.core.ui.components.UserAvatar
 import com.fit10.app.core.feedback.HapticKind
 import androidx.compose.material3.MaterialTheme
 import com.fit10.app.core.ui.theme.Fit10Theme
@@ -160,15 +161,9 @@ fun PaywallScreen(
                             .clickable { haptics.perform(HapticKind.Tick); onRestorePurchases() }
                             .padding(horizontal = 8.dp, vertical = 6.dp)
                     )
-                    Image(
-                        painter = painterResource(id = R.drawable.coach_maya),
-                        contentDescription = "Coach Maya",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
+                    UserAvatar(modifier = Modifier
                             .size(32.dp)
-                            .clip(CircleShape)
-                            .border(1.5.dp, BrandPrimary, CircleShape)
-                    )
+                            .border(1.5.dp, BrandPrimary, CircleShape))
                     Spacer(Modifier.width(16.dp))
                 }
             )

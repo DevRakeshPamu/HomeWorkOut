@@ -1,6 +1,7 @@
 package com.fit10.app.feature.history
 
 import com.fit10.app.core.ui.theme.Fit10Theme
+import com.fit10.app.core.ui.components.UserAvatar
 import androidx.compose.runtime.ReadOnlyComposable
 import com.fit10.app.core.feedback.HapticKind
 import com.fit10.app.core.feedback.rememberFit10Haptics
@@ -168,15 +169,9 @@ fun HistoryScreen(
 
                     Spacer(modifier = Modifier.width(10.dp))
 
-                    Image(
-                        painter = painterResource(id = R.drawable.coach_maya),
-                        contentDescription = "Profile",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
+                    UserAvatar(modifier = Modifier
                             .size(34.dp)
-                            .clip(CircleShape)
-                            .border(1.5.dp, BrandPrimary, CircleShape)
-                    )
+                            .border(1.5.dp, BrandPrimary, CircleShape))
                 }
             }
 

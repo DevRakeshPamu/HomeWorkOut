@@ -1,6 +1,7 @@
 package com.fit10.app.feature.plan
 
 import com.fit10.app.core.feedback.rememberFit10Haptics
+import com.fit10.app.core.ui.components.UserAvatar
 import com.fit10.app.core.feedback.HapticKind
 import com.fit10.app.core.ui.theme.Fit10Theme
 import androidx.compose.runtime.ReadOnlyComposable
@@ -488,15 +489,9 @@ fun PlanSummaryScreen(
                     modifier = Modifier.padding(14.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.coach_maya),
-                        contentDescription = "Coach Maya",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
+                    UserAvatar(modifier = Modifier
                             .size(44.dp)
-                            .clip(CircleShape)
-                            .border(1.5.dp, BrandPrimary, CircleShape)
-                    )
+                            .border(1.5.dp, BrandPrimary, CircleShape))
                     Spacer(Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(

@@ -1,6 +1,7 @@
 package com.fit10.app.feature.explore
 
 import com.fit10.app.core.feedback.rememberFit10Haptics
+import com.fit10.app.core.ui.components.UserAvatar
 import com.fit10.app.core.feedback.HapticKind
 import com.fit10.app.core.ui.theme.Fit10Theme
 import androidx.compose.runtime.ReadOnlyComposable
@@ -221,12 +222,7 @@ private fun WorkoutListItemCard(
                     .height(110.dp)
                     .clip(RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp))
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.coach_squat),
-                    contentDescription = workout.title,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
+                UserAvatar(modifier = Modifier.fillMaxSize())
                 // Gradient fade
                 Box(
                     modifier = Modifier

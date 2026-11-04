@@ -1,6 +1,7 @@
 package com.fit10.app.feature.profile
 
 import androidx.compose.foundation.BorderStroke
+import com.fit10.app.core.ui.components.UserAvatar
 import com.fit10.app.core.feedback.rememberFit10Haptics
 import com.fit10.app.core.feedback.HapticKind
 import com.fit10.app.core.ui.theme.ThemeMode
@@ -168,15 +169,9 @@ fun ProfileSettingsScreen(
                     color = BrandPrimary
                 )
 
-                Image(
-                    painter = painterResource(id = R.drawable.coach_maya),
-                    contentDescription = "Coach Avatar",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
+                UserAvatar(modifier = Modifier
                         .size(34.dp)
-                        .clip(CircleShape)
-                        .border(1.5.dp, BrandPrimary, CircleShape)
-                )
+                        .border(1.5.dp, BrandPrimary, CircleShape))
             }
 
             Spacer(modifier = Modifier.height(18.dp))
@@ -195,15 +190,9 @@ fun ProfileSettingsScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box {
-                        Image(
-                            painter = painterResource(id = R.drawable.coach_maya),
-                            contentDescription = "Profile Photo",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
+                        UserAvatar(modifier = Modifier
                                 .size(60.dp)
-                                .clip(CircleShape)
-                                .border(2.dp, BrandPrimary, CircleShape)
-                        )
+                                .border(2.dp, BrandPrimary, CircleShape))
                         Box(
                             modifier = Modifier
                                 .size(20.dp)

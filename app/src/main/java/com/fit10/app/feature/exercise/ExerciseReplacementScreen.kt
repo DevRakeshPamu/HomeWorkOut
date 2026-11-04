@@ -1,6 +1,7 @@
 package com.fit10.app.feature.exercise
 
 import com.fit10.app.core.feedback.rememberFit10Haptics
+import com.fit10.app.core.ui.components.UserAvatar
 import com.fit10.app.core.feedback.HapticKind
 import androidx.compose.material3.MaterialTheme
 import com.fit10.app.core.ui.theme.Fit10Theme
@@ -247,15 +248,9 @@ fun ExerciseReplacementScreen(
                     }
                 }
 
-                Image(
-                    painter = painterResource(id = R.drawable.coach_maya),
-                    contentDescription = "Coach Maya",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
+                UserAvatar(modifier = Modifier
                         .size(34.dp)
-                        .clip(CircleShape)
-                        .border(1.5.dp, BrandPrimary, CircleShape)
-                )
+                        .border(1.5.dp, BrandPrimary, CircleShape))
             }
 
             Spacer(modifier = Modifier.height(18.dp))
@@ -316,14 +311,9 @@ fun ExerciseReplacementScreen(
                     modifier = Modifier.padding(14.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.coach_pushup),
-                        contentDescription = "Standard Push-up",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
+                    UserAvatar(modifier = Modifier
                             .size(54.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                    )
+                            .clip(RoundedCornerShape(10.dp)))
 
                     Spacer(modifier = Modifier.width(14.dp))
 
@@ -449,14 +439,9 @@ private fun VariationCard(
             modifier = Modifier.padding(14.dp),
             verticalAlignment = Alignment.Top
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.coach_pushup),
-                contentDescription = variation.name,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
+            UserAvatar(modifier = Modifier
                     .size(54.dp)
-                    .clip(RoundedCornerShape(10.dp))
-            )
+                    .clip(RoundedCornerShape(10.dp)))
 
             Spacer(modifier = Modifier.width(14.dp))
 

@@ -11,6 +11,8 @@ import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import com.fit10.app.core.ui.components.LocalUserName
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -33,6 +35,8 @@ fun Fit10App() {
     val isOnboardingCompleted by container.userRepository
         .isOnboardingCompleted()
         .collectAsStateWithLifecycle(initialValue = null)
+
+    val userProfile by container.userRepository.getUserProfile().collectAsStateWithLifecycle(initialValue = null)
 
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -61,6 +65,7 @@ fun Fit10App() {
         else -> 0
     }
 
+    CompositionLocalProvider(LocalUserName provides userProfile?.name.orEmpty()) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
@@ -94,7 +99,8 @@ fun Fit10App() {
             container = container,
             isOnboardingCompleted = isOnboardingCompleted,
             startDestination = Fit10Destination.Splash.route,
-            modifier = if (currentRoute == Fit10Destination.Splash.route) Modifier else Modifier.padding(paddingValues)
+            modifier = if (currentRoute == Fit10Destination.Splash.route) Modifier else Modifier.padding(bottom = paddingValues.calculateBottomPadding())
         )
+    }
     }
 }

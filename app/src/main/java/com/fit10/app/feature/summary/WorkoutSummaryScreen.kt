@@ -1,6 +1,7 @@
 package com.fit10.app.feature.summary
 
 import androidx.compose.animation.core.FastOutSlowInEasing
+import com.fit10.app.core.ui.components.UserAvatar
 import com.fit10.app.core.feedback.rememberFit10Haptics
 import com.fit10.app.core.feedback.HapticKind
 import com.fit10.app.core.ui.theme.Fit10Theme
@@ -208,15 +209,9 @@ fun WorkoutSummaryScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.coach_maya),
-                        contentDescription = "Coach Maya",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
+                    UserAvatar(modifier = Modifier
                             .size(36.dp)
-                            .clip(CircleShape)
-                            .border(2.dp, BrandPrimary, CircleShape)
-                    )
+                            .border(2.dp, BrandPrimary, CircleShape))
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))

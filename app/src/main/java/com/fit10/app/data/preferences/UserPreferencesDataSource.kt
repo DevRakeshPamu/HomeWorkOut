@@ -23,6 +23,7 @@ class UserPreferencesDataSource(private val context: Context) {
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val HAPTICS_ENABLED = booleanPreferencesKey("haptics_enabled")
         val POSTPARTUM_PROFILE = stringPreferencesKey("postpartum_profile")
+        val SLEEP_CHECK_IN = stringPreferencesKey("sleep_check_in")
     }
 
     val isOnboardingCompleted: Flow<Boolean> = context.dataStore.data.map { preferences ->
@@ -76,6 +77,16 @@ class UserPreferencesDataSource(private val context: Context) {
     suspend fun setPostpartumProfile(profile: PostpartumProfile) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.POSTPARTUM_PROFILE] = json.encodeToString(PostpartumProfile.serializer(), profile)
+        }
+    }
+
+    val sleepCheckIn: Flow<Pair<String, String>?> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.SLEEP_CHECK_IN]?.split("|")?.takeIf { it.size == 2 }?.let { it[0] to it[1] }
+    }
+
+    suspend fun setSleepCheckIn(date: String, quality: String) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.SLEEP_CHECK_IN] = "$date|$quality"
         }
     }
 

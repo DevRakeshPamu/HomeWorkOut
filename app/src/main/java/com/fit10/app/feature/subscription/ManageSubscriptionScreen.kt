@@ -1,6 +1,7 @@
 package com.fit10.app.feature.subscription
 
 import com.fit10.app.core.feedback.rememberFit10Haptics
+import com.fit10.app.core.ui.components.UserAvatar
 import com.fit10.app.core.feedback.HapticKind
 import androidx.compose.material3.MaterialTheme
 import com.fit10.app.core.ui.theme.Fit10Theme
@@ -143,15 +144,9 @@ fun ManageSubscriptionScreen(
                     )
                 },
                 actions = {
-                    Image(
-                        painter = painterResource(id = R.drawable.coach_maya),
-                        contentDescription = "Profile",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
+                    UserAvatar(modifier = Modifier
                             .size(36.dp)
-                            .clip(CircleShape)
-                            .border(1.5.dp, BrandPrimary, CircleShape)
-                    )
+                            .border(1.5.dp, BrandPrimary, CircleShape))
                     Spacer(Modifier.width(16.dp))
                 }
             )

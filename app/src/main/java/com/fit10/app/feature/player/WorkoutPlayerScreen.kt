@@ -1,6 +1,7 @@
 package com.fit10.app.feature.player
 
 import androidx.compose.animation.AnimatedContent
+import com.fit10.app.core.ui.components.UserAvatar
 import com.fit10.app.core.feedback.rememberFit10Haptics
 import com.fit10.app.core.feedback.HapticKind
 import com.fit10.app.core.ui.theme.Fit10Theme
@@ -210,16 +211,10 @@ fun WorkoutPlayerScreen(
                     IconButton(onClick = {}) {
                         Icon(imageVector = Icons.Rounded.MoreVert, contentDescription = "Settings", tint = TextMain)
                     }
-                    Image(
-                        painter = painterResource(id = R.drawable.coach_maya),
-                        contentDescription = "Coach",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
+                    UserAvatar(modifier = Modifier
                             .padding(end = 12.dp)
                             .size(34.dp)
-                            .clip(CircleShape)
-                            .border(2.dp, BrandPrimary, CircleShape)
-                    )
+                            .border(2.dp, BrandPrimary, CircleShape))
                 }
             )
         }
@@ -843,12 +838,7 @@ private fun RestIntervalPlayerView(
             modifier = Modifier.fillMaxWidth()
         ) {
             Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                Image(
-                    painter = painterResource(id = R.drawable.coach_pushup),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.size(68.dp).clip(RoundedCornerShape(14.dp))
-                )
+                UserAvatar(modifier = Modifier.size(68.dp).clip(RoundedCornerShape(14.dp)))
                 Spacer(Modifier.width(14.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(text = "UP NEXT", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = BrandPrimary, letterSpacing = 0.8.sp)

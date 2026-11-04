@@ -49,9 +49,6 @@ fun Fit10NavGraph(
     val userProfile by container.userRepository
         .getUserProfile()
         .collectAsStateWithLifecycle(initialValue = null)
-    val isOnboardingDone by container.userRepository
-        .isOnboardingCompleted()
-        .collectAsStateWithLifecycle(initialValue = false)
 
     NavHost(
         navController = navController,
@@ -60,8 +57,9 @@ fun Fit10NavGraph(
     ) {
         composable(Fit10Destination.Splash.route) {
             SplashScreen(
+                isReady = isOnboardingCompleted != null,
                 onSplashFinished = {
-                    val nextRoute = if (isOnboardingDone) {
+                    val nextRoute = if (isOnboardingCompleted == true) {
                         Fit10Destination.Home.route
                     } else {
                         Fit10Destination.Onboarding.route
@@ -90,8 +88,10 @@ fun Fit10NavGraph(
         composable(Fit10Destination.Breathing.route) {
             BreathingSessionScreen(
                 onFinished = {
-                    navController.navigate(Fit10Destination.Home.route) {
-                        popUpTo(Fit10Destination.Breathing.route) { inclusive = true }
+                    if (!navController.popBackStack(Fit10Destination.Home.route, inclusive = false)) {
+                        navController.navigate(Fit10Destination.Home.route) {
+                            popUpTo(Fit10Destination.Breathing.route) { inclusive = true }
+                        }
                     }
                 }
             )
@@ -119,28 +119,19 @@ fun Fit10NavGraph(
                     container.userRepository,
                     container.workoutRepository,
                     container.historyRepository,
-                    container.programRepository
+                    container.preferencesDataSource
                 )
             )
             HomeScreen(
                 viewModel = viewModel,
-                onStartWorkout = { workoutId ->
-                    navController.navigate(Fit10Destination.Player.createRoute(workoutId))
-                },
-                onPreviewWorkout = { workoutId ->
-                    navController.navigate(Fit10Destination.WorkoutPreview.createRoute(workoutId))
-                },
-                onNavigateToExplore = { filterArea ->
-                    navController.navigate(Fit10Destination.Explore.route)
-                },
-                onManageSubscription = {
-                    navController.navigate(Fit10Destination.ManageSubscription.route)
-                },
-                onNavigateToReminders = {
-                    navController.navigate(Fit10Destination.Reminders.route)
-                },
-                onNavigateToPaywall = {
-                    navController.navigate(Fit10Destination.Paywall.route)
+                onStartWorkout = { workoutId -> navController.navigate(Fit10Destination.Player.createRoute(workoutId)) },
+                onStartBreathing = { navController.navigate(Fit10Destination.Breathing.route) },
+                onOpenProfile = {
+                    navController.navigate(Fit10Destination.Profile.route) {
+                        popUpTo(Fit10Destination.Home.route) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 }
             )
         }

@@ -13,7 +13,14 @@ import com.fit10.app.domain.model.WorkoutHistory
 import com.fit10.app.domain.repository.HistoryRepository
 import com.fit10.app.domain.repository.UserRepository
 import com.fit10.app.domain.repository.WorkoutRepository
+import com.fit10.app.domain.plan.PlanLevel
+import com.fit10.app.domain.plan.PlanState
+import com.fit10.app.domain.plan.ReviewOutcome
+import com.fit10.app.domain.plan.WeekPlan
+import com.fit10.app.domain.plan.WeeklyPlanner
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
@@ -34,15 +41,44 @@ data class HomeUiState(
     val history: WorkoutHistory = WorkoutHistory(),
     val sessionsThisWeek: Int = 0,
     val sleepToday: SleepQuality? = null,
+    val plan: WeekPlan? = null,
+    val reviewNote: String? = null,
     val isLoading: Boolean = false,
 )
 
 class HomeViewModel(
     userRepository: UserRepository,
     workoutRepository: WorkoutRepository,
-    historyRepository: HistoryRepository,
+    private val historyRepository: HistoryRepository,
     private val preferences: UserPreferencesDataSource,
 ) : ViewModel() {
+
+    private val reviewNote = MutableStateFlow<String?>(null)
+
+    init {
+        viewModelScope.launch { ensurePlan() }
+    }
+
+    private suspend fun ensurePlan() {
+        val profile = preferences.postpartumProfile.first() ?: return
+        val todayDay = LocalDate.now().toEpochDay()
+        val state = preferences.planState.first()
+        if (state == null) {
+            preferences.setPlanState(PlanState(WeeklyPlanner.startLevel(profile), todayDay, todayDay))
+            return
+        }
+        if (todayDay - state.blockStartDay < 14) return
+        val zone = ZoneId.systemDefault()
+        val from = LocalDate.ofEpochDay(state.blockStartDay).atStartOfDay(zone).toInstant().toEpochMilli()
+        val window = historyRepository.getRecentResults(60).first().filter { it.completedAtEpochMs >= from }
+        val (level, outcome) = WeeklyPlanner.review(profile, state.level, window)
+        preferences.setPlanState(state.copy(level = level, blockStartDay = todayDay))
+        reviewNote.value = when (outcome) {
+            ReviewOutcome.UP -> "Nice work. You've moved up to ${PlanLevel.entries[level - 1].title}."
+            ReviewOutcome.DOWN -> "We've eased your plan back a little. Slow and steady."
+            ReviewOutcome.STAY -> "New 2-week block. Same level, a little fresher."
+        }
+    }
 
     private val today get() = LocalDate.now().toString()
 
@@ -66,10 +102,19 @@ class HomeViewModel(
         base,
         preferences.postpartumProfile,
         preferences.sleepCheckIn,
-    ) { state, postpartum, checkIn ->
+        preferences.planState,
+        reviewNote,
+    ) { state, postpartum, checkIn, planState, note ->
+        val sleep = checkIn?.takeIf { it.first == today }?.let { (_, q) -> SleepQuality.entries.firstOrNull { it.name == q } }
+        val plan = if (postpartum != null && planState != null) {
+            WeeklyPlanner.buildWeek(postpartum, planState, state.history.recentResults, gentleToday = sleep == SleepQuality.BADLY)
+        } else null
         state.copy(
             postpartum = postpartum,
-            sleepToday = checkIn?.takeIf { it.first == today }?.let { (_, q) -> SleepQuality.entries.firstOrNull { it.name == q } },
+            sleepToday = sleep,
+            plan = plan,
+            recommendedWorkout = plan?.today ?: state.recommendedWorkout,
+            reviewNote = note,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState(isLoading = true))
 

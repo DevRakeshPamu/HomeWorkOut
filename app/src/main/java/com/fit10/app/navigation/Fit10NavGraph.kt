@@ -13,6 +13,7 @@ import androidx.navigation.navArgument
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import com.fit10.app.core.di.AppContainer
 import com.fit10.app.feature.explore.ExploreScreen
@@ -123,6 +124,7 @@ fun Fit10NavGraph(
         ) { backStackEntry ->
             val workoutId = backStackEntry.arguments?.getString("workoutId") ?: ""
             val workout by container.workoutRepository.getWorkoutById(workoutId)
+                .map { it ?: com.fit10.app.domain.plan.WeeklyPlanner.workoutFor(workoutId) }
                 .collectAsStateWithLifecycle(initialValue = null)
             WorkoutPreviewScreen(
                 workout = workout,

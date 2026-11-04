@@ -1,5 +1,12 @@
 package com.fit10.app.feature.home
 
+import androidx.compose.foundation.border
+import androidx.compose.material.icons.rounded.Check
+import com.fit10.app.domain.plan.PlanDay
+import com.fit10.app.domain.plan.WeekPlan
+import java.time.format.TextStyle
+import java.util.Locale
+
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -117,25 +124,52 @@ fun HomeScreen(
             CheckInCard(state.sleepToday) { haptics.perform(HapticKind.Tick); viewModel.checkIn(it) }
         }
 
+        state.reviewNote?.let { note ->
+            Spacer(Modifier.height(16.dp))
+            Text(
+                note, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.secondaryContainer).padding(14.dp)
+            )
+        }
+
         Spacer(Modifier.height(16.dp))
         Staggered(appeared, 1) {
-            TodayCard(
-                eyebrow = when (startingPoint) {
-                    StartingPoint.PHASE_ONE -> "Phase 1 · Reconnect"
-                    else -> "Gentle recovery"
-                },
-                title = if (breathingFirst) "Core connection breath" else state.recommendedWorkout.title,
-                meta = if (breathingFirst) "2 min · Breathing and pelvic floor" else "${state.recommendedWorkout.estimatedDurationMinutes} min · ${state.recommendedWorkout.exercises.size} moves",
-                reason = when {
-                    startingPoint == StartingPoint.SEE_DOCTOR -> "Check with your doctor before starting workouts."
-                    breathingFirst -> "Until you're cleared, we keep it to breathing and posture."
-                    else -> state.sleepToday?.message ?: "Picked to rest yesterday's muscles."
-                },
-                onStart = {
-                    haptics.perform(HapticKind.Confirm)
-                    if (breathingFirst) onStartBreathing() else onStartWorkout(state.recommendedWorkout.id)
-                }
-            )
+            val plan = state.plan
+            if (breathingFirst || plan == null) {
+                TodayCard(
+                    eyebrow = "Gentle recovery",
+                    title = "Core connection breath",
+                    meta = "2 min · Breathing and pelvic floor",
+                    reason = if (startingPoint == StartingPoint.SEE_DOCTOR) "Check with your doctor before starting workouts."
+                    else "Until you're cleared, we keep it to breathing and posture.",
+                    cta = "Start",
+                    onStart = { haptics.perform(HapticKind.Confirm); onStartBreathing() }
+                )
+            } else {
+                val next = plan.days.firstOrNull { it.date.isAfter(java.time.LocalDate.now()) && it.focus != null }
+                val nextText = next?.let { "Next: ${it.focus!!.label}, ${it.date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())}" }
+                TodayCard(
+                    eyebrow = "Week ${plan.week} · ${plan.level.title}",
+                    title = when {
+                        plan.doneToday -> "Done for today"
+                        plan.isRestDay -> "Rest day"
+                        else -> plan.today.title
+                    },
+                    meta = when {
+                        plan.doneToday -> nextText ?: "See you next week"
+                        plan.isRestDay -> "Optional · ${plan.today.title} · ${plan.today.estimatedDurationMinutes} min"
+                        else -> "${plan.today.estimatedDurationMinutes} min · ${plan.today.exercises.size} moves"
+                    },
+                    reason = if (plan.doneToday) "Rest and recover. Your plan adjusts as you go." else plan.reason,
+                    cta = when {
+                        plan.doneToday -> "Do a bonus session"
+                        plan.isRestDay -> "Start anyway"
+                        else -> "Start"
+                    },
+                    onStart = { haptics.perform(HapticKind.Confirm); onStartWorkout(plan.today.id) }
+                )
+            }
         }
 
         if (!breathingFirst) {
@@ -150,10 +184,10 @@ fun HomeScreen(
         Spacer(Modifier.height(28.dp))
         Staggered(appeared, 3) {
             ProgressSection(
+                plan = state.plan,
                 sessionsThisWeek = state.sessionsThisWeek,
                 weeklyTarget = daysTarget,
                 streakDays = state.history.currentStreakDays,
-                totalSessions = state.history.totalWorkoutsCompleted
             )
         }
         Spacer(Modifier.height(32.dp))
@@ -218,7 +252,7 @@ private fun CheckInCard(selected: SleepQuality?, onSelect: (SleepQuality) -> Uni
 }
 
 @Composable
-private fun TodayCard(eyebrow: String, title: String, meta: String, reason: String, onStart: () -> Unit) {
+private fun TodayCard(eyebrow: String, title: String, meta: String, reason: String, cta: String, onStart: () -> Unit) {
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.97f else 1f, spring(dampingRatio = 0.6f), label = "today")
@@ -252,7 +286,7 @@ private fun TodayCard(eyebrow: String, title: String, meta: String, reason: Stri
             ) {
                 Icon(Icons.Rounded.PlayArrow, null, tint = MaterialTheme.colorScheme.onPrimary)
                 Spacer(Modifier.width(6.dp))
-                Text("Start", fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onPrimary)
+                Text(cta, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onPrimary)
             }
         }
     }
@@ -283,41 +317,68 @@ private fun QuickAction(icon: ImageVector, title: String, subtitle: String, onCl
 }
 
 @Composable
-private fun ProgressSection(sessionsThisWeek: Int, weeklyTarget: Int, streakDays: Int, totalSessions: Int) {
-    val weekProgress by animateFloatAsState(
-        (sessionsThisWeek / weeklyTarget.toFloat()).coerceIn(0f, 1f), tween(800), label = "week"
-    )
-    val journeyWeek = (totalSessions / 5 + 1).coerceAtMost(12)
+private fun ProgressSection(plan: WeekPlan?, sessionsThisWeek: Int, weeklyTarget: Int, streakDays: Int) {
     Column {
-    Text("Your progress", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
-    Spacer(Modifier.height(12.dp))
-    Surface(shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(20.dp)) {
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text("$sessionsThisWeek", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                Text(" of $weeklyTarget this week", fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 6.dp))
-                Spacer(Modifier.weight(1f))
-                if (streakDays > 0) {
-                    Icon(Icons.Rounded.LocalFireDepartment, null, tint = MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier.size(18.dp).padding(bottom = 2.dp))
-                    Text("$streakDays-day streak", fontSize = 13.sp, fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 6.dp))
+        Text("This week", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+        Spacer(Modifier.height(12.dp))
+        Surface(shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(20.dp)) {
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text("$sessionsThisWeek", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text(" of $weeklyTarget done", fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 6.dp))
+                    Spacer(Modifier.weight(1f))
+                    if (streakDays > 0) {
+                        Icon(Icons.Rounded.LocalFireDepartment, null, tint = MaterialTheme.colorScheme.tertiary,
+                            modifier = Modifier.size(18.dp).padding(bottom = 2.dp))
+                        Text("$streakDays-day streak", fontSize = 13.sp, fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 6.dp))
+                    }
+                }
+                plan?.let {
+                    Spacer(Modifier.height(16.dp))
+                    WeekStrip(it.days)
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        "${it.level.title}: ${it.level.blurb.lowercase()}. Plan updates in ${it.daysToReview} days based on how it goes.",
+                        fontSize = 13.sp, lineHeight = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
-            Spacer(Modifier.height(12.dp))
-            LinearProgressIndicator(
-                progress = { weekProgress },
-                modifier = Modifier.fillMaxWidth().height(8.dp).clip(CircleShape),
-                trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                drawStopIndicator = {}
-            )
-            Spacer(Modifier.height(16.dp))
-            Text(
-                "Week $journeyWeek of your 12-week journey",
-                fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
+}
+
+@Composable
+private fun WeekStrip(days: List<PlanDay>) {
+    val primary = MaterialTheme.colorScheme.primary
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        days.forEach { d ->
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    d.date.dayOfWeek.getDisplayName(TextStyle.NARROW, Locale.getDefault()),
+                    fontSize = 12.sp,
+                    fontWeight = if (d.isToday) FontWeight.Bold else FontWeight.Normal,
+                    color = if (d.isToday) primary else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(6.dp))
+                val bg = when {
+                    d.done -> primary
+                    d.focus != null && d.date.isBefore(java.time.LocalDate.now()) -> MaterialTheme.colorScheme.surfaceVariant
+                    d.focus != null -> MaterialTheme.colorScheme.primaryContainer
+                    else -> MaterialTheme.colorScheme.surfaceVariant
+                }
+                Box(
+                    Modifier.size(34.dp).clip(CircleShape).background(bg)
+                        .then(if (d.isToday && !d.done) Modifier.border(2.dp, primary, CircleShape) else Modifier),
+                    contentAlignment = Alignment.Center
+                ) {
+                    when {
+                        d.done -> Icon(Icons.Rounded.Check, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(18.dp))
+                        d.focus == null -> Text("Rest", fontSize = 9.sp, color = MaterialTheme.colorScheme.outline)
+                    }
+                }
+            }
+        }
     }
 }

@@ -47,6 +47,7 @@ class WorkoutPlayerViewModel(
     private fun loadAndStartWorkout() {
         viewModelScope.launch {
             val workout = workoutRepository.getWorkoutById(workoutId).first()
+                ?: com.fit10.app.domain.plan.WeeklyPlanner.workoutFor(workoutId)
                 ?: WorkoutCatalog.ALL.find { it.id == workoutId }
                 ?: WorkoutCatalog.FULL_BODY_IGNITION
 

@@ -10,6 +10,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.fit10.app.core.ui.theme.ThemeMode
 import com.fit10.app.domain.model.PostpartumProfile
 import kotlinx.serialization.json.Json
+import com.fit10.app.domain.plan.PlanState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -26,6 +27,7 @@ class UserPreferencesDataSource(private val context: Context) {
         val SLEEP_CHECK_IN = stringPreferencesKey("sleep_check_in")
         val REMINDER_ENABLED = booleanPreferencesKey("reminder_enabled")
         val REMINDER_TIME = stringPreferencesKey("reminder_time")
+        val PLAN_STATE = stringPreferencesKey("plan_state")
     }
 
     val isOnboardingCompleted: Flow<Boolean> = context.dataStore.data.map { preferences ->
@@ -104,6 +106,16 @@ class UserPreferencesDataSource(private val context: Context) {
             preferences[PreferencesKeys.REMINDER_ENABLED] = enabled
             preferences[PreferencesKeys.REMINDER_TIME] = "$hour:$minute"
         }
+    }
+
+    val planState: Flow<PlanState?> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.PLAN_STATE]?.split("|")?.takeIf { it.size == 3 }?.let {
+            PlanState(it[0].toInt(), it[1].toLong(), it[2].toLong())
+        }
+    }
+
+    suspend fun setPlanState(state: PlanState) {
+        context.dataStore.edit { it[PreferencesKeys.PLAN_STATE] = "${state.level}|${state.blockStartDay}|${state.planStartDay}" }
     }
 
     suspend fun clearAll() {

@@ -23,7 +23,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -168,5 +170,33 @@ fun ListRow(
             }
         }
         if (showDivider) HorizontalDivider(Modifier.padding(start = 62.dp), color = MaterialTheme.colorScheme.outlineVariant)
+    }
+}
+
+@Composable
+fun BackBar(onBack: () -> Unit, title: String? = null) {
+    val haptics = rememberFit10Haptics()
+    Row(Modifier.fillMaxWidth().height(56.dp).padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        IconButton(onClick = { haptics.perform(HapticKind.Tick); onBack() }) {
+            Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
+        }
+        if (title != null) Text(title, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
+    }
+}
+
+@Composable
+fun PrimaryCta(text: String, modifier: Modifier = Modifier, enabled: Boolean = true, onClick: () -> Unit) {
+    val haptics = rememberFit10Haptics()
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val scale by animateFloatAsState(if (pressed) 0.96f else 1f, spring(dampingRatio = 0.6f), label = "cta")
+    androidx.compose.material3.Button(
+        onClick = { haptics.perform(HapticKind.Confirm); onClick() },
+        enabled = enabled,
+        interactionSource = interaction,
+        shape = RoundedCornerShape(18.dp),
+        modifier = modifier.fillMaxWidth().height(56.dp).scale(scale)
+    ) {
+        Text(text, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
     }
 }

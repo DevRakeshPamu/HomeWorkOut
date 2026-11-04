@@ -1,6 +1,7 @@
 package com.fit10.app.navigation
 
 import androidx.compose.runtime.Composable
+import kotlinx.coroutines.flow.first
 import com.fit10.app.core.ui.theme.ThemeMode
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -23,7 +24,6 @@ import com.fit10.app.feature.home.HomeViewModel
 import com.fit10.app.feature.onboarding.OnboardingScreen
 import com.fit10.app.feature.breathing.BreathingSessionScreen
 import com.fit10.app.feature.onboarding.OnboardingViewModel
-import com.fit10.app.feature.plan.PlanSummaryScreen
 import com.fit10.app.feature.player.WorkoutPlayerScreen
 import com.fit10.app.feature.player.WorkoutPlayerViewModel
 import com.fit10.app.feature.splash.SplashScreen
@@ -46,9 +46,6 @@ fun Fit10NavGraph(
     startDestination: String = Fit10Destination.Splash.route,
     modifier: Modifier = Modifier
 ) {
-    val userProfile by container.userRepository
-        .getUserProfile()
-        .collectAsStateWithLifecycle(initialValue = null)
 
     NavHost(
         navController = navController,
@@ -92,22 +89,6 @@ fun Fit10NavGraph(
                         navController.navigate(Fit10Destination.Home.route) {
                             popUpTo(Fit10Destination.Breathing.route) { inclusive = true }
                         }
-                    }
-                }
-            )
-        }
-
-        composable(Fit10Destination.PlanSummary.route) {
-            PlanSummaryScreen(
-                userProfile = userProfile,
-                onStartWorkout = {
-                    navController.navigate(Fit10Destination.WorkoutPreview.createRoute("w_full_body_ignition")) {
-                        popUpTo(Fit10Destination.PlanSummary.route) { inclusive = true }
-                    }
-                },
-                onEditPlan = {
-                    navController.navigate(Fit10Destination.Home.route) {
-                        popUpTo(Fit10Destination.PlanSummary.route) { inclusive = true }
                     }
                 }
             )
@@ -166,9 +147,7 @@ fun Fit10NavGraph(
                 onReplace = {
                     navController.navigate(Fit10Destination.ExerciseReplacement.createRoute(exerciseId))
                 },
-                onGotIt = {
-                    navController.navigate(Fit10Destination.Summary.createRoute("session_10", "workout_core_1"))
-                }
+                onGotIt = { navController.popBackStack() }
             )
         }
 
@@ -230,11 +209,39 @@ fun Fit10NavGraph(
         }
 
         composable(Fit10Destination.PrivacyData.route) {
+            val scope = rememberCoroutineScope()
+            val context = androidx.compose.ui.platform.LocalContext.current
             PrivacyDataScreen(
                 onBack = { navController.popBackStack() },
-                onDownloadData = {},
-                onManagePermissions = {},
-                onDeleteAccount = {}
+                onDownloadData = {
+                    scope.launch {
+                        val json = org.json.JSONObject().apply {
+                            put("postpartumProfile", container.preferencesDataSource.postpartumProfile.first()?.toString() ?: "")
+                            put("workouts", org.json.JSONArray(container.historyRepository.getRecentResults(1000).first().map {
+                                org.json.JSONObject().put("title", it.workoutTitle).put("completedAt", it.completedAtEpochMs)
+                                    .put("durationSeconds", it.durationSeconds).put("feedback", it.feedback?.name ?: "")
+                            }))
+                        }.toString(2)
+                        val send = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                            type = "application/json"
+                            putExtra(android.content.Intent.EXTRA_SUBJECT, "Fit10 Mom data export")
+                            putExtra(android.content.Intent.EXTRA_TEXT, json)
+                        }
+                        context.startActivity(android.content.Intent.createChooser(send, "Export my data"))
+                    }
+                },
+                onDeleteAccount = {
+                    scope.launch {
+                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                            container.database.clearAllTables()
+                            container.preferencesDataSource.clearAll()
+                        }
+                        com.fit10.app.core.reminder.ReminderScheduler.cancel(context)
+                        navController.navigate(Fit10Destination.Onboarding.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                }
             )
         }
 
@@ -244,6 +251,7 @@ fun Fit10NavGraph(
             ManageSubscriptionScreen(
                 entitlement = entitlement,
                 onBack = { navController.popBackStack() },
+                onUpgrade = { navController.navigate(Fit10Destination.Paywall.route) },
                 onRestorePurchases = {
                     coroutineScope.launch {
                         container.billingRepository.restorePurchases()

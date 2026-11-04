@@ -24,6 +24,8 @@ class UserPreferencesDataSource(private val context: Context) {
         val HAPTICS_ENABLED = booleanPreferencesKey("haptics_enabled")
         val POSTPARTUM_PROFILE = stringPreferencesKey("postpartum_profile")
         val SLEEP_CHECK_IN = stringPreferencesKey("sleep_check_in")
+        val REMINDER_ENABLED = booleanPreferencesKey("reminder_enabled")
+        val REMINDER_TIME = stringPreferencesKey("reminder_time")
     }
 
     val isOnboardingCompleted: Flow<Boolean> = context.dataStore.data.map { preferences ->
@@ -87,6 +89,20 @@ class UserPreferencesDataSource(private val context: Context) {
     suspend fun setSleepCheckIn(date: String, quality: String) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.SLEEP_CHECK_IN] = "$date|$quality"
+        }
+    }
+
+    val reminderEnabled: Flow<Boolean> = context.dataStore.data.map { it[PreferencesKeys.REMINDER_ENABLED] ?: false }
+
+    val reminderTime: Flow<Pair<Int, Int>> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.REMINDER_TIME]?.split(":")?.mapNotNull { it.toIntOrNull() }
+            ?.takeIf { it.size == 2 }?.let { it[0] to it[1] } ?: (20 to 30)
+    }
+
+    suspend fun setReminder(enabled: Boolean, hour: Int, minute: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.REMINDER_ENABLED] = enabled
+            preferences[PreferencesKeys.REMINDER_TIME] = "$hour:$minute"
         }
     }
 

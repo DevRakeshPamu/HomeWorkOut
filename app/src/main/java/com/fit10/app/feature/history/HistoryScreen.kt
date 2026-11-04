@@ -1,93 +1,53 @@
 package com.fit10.app.feature.history
 
-import com.fit10.app.core.ui.theme.Fit10Theme
-import com.fit10.app.core.ui.components.UserAvatar
-import androidx.compose.runtime.ReadOnlyComposable
-import com.fit10.app.core.feedback.HapticKind
-import com.fit10.app.core.feedback.rememberFit10Haptics
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.EmojiEvents
-import androidx.compose.material.icons.rounded.FitnessCenter
-import androidx.compose.material.icons.rounded.LocalFireDepartment
-import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material.icons.rounded.Notifications
-import androidx.compose.material.icons.rounded.Schedule
-import androidx.compose.material.icons.rounded.Shield
-import androidx.compose.material.icons.rounded.Verified
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
+import androidx.compose.material.icons.rounded.Spa
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.fit10.app.R
-
-private val BrandPrimary: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
-private val OnBrand: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimary
-private val BrandDeep: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimaryContainer
-private val BrandContainer: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primaryContainer
-private val ScreenBackground: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.background
-private val BorderInactive: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.outlineVariant
-private val TextMain: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurface
-private val TextMuted: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurfaceVariant
-private val CardSurface: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surface
-private val IconWell: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surfaceVariant
-
-private val BarGradient: Brush
-    @Composable @ReadOnlyComposable get() = Brush.verticalGradient(
-        colors = listOf(Fit10Theme.extendedColors.brandBright, MaterialTheme.colorScheme.primary)
-    )
+import com.fit10.app.core.ui.components.IconTile
+import com.fit10.app.core.ui.components.LargeTitle
+import com.fit10.app.core.ui.components.PressableCard
+import com.fit10.app.core.ui.components.SectionLabel
+import com.fit10.app.domain.model.WorkoutResult
+import java.time.DayOfWeek
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.util.Locale
 
 @Composable
 fun HistoryScreen(
@@ -96,735 +56,111 @@ fun HistoryScreen(
     onPreviewWorkout: (String) -> Unit = {}
 ) {
     val history by viewModel.history.collectAsStateWithLifecycle()
-    val haptics = rememberFit10Haptics()
+    val zone = ZoneId.systemDefault()
+    val doneDays = history.recentResults.map { Instant.ofEpochMilli(it.completedAtEpochMs).atZone(zone).toLocalDate() }.toSet()
 
-    Scaffold(
-        containerColor = ScreenBackground
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 20.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // 1. Top Header with Logo, Notification Bell, and Maya Avatar
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(28.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(BrandContainer),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.FitnessCenter,
-                            contentDescription = null,
-                            tint = BrandPrimary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                    Text(
-                        text = "Fit10",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = BrandDeep
-                    )
-                }
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(34.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(CardSurface)
-                            .border(1.dp, BorderInactive, RoundedCornerShape(10.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Notifications,
-                            contentDescription = "Notifications",
-                            tint = TextMain,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Box(
-                            modifier = Modifier
-                                .size(7.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.error)
-                                .align(Alignment.TopEnd)
-                                .padding(2.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(10.dp))
-
-                    UserAvatar(modifier = Modifier
-                            .size(34.dp)
-                            .border(1.5.dp, BrandPrimary, CircleShape))
-                }
+    LazyColumn(
+        Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).statusBarsPadding(),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        item { LargeTitle("Progress", "Every session counts, however small.") }
+        item {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                StatTile("Sessions", history.totalWorkoutsCompleted, Modifier.weight(1f))
+                StatTile("Minutes", history.totalMinutesWorkedOut, Modifier.weight(1f))
+                StatTile("Best streak", history.bestStreakDays, Modifier.weight(1f))
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // 2. Hero Header
-            Text(
-                text = "Your Consistency Pays Off",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextMain
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "You're compounding 10 minutes every day into lifelong fitness. Keep the momentum high.",
-                fontSize = 13.sp,
-                color = TextMuted,
-                lineHeight = 18.sp
-            )
-
-            Spacer(modifier = Modifier.height(18.dp))
-
-            // 3. Top 4 Stats Grid (2x2)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                // Card 1: Streak
-                StatTile(
-                    icon = Icons.Rounded.LocalFireDepartment,
-                    iconTint = Fit10Theme.extendedColors.streak,
-                    iconBg = Fit10Theme.extendedColors.streakContainer,
-                    badge = "+2 d",
-                    badgeColor = BrandContainer,
-                    badgeText = BrandDeep,
-                    value = "7 Days",
-                    label = "Current Streak",
-                    modifier = Modifier.weight(1f)
-                )
-
-                // Card 2: Total Workouts
-                StatTile(
-                    icon = Icons.Rounded.FitnessCenter,
-                    iconTint = BrandPrimary,
-                    iconBg = BrandContainer,
-                    badge = "Jan '25",
-                    badgeColor = IconWell,
-                    badgeText = TextMuted,
-                    value = "28",
-                    label = "Total Workouts",
-                    modifier = Modifier.weight(1f)
-                )
+        }
+        item { WeekStrip(doneDays) }
+        if (history.recentResults.isEmpty()) {
+            item { EmptyState(onExploreWorkouts) }
+        } else {
+            item { SectionLabel("Recent") }
+            items(history.recentResults, key = { it.sessionId }) { result ->
+                ResultRow(result, Modifier.animateItem()) { onPreviewWorkout(result.workoutId) }
             }
+        }
+        item { Spacer(Modifier.height(24.dp)) }
+    }
+}
 
-            Spacer(modifier = Modifier.height(10.dp))
+@Composable
+private fun StatTile(label: String, value: Int, modifier: Modifier) {
+    val shown by animateIntAsState(value, tween(800), label = "stat")
+    PressableCard(modifier) {
+        Column(Modifier.padding(vertical = 16.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("$shown", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text(label, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                // Card 3: Active Duration
-                StatTile(
-                    icon = Icons.Rounded.Schedule,
-                    iconTint = Fit10Theme.extendedColors.timer,
-                    iconBg = Fit10Theme.extendedColors.timerContainer,
-                    badge = "4.6 hrs",
-                    badgeColor = IconWell,
-                    badgeText = TextMuted,
-                    value = "280 min",
-                    label = "Active Duration",
-                    modifier = Modifier.weight(1f)
-                )
-
-                // Card 4: Calories Burned
-                StatTile(
-                    icon = Icons.Rounded.Bolt,
-                    iconTint = BrandPrimary,
-                    iconBg = BrandContainer,
-                    badge = "Top 8%",
-                    badgeColor = BrandContainer,
-                    badgeText = BrandDeep,
-                    value = "2,240",
-                    label = "Calories Burned",
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // 4. Workouts This Week Card with Bar Chart
-            Surface(
-                shape = RoundedCornerShape(18.dp),
-                color = CardSurface,
-                shadowElevation = 3.dp,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = "Workouts This Week",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp,
-                                color = TextMain
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = "Daily commitment to micro-sets",
-                                fontSize = 12.sp,
-                                color = TextMuted
-                            )
-                        }
-
-                        Surface(
-                            shape = RoundedCornerShape(6.dp),
-                            color = BrandContainer,
-                            border = BorderStroke(1.dp, BrandPrimary.copy(alpha = 0.3f))
-                        ) {
-                            Text(
-                                text = "✓ 4 of 4 Met",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = BrandDeep,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // 7-day Bar Chart
-                    val dayData = listOf(
-                        Triple("M", 75, true),
-                        Triple("T", 14, false), // Rest
-                        Triple("W", 100, true),
-                        Triple("T", 65, true),
-                        Triple("F", 85, true), // Today with 10m tag
-                        Triple("S", 14, false),
-                        Triple("S", 14, false)
-                    )
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(130.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Bottom
-                    ) {
-                        dayData.forEachIndexed { index, (day, heightPercent, isActive) ->
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Bottom,
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                if (index == 4) { // Friday with 10m tag
-                                    Surface(
-                                        shape = RoundedCornerShape(4.dp),
-                                        color = BrandContainer,
-                                        border = BorderStroke(0.5.dp, BrandPrimary.copy(alpha = 0.4f))
-                                    ) {
-                                        Text(
-                                            text = "10m",
-                                            fontSize = 9.5.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = BrandDeep,
-                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                }
-
-                                Box(
-                                    modifier = Modifier
-                                        .width(20.dp)
-                                        .height((heightPercent * 0.9).dp)
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(
-                                            if (isActive) BarGradient
-                                            else Brush.verticalGradient(listOf(BorderInactive, BorderInactive))
-                                        )
-                                )
-
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                Text(
-                                    text = day,
-                                    fontSize = 11.5.sp,
-                                    fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isActive) TextMain else TextMuted
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-                    Divider(color = BorderInactive, thickness = 1.dp)
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .clip(CircleShape)
-                                    .background(BrandPrimary)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "Daily Target: 10 min",
-                                fontSize = 11.5.sp,
-                                color = TextMuted
-                            )
-                        }
-
+@Composable
+private fun WeekStrip(doneDays: Set<LocalDate>) {
+    val today = LocalDate.now()
+    val monday = today.with(DayOfWeek.MONDAY)
+    PressableCard {
+        Column(Modifier.padding(16.dp)) {
+            Text("This week", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+            Spacer(Modifier.height(12.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                (0..6).forEach { i ->
+                    val day = monday.plusDays(i.toLong())
+                    val done = day in doneDays
+                    val isToday = day == today
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "Details ›",
+                            day.dayOfWeek.getDisplayName(TextStyle.NARROW, Locale.getDefault()),
                             fontSize = 12.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = BrandDeep,
-                            modifier = Modifier.clickable { haptics.perform(HapticKind.Tick); onExploreWorkouts() }
+                            fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
+                            color = if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // 5. Habit Stability Score Card
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = CardSurface,
-                border = BorderStroke(1.dp, BorderInactive),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Donut circular progress chart
-                    Box(
-                        modifier = Modifier.size(68.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(
-                            progress = { 0.94f },
-                            modifier = Modifier.fillMaxSize(),
-                            color = BrandPrimary,
-                            trackColor = BorderInactive,
-                            strokeWidth = 6.dp,
-                            strokeCap = StrokeCap.Round
-                        )
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "94%",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp,
-                                color = TextMain
-                            )
-                            Text(
-                                text = "SCORE",
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = TextMuted
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Rounded.Verified,
-                                contentDescription = null,
-                                tint = BrandPrimary,
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = "HABIT STABILITY",
-                                fontSize = 10.5.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 0.8.sp,
-                                color = BrandDeep
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(2.dp))
-
-                        Text(
-                            text = "Outstanding Performance",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.5.sp,
-                            color = TextMain
-                        )
-
-                        Spacer(modifier = Modifier.height(3.dp))
-
-                        Text(
-                            text = "You have finished 12 micro-workouts in the last 14 days without friction.",
-                            fontSize = 11.5.sp,
-                            color = TextMuted,
-                            lineHeight = 15.sp
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(22.dp))
-
-            // 6. Recent Milestones Section
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = "Recent Milestones",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp,
-                        color = TextMain
-                    )
-                    Text(
-                        text = "Badges earned through consistency",
-                        fontSize = 11.5.sp,
-                        color = TextMuted
-                    )
-                }
-
-                Text(
-                    text = "See All (9)",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = BrandDeep
-                )
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = CardSurface,
-                border = BorderStroke(1.dp, BorderInactive),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(14.dp)) {
-                    // Milestone 1: 7-Day Streak
-                    MilestoneRow(
-                        icon = Icons.Rounded.Shield,
-                        iconTint = BrandPrimary,
-                        iconBg = BrandContainer,
-                        title = "7-Day Streak",
-                        badge = "New",
-                        subtitle = "Completed 7 consecutive days of mo...",
-                        date = "Today"
-                    )
-
-                    Divider(color = BorderInactive, thickness = 1.dp, modifier = Modifier.padding(vertical = 10.dp))
-
-                    // Milestone 2: 25 Workouts Club
-                    MilestoneRow(
-                        icon = Icons.Rounded.EmojiEvents,
-                        iconTint = MaterialTheme.colorScheme.tertiary,
-                        iconBg = MaterialTheme.colorScheme.tertiaryContainer,
-                        title = "25 Workouts Club",
-                        subtitle = "Quarter-century milestone achieved",
-                        date = "Jan 10"
-                    )
-
-                    Divider(color = BorderInactive, thickness = 1.dp, modifier = Modifier.padding(vertical = 10.dp))
-
-                    // Milestone 3: 5 Hours Completed
-                    MilestoneRow(
-                        icon = Icons.Rounded.Schedule,
-                        iconTint = Fit10Theme.extendedColors.timer,
-                        iconBg = Fit10Theme.extendedColors.timerContainer,
-                        title = "5 Hours Completed",
-                        subtitle = "Accumulated 300+ active minutes",
-                        date = "Jan 8"
-                    )
-
-                    Divider(color = BorderInactive, thickness = 1.dp, modifier = Modifier.padding(vertical = 10.dp))
-
-                    // Milestone 4: 30-Day Habit Master with Progress Bar
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                        Spacer(Modifier.height(6.dp))
                         Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(IconWell),
+                            Modifier.size(32.dp).clip(CircleShape)
+                                .background(if (done) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Lock,
-                                contentDescription = null,
-                                tint = TextMuted,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "30-Day Habit Master",
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 13.5.sp,
-                                    color = TextMain
-                                )
-                                Text(
-                                    text = "24/30 days",
-                                    fontSize = 11.5.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = TextMuted
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(6.dp))
-
-                            LinearProgressIndicator(
-                                progress = { 24f / 30f },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(6.dp)
-                                    .clip(RoundedCornerShape(3.dp)),
-                                color = BrandPrimary,
-                                trackColor = BorderInactive,
-                                strokeCap = StrokeCap.Round
-                            )
+                            if (done) Icon(Icons.Rounded.Check, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(18.dp))
                         }
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // 7. Daily Protocol Banner 
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = BrandPrimary,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "DAILY PROTOCOL",
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.sp,
-                            color = OnBrand.copy(alpha = 0.75f)
-                        )
-                        Spacer(modifier = Modifier.height(3.dp))
-                        Text(
-                            text = "Ready for Saturday's 10m?",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp,
-                            color = OnBrand
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = "Upper Body Flush scheduled for tomorrow morning.",
-                            fontSize = 11.5.sp,
-                            color = OnBrand.copy(alpha = 0.85f),
-                            lineHeight = 15.sp
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(10.dp))
-
-                    Surface(
-                        shape = RoundedCornerShape(20.dp),
-                        color = CardSurface,
-                        modifier = Modifier.clickable { haptics.perform(HapticKind.Confirm); onPreviewWorkout("full_body_ignition") }
-                    ) {
-                        Text(
-                            text = "Preview →",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = BrandPrimary,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
 
 @Composable
-private fun StatTile(
-    icon: ImageVector,
-    iconTint: Color,
-    iconBg: Color,
-    badge: String,
-    badgeColor: Color,
-    badgeText: Color,
-    value: String,
-    label: String,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = CardSurface,
-        border = BorderStroke(1.dp, BorderInactive),
-        modifier = modifier
-    ) {
-        Column(modifier = Modifier.padding(14.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(iconBg),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = iconTint,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-
-                Surface(
-                    shape = RoundedCornerShape(6.dp),
-                    color = badgeColor
-                ) {
-                    Text(
-                        text = badge,
-                        fontSize = 10.5.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = badgeText,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                    )
-                }
+private fun ResultRow(result: WorkoutResult, modifier: Modifier, onClick: () -> Unit) {
+    val date = Instant.ofEpochMilli(result.completedAtEpochMs).atZone(ZoneId.systemDefault()).toLocalDate()
+    val label = when (date) {
+        LocalDate.now() -> "Today"
+        LocalDate.now().minusDays(1) -> "Yesterday"
+        else -> date.format(DateTimeFormatter.ofPattern("EEE, d MMM"))
+    }
+    PressableCard(modifier, onClick = onClick) {
+        Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+            IconTile(Icons.Rounded.Check, 40.dp)
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f)) {
+                Text(result.workoutTitle, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                Text("$label · ${(result.durationSeconds + 30) / 60} min", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Text(
-                text = value,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
-                color = TextMain
-            )
-
-            Spacer(modifier = Modifier.height(2.dp))
-
-            Text(
-                text = label,
-                fontSize = 11.5.sp,
-                color = TextMuted
-            )
         }
     }
 }
 
 @Composable
-private fun MilestoneRow(
-    icon: ImageVector,
-    iconTint: Color,
-    iconBg: Color,
-    title: String,
-    subtitle: String,
-    date: String,
-    badge: String? = null
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(iconBg),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = iconTint,
-                modifier = Modifier.size(18.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = title,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 13.5.sp,
-                    color = TextMain
-                )
-                if (badge != null) {
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = BrandContainer,
-                        border = BorderStroke(1.dp, BrandPrimary.copy(alpha = 0.3f))
-                    ) {
-                        Text(
-                            text = badge,
-                            fontSize = 9.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = BrandDeep,
-                            modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
-                        )
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(1.dp))
-            Text(
-                text = subtitle,
-                fontSize = 11.5.sp,
-                color = TextMuted
-            )
-        }
-
-        Text(
-            text = date,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Medium,
-            color = TextMuted
-        )
+private fun EmptyState(onExplore: () -> Unit) {
+    Column(Modifier.fillMaxWidth().padding(top = 40.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        IconTile(Icons.Rounded.Spa, 64.dp)
+        Spacer(Modifier.height(16.dp))
+        Text("Your sessions will show up here", fontSize = 18.sp, fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onBackground, textAlign = TextAlign.Center)
+        Spacer(Modifier.height(6.dp))
+        Text("Start with 10 minutes today.", fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(20.dp))
+        Button(onClick = onExplore) { Text("Find a workout") }
     }
 }

@@ -1,75 +1,44 @@
 package com.fit10.app.feature.explore
 
-import com.fit10.app.core.feedback.rememberFit10Haptics
-import com.fit10.app.core.ui.components.UserAvatar
-import com.fit10.app.core.feedback.HapticKind
-import com.fit10.app.core.ui.theme.Fit10Theme
-import androidx.compose.runtime.ReadOnlyComposable
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.AccessibilityNew
+import androidx.compose.material.icons.rounded.DirectionsWalk
 import androidx.compose.material.icons.rounded.FitnessCenter
-import androidx.compose.material.icons.rounded.LocalFireDepartment
-import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.Schedule
-import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.SelfImprovement
+import androidx.compose.material.icons.rounded.Spa
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.fit10.app.R
-import com.fit10.app.core.ui.components.Fit10Chip
-import com.fit10.app.core.ui.components.Fit10TopBar
-import com.fit10.app.core.ui.theme.Fit10Shapes
+import com.fit10.app.core.ui.components.IconTile
+import com.fit10.app.core.ui.components.LargeTitle
+import com.fit10.app.core.ui.components.PillRow
+import com.fit10.app.core.ui.components.PressableCard
 import com.fit10.app.domain.model.FocusArea
+import com.fit10.app.domain.model.IntensityPreference
 import com.fit10.app.domain.model.Workout
-
-private val BrandPrimary: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
-private val BrandStrong: Color
-    @Composable @ReadOnlyComposable get() = Fit10Theme.extendedColors.brandStrong
-private val OnBrand: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onPrimary
-private val ScreenBackground: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.background
-private val TextMain: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurface
-private val TextMuted: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurfaceVariant
-private val CardSurface: Color
-    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surface
 
 @Composable
 fun ExploreScreen(
@@ -77,259 +46,60 @@ fun ExploreScreen(
     onSelectWorkout: (workoutId: String) -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val haptics = rememberFit10Haptics()
-
-    Scaffold(
-        containerColor = ScreenBackground,
-        topBar = {
-            Fit10TopBar(title = "Explore Workouts")
+    val filters = listOf<Pair<FocusArea?, String>>(
+        null to "All",
+        FocusArea.CORE to "Core",
+        FocusArea.MOBILITY to "Mobility",
+        FocusArea.LOWER_BODY to "Lower body",
+        FocusArea.UPPER_BODY to "Upper body",
+        FocusArea.FULL_BODY to "Full body",
+    )
+    LazyColumn(
+        Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).statusBarsPadding(),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item { LargeTitle("Workouts", "10 minutes. No equipment. Gentle on your body.") }
+        item {
+            PillRow(filters, state.selectedFilter, viewModel::setFilter)
+            Spacer(Modifier.height(8.dp))
         }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            verticalArrangement = Arrangement.spacedBy(0.dp)
-        ) {
-            // ── Featured Banner ──────────────────────────────────────────────
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.splash_bg),
-                        contentDescription = "Featured",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                    // Gradient overlay
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(Color.Transparent, Fit10Theme.extendedColors.mediaScrim),
-                                    startY = 60f
-                                )
-                            )
-                    )
-                    Column(
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(16.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(50))
-                                    .background(BrandPrimary)
-                                    .padding(horizontal = 10.dp, vertical = 3.dp)
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(imageVector = Icons.Rounded.Star, contentDescription = null, tint = OnBrand, modifier = Modifier.size(11.dp))
-                                    Spacer(Modifier.width(4.dp))
-                                    Text(text = "FEATURED", color = OnBrand, fontSize = 9.5.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-                                }
-                            }
-                        }
-                        Spacer(Modifier.height(6.dp))
-                        Text(text = "Full Body Kickstart", color = Fit10Theme.extendedColors.onMediaScrim, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                        Text(text = "10 min • Beginner • No equipment", color = Fit10Theme.extendedColors.onMediaScrim.copy(0.8f), fontSize = 12.sp)
-                    }
-                    // Play button overlay
-                    Surface(
-                        onClick = { haptics.perform(HapticKind.Confirm); state.filteredWorkouts.firstOrNull()?.let { onSelectWorkout(it.id) } },
-                        shape = CircleShape,
-                        color = BrandPrimary,
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(16.dp)
-                            .size(52.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(imageVector = Icons.Rounded.PlayArrow, contentDescription = "Play", tint = OnBrand, modifier = Modifier.size(28.dp))
-                        }
-                    }
-                }
-            }
+        items(state.filteredWorkouts, key = { it.id }) { workout ->
+            WorkoutRow(workout, Modifier.animateItem()) { onSelectWorkout(workout.id) }
+        }
+        item { Spacer(Modifier.height(24.dp)) }
+    }
+}
 
-            // ── Filter chips ─────────────────────────────────────────────────
-            item {
-                Column(modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState())
-                            .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Fit10Chip(text = "All", selected = state.selectedFilter == null, onClick = { viewModel.setFilter(null) })
-                        FocusArea.entries.forEach { area ->
-                            Fit10Chip(
-                                text = area.name.replace("_", " ").lowercase().replaceFirstChar { it.uppercase() },
-                                selected = state.selectedFilter == area,
-                                onClick = { viewModel.setFilter(area) }
-                            )
-                        }
-                    }
-                }
-            }
-
-            // ── Count label ──────────────────────────────────────────────────
-            item {
+@Composable
+private fun WorkoutRow(workout: Workout, modifier: Modifier, onClick: () -> Unit) {
+    PressableCard(modifier, onClick = onClick) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            IconTile(iconFor(workout.focusArea))
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f)) {
+                Text(workout.title, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                Spacer(Modifier.height(2.dp))
                 Text(
-                    text = "${state.filteredWorkouts.size} routines crafted for 10-minute maximum impact",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextMuted,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    "${workout.estimatedDurationMinutes} min · ${workout.exercises.size} moves · ${intensityLabel(workout.intensity)}",
+                    fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-
-            // ── Workout list ─────────────────────────────────────────────────
-            items(state.filteredWorkouts, key = { it.id }) { workout ->
-                WorkoutListItemCard(
-                    workout = workout,
-                    onClick = { haptics.perform(HapticKind.Tick); onSelectWorkout(workout.id) },
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
-                )
-            }
-
-            item { Spacer(modifier = Modifier.height(40.dp)) }
+            Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(22.dp))
         }
     }
 }
 
-@Composable
-private fun WorkoutListItemCard(
-    workout: Workout,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(18.dp),
-        color = CardSurface,
-        shadowElevation = 3.dp,
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Column {
-            // Thumbnail image strip
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(110.dp)
-                    .clip(RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp))
-            ) {
-                UserAvatar(modifier = Modifier.fillMaxSize())
-                // Gradient fade
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(Color.Transparent, Fit10Theme.extendedColors.mediaScrim.copy(alpha = 0.55f)),
-                                startY = 40f
-                            )
-                        )
-                )
-                // Focus area badge
-                Box(
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .align(Alignment.BottomStart)
-                        .clip(RoundedCornerShape(50))
-                        .background(
-                            Brush.horizontalGradient(listOf(BrandStrong, BrandPrimary))
-                        )
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = workout.focusArea.name.replace("_", " "),
-                        color = OnBrand,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            // Content area
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(14.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = workout.title,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = TextMain
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = workout.description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextMuted,
-                        maxLines = 2,
-                        lineHeight = 16.sp
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    // Metadata row
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        MetaPill(icon = Icons.Rounded.Schedule, text = "${workout.estimatedDurationMinutes}m", color = Fit10Theme.extendedColors.timer)
-                        workout.caloriesBurnEstimate?.let { cal ->
-                            MetaPill(icon = Icons.Rounded.LocalFireDepartment, text = "$cal kcal", color = Fit10Theme.extendedColors.streak)
-                        }
-                        MetaPill(icon = Icons.Rounded.FitnessCenter, text = "${workout.exercises.size} moves", color = BrandPrimary)
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                // Play button
-                Box(
-                    modifier = Modifier
-                        .size(50.dp)
-                        .clip(CircleShape)
-                        .background(Brush.linearGradient(listOf(BrandStrong, BrandPrimary))),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.PlayArrow,
-                        contentDescription = "Start Workout",
-                        tint = OnBrand,
-                        modifier = Modifier.size(26.dp)
-                    )
-                }
-            }
-        }
-    }
+private fun iconFor(area: FocusArea) = when (area) {
+    FocusArea.CORE -> Icons.Rounded.Spa
+    FocusArea.MOBILITY -> Icons.Rounded.SelfImprovement
+    FocusArea.LOWER_BODY -> Icons.Rounded.DirectionsWalk
+    FocusArea.UPPER_BODY -> Icons.Rounded.FitnessCenter
+    FocusArea.FULL_BODY -> Icons.Rounded.AccessibilityNew
 }
 
-@Composable
-private fun MetaPill(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    text: String,
-    color: Color
-) {
-    Surface(
-        shape = RoundedCornerShape(50),
-        color = color.copy(alpha = 0.1f)
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(imageVector = icon, contentDescription = null, tint = color, modifier = Modifier.size(12.dp))
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(text = text, fontSize = 10.5.sp, fontWeight = FontWeight.Bold, color = color)
-        }
-    }
+private fun intensityLabel(i: IntensityPreference) = when (i) {
+    IntensityPreference.EASY -> "Gentle"
+    IntensityPreference.MODERATE -> "Steady"
+    IntensityPreference.CHALLENGING -> "Stronger"
 }

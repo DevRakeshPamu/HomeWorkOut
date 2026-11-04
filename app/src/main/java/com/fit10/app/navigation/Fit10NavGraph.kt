@@ -197,8 +197,15 @@ fun Fit10NavGraph(
             val hapticsEnabled by container.preferencesDataSource.hapticsEnabled
                 .collectAsStateWithLifecycle(initialValue = true)
             val scope = rememberCoroutineScope()
+            val profile by container.userRepository.getUserProfile().collectAsStateWithLifecycle(initialValue = null)
+            val history by container.historyRepository.getWorkoutHistory()
+                .collectAsStateWithLifecycle(initialValue = com.fit10.app.domain.model.WorkoutHistory())
             ProfileSettingsScreen(
                 isPro = entitlement.isPro(),
+                userName = profile?.name.orEmpty(),
+                streakDays = history.currentStreakDays,
+                sessions = history.totalWorkoutsCompleted,
+                minutes = history.totalMinutesWorkedOut,
                 themeMode = themeMode,
                 onThemeModeChange = { mode ->
                     scope.launch { container.preferencesDataSource.setThemeMode(mode) }

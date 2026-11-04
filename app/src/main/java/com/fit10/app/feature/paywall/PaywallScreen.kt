@@ -103,16 +103,21 @@ fun PaywallScreen(
 ) {
     val context = LocalContext.current
     val haptics = rememberFit10Haptics()
-    var selectedPlanIndex by remember { mutableIntStateOf(0) } // 0: Annual, 1: Monthly
+    var selectedPlanIndex by remember { mutableIntStateOf(0) } // 0: Annual, 1: Monthly, 2: Lifetime
 
     val activePlans = plans.ifEmpty {
-        listOf(SubscriptionPlanDetails.FALLBACK_ANNUAL, SubscriptionPlanDetails.FALLBACK_MONTHLY)
+        listOf(SubscriptionPlanDetails.FALLBACK_ANNUAL, SubscriptionPlanDetails.FALLBACK_MONTHLY, SubscriptionPlanDetails.FALLBACK_LIFETIME)
     }
 
     val annualPlan = activePlans.find { it.productId == BillingConstants.PRODUCT_ID_ANNUAL } ?: activePlans.first()
     val monthlyPlan = activePlans.find { it.productId == BillingConstants.PRODUCT_ID_MONTHLY } ?: activePlans.getOrElse(1) { activePlans.first() }
 
-    val selectedPlan = if (selectedPlanIndex == 0) annualPlan else monthlyPlan
+    val lifetimePlan = activePlans.find { it.productId == BillingConstants.PRODUCT_ID_LIFETIME } ?: SubscriptionPlanDetails.FALLBACK_LIFETIME
+    val selectedPlan = when (selectedPlanIndex) {
+        0 -> annualPlan
+        1 -> monthlyPlan
+        else -> lifetimePlan
+    }
 
     Scaffold(
         containerColor = ScreenBackground,
@@ -194,10 +199,10 @@ fun PaywallScreen(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = if (selectedPlan.hasFreeTrial) {
-                                    "Start ${selectedPlan.freeTrialDays}-Day Free Trial, then ${selectedPlan.formattedPrice}/yr"
-                                } else {
-                                    "Continue with ${selectedPlan.formattedPrice}/mo"
+                                text = when {
+                                    selectedPlan.productId == BillingConstants.PRODUCT_ID_LIFETIME -> "Get lifetime access for ${selectedPlan.formattedPrice}"
+                                    selectedPlan.hasFreeTrial -> "Start ${selectedPlan.freeTrialDays}-Day Free Trial, then ${selectedPlan.formattedPrice}/yr"
+                                    else -> "Continue with ${selectedPlan.formattedPrice}/mo"
                                 },
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold
@@ -535,6 +540,59 @@ fun PaywallScreen(
                 }
             }
 
+            Spacer(Modifier.height(10.dp))
+
+            // Option 3: Lifetime
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = if (selectedPlanIndex == 2) BrandContainer.copy(alpha = 0.35f) else CardSurface,
+                border = BorderStroke(
+                    width = if (selectedPlanIndex == 2) 2.dp else 1.dp,
+                    color = if (selectedPlanIndex == 2) BrandPrimary else BorderInactive
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { haptics.perform(HapticKind.Tick); selectedPlanIndex = 2 }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = selectedPlanIndex == 2,
+                        onClick = { haptics.perform(HapticKind.Tick); selectedPlanIndex = 2 },
+                        colors = RadioButtonDefaults.colors(
+                            selectedColor = BrandPrimary,
+                            unselectedColor = MaterialTheme.colorScheme.outline
+                        )
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = lifetimePlan.formattedPrice,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = TextMain
+                            )
+                            Text(
+                                text = " once",
+                                fontSize = 13.sp,
+                                color = TextMuted
+                            )
+                        }
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            text = "Pay once, yours forever. No renewals",
+                            fontSize = 11.5.sp,
+                            color = TextMuted
+                        )
+                    }
+                }
+            }
+
             Spacer(Modifier.height(20.dp))
 
             // 6. Explicit Subscription Terms (Play Store Requirement)
@@ -556,6 +614,7 @@ fun PaywallScreen(
                         text = "• After the 7-day free trial, your Google Play account will be charged ${annualPlan.formattedPrice}/year (or ${monthlyPlan.formattedPrice}/month if selected) unless canceled at least 24 hours before the trial ends.\n" +
                                 "• Subscriptions automatically renew until canceled in your Google Play account settings.\n" +
                                 "• You can cancel anytime directly via Google Play Subscriptions.\n" +
+                                "• Lifetime is a one-time purchase with no renewal.\n" +
                                 "• Refund policy: governed exclusively by Google Play refund rules.",
                         fontSize = 11.sp,
                         color = TextMuted,

@@ -14,6 +14,8 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
+import com.android.billingclient.api.queryPurchasesAsync
+import com.android.billingclient.api.queryProductDetails
 import com.fit10.app.domain.billing.BillingConstants
 import com.fit10.app.domain.billing.EntitlementInfo
 import com.fit10.app.domain.billing.EntitlementVerifier
@@ -100,7 +102,7 @@ class BillingRepositoryImpl(
     override val entitlement: StateFlow<EntitlementInfo> = _entitlement.asStateFlow()
 
     private val _subscriptionPlans = MutableStateFlow<List<SubscriptionPlanDetails>>(
-        listOf(SubscriptionPlanDetails.FALLBACK_ANNUAL, SubscriptionPlanDetails.FALLBACK_MONTHLY)
+        listOf(SubscriptionPlanDetails.FALLBACK_ANNUAL, SubscriptionPlanDetails.FALLBACK_MONTHLY, SubscriptionPlanDetails.FALLBACK_LIFETIME)
     )
     override val subscriptionPlans: StateFlow<List<SubscriptionPlanDetails>> = _subscriptionPlans.asStateFlow()
 
@@ -192,60 +194,80 @@ class BillingRepositoryImpl(
             .setProductList(productList)
             .build()
 
-        billingClient.queryProductDetailsAsync(params) { billingResult, queryResult ->
-            val productDetailsList = queryResult.productDetailsList
-            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && productDetailsList.isNotEmpty()) {
-                val detailsMap = productDetailsList.associateBy { it.productId }
-                cachedProductDetails.clear()
-                cachedProductDetails.putAll(detailsMap)
-
-                val monthlyDetails = detailsMap[BillingConstants.PRODUCT_ID_MONTHLY]
-                val annualDetails = detailsMap[BillingConstants.PRODUCT_ID_ANNUAL]
-
-                val monthlyMicros = monthlyDetails?.subscriptionOfferDetails?.firstOrNull()
-                    ?.pricingPhases?.pricingPhaseList?.lastOrNull()?.priceAmountMicros ?: 149_000_000L
-
-                val parsedPlans = productDetailsList.map { productDetails ->
-                    val offer = productDetails.subscriptionOfferDetails?.firstOrNull()
-                    val recurringPhase = offer?.pricingPhases?.pricingPhaseList?.lastOrNull()
-                    val trialPhase = offer?.pricingPhases?.pricingPhaseList?.firstOrNull { it.priceAmountMicros == 0L }
-
-                    val priceMicros = recurringPhase?.priceAmountMicros ?: 0L
-                    val formattedPrice = recurringPhase?.formattedPrice ?: "₹0"
-                    val currency = recurringPhase?.priceCurrencyCode ?: "INR"
-                    val period = recurringPhase?.billingPeriod ?: ""
-
-                    val hasTrial = trialPhase != null
-                    val trialDays = if (hasTrial) 7 else 0
-
-                    val monthlyEquiv = if (productDetails.productId == BillingConstants.PRODUCT_ID_ANNUAL) {
-                        SubscriptionPlanDetails.computeMonthlyEquivalent(priceMicros, currency)
-                    } else {
-                        formattedPrice
-                    }
-
-                    val savings = if (productDetails.productId == BillingConstants.PRODUCT_ID_ANNUAL) {
-                        SubscriptionPlanDetails.computeSavingsPercentage(priceMicros, monthlyMicros)
-                    } else null
-
-                    SubscriptionPlanDetails(
-                        productId = productDetails.productId,
-                        title = productDetails.title.ifBlank { if (productDetails.productId == BillingConstants.PRODUCT_ID_ANNUAL) "Annual Pass" else "Monthly Pass" },
-                        formattedPrice = formattedPrice,
-                        priceAmountMicros = priceMicros,
-                        currencyCode = currency,
-                        billingPeriod = period,
-                        hasFreeTrial = hasTrial,
-                        freeTrialDays = trialDays,
-                        formattedMonthlyEquivalent = monthlyEquiv,
-                        savingsPercentage = savings,
-                        isFallbackSkeleton = false
+        val subsResult = billingClient.queryProductDetails(params)
+        val inAppResult = billingClient.queryProductDetails(
+            QueryProductDetailsParams.newBuilder()
+                .setProductList(
+                    listOf(
+                        QueryProductDetailsParams.Product.newBuilder()
+                            .setProductId(BillingConstants.PRODUCT_ID_LIFETIME)
+                            .setProductType(BillingClient.ProductType.INAPP)
+                            .build()
                     )
-                }
-
-                _subscriptionPlans.value = parsedPlans
-            }
+                )
+                .build()
+        )
+        val productDetailsList = buildList {
+            if (subsResult.billingResult.responseCode == BillingClient.BillingResponseCode.OK) addAll(subsResult.productDetailsList.orEmpty())
+            if (inAppResult.billingResult.responseCode == BillingClient.BillingResponseCode.OK) addAll(inAppResult.productDetailsList.orEmpty())
         }
+        if (productDetailsList.isEmpty()) return@withContext
+
+        val detailsMap = productDetailsList.associateBy { it.productId }
+        cachedProductDetails.clear()
+        cachedProductDetails.putAll(detailsMap)
+
+        val monthlyMicros = detailsMap[BillingConstants.PRODUCT_ID_MONTHLY]?.subscriptionOfferDetails?.firstOrNull()
+            ?.pricingPhases?.pricingPhaseList?.lastOrNull()?.priceAmountMicros ?: 149_000_000L
+
+        _subscriptionPlans.value = productDetailsList.map { productDetails ->
+            if (productDetails.productId == BillingConstants.PRODUCT_ID_LIFETIME) {
+                val oneTime = productDetails.oneTimePurchaseOfferDetailsList?.firstOrNull()
+                val price = oneTime?.formattedPrice ?: SubscriptionPlanDetails.FALLBACK_LIFETIME.formattedPrice
+                return@map SubscriptionPlanDetails(
+                    productId = productDetails.productId,
+                    title = productDetails.title.ifBlank { "Lifetime" },
+                    formattedPrice = price,
+                    priceAmountMicros = oneTime?.priceAmountMicros ?: 0L,
+                    currencyCode = oneTime?.priceCurrencyCode ?: "INR",
+                    billingPeriod = "",
+                    formattedMonthlyEquivalent = price
+                )
+            }
+            val offer = productDetails.subscriptionOfferDetails?.firstOrNull()
+            val recurringPhase = offer?.pricingPhases?.pricingPhaseList?.lastOrNull()
+            val trialPhase = offer?.pricingPhases?.pricingPhaseList?.firstOrNull { it.priceAmountMicros == 0L }
+            val priceMicros = recurringPhase?.priceAmountMicros ?: 0L
+            val formattedPrice = recurringPhase?.formattedPrice ?: "₹0"
+            val currency = recurringPhase?.priceCurrencyCode ?: "INR"
+            val isAnnual = productDetails.productId == BillingConstants.PRODUCT_ID_ANNUAL
+            SubscriptionPlanDetails(
+                productId = productDetails.productId,
+                title = productDetails.title.ifBlank { if (isAnnual) "Annual Pass" else "Monthly Pass" },
+                formattedPrice = formattedPrice,
+                priceAmountMicros = priceMicros,
+                currencyCode = currency,
+                billingPeriod = recurringPhase?.billingPeriod ?: "",
+                hasFreeTrial = trialPhase != null,
+                freeTrialDays = if (trialPhase != null) 7 else 0,
+                formattedMonthlyEquivalent = if (isAnnual) SubscriptionPlanDetails.computeMonthlyEquivalent(priceMicros, currency) else formattedPrice,
+                savingsPercentage = if (isAnnual) SubscriptionPlanDetails.computeSavingsPercentage(priceMicros, monthlyMicros) else null,
+                isFallbackSkeleton = false
+            )
+        }
+    }
+
+    private suspend fun queryAllPurchases(): List<Purchase>? {
+        val subs = billingClient.queryPurchasesAsync(
+            QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.SUBS).build()
+        )
+        val inApp = billingClient.queryPurchasesAsync(
+            QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.INAPP).build()
+        )
+        if (subs.billingResult.responseCode != BillingClient.BillingResponseCode.OK &&
+            inApp.billingResult.responseCode != BillingClient.BillingResponseCode.OK
+        ) return null
+        return subs.purchasesList + inApp.purchasesList
     }
 
     override suspend fun refreshPurchases(): Result<Unit> = withContext(Dispatchers.IO) {
@@ -254,23 +276,15 @@ class BillingRepositoryImpl(
         }
 
         _isLoading.value = true
-        val params = QueryPurchasesParams.newBuilder()
-            .setProductType(BillingClient.ProductType.SUBS)
-            .build()
-
-        billingClient.queryPurchasesAsync(params) { billingResult, purchasesList ->
-            _isLoading.value = false
-            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                processPurchases(purchasesList)
-            }
-        }
-
+        val purchases = queryAllPurchases()
+        _isLoading.value = false
+        purchases?.let(::processPurchases)
         Result.success(Unit)
     }
 
     override fun onPurchasesUpdated(billingResult: BillingResult, purchases: List<Purchase>?) {
         if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
-            processPurchases(purchases)
+            scope.launch { processPurchases(queryAllPurchases() ?: purchases) }
         } else if (billingResult.responseCode == BillingClient.BillingResponseCode.USER_CANCELED) {
             // User canceled purchase flow: no-op
         } else {
@@ -283,7 +297,10 @@ class BillingRepositoryImpl(
             val validPurchases = purchases.filter { it.products.any { p -> isProProduct(p) } }
 
             // 1. Pending purchases check: NEVER unlock until PURCHASED
-            val activePurchase = validPurchases.firstOrNull { it.purchaseState == Purchase.PurchaseState.PURCHASED }
+            val activePurchase = validPurchases
+                .filter { it.purchaseState == Purchase.PurchaseState.PURCHASED }
+                .sortedByDescending { BillingConstants.PRODUCT_ID_LIFETIME in it.products }
+                .firstOrNull()
             val pendingPurchase = validPurchases.firstOrNull { it.purchaseState == Purchase.PurchaseState.PENDING }
 
             if (activePurchase != null) {
@@ -300,7 +317,8 @@ class BillingRepositoryImpl(
                         billingClient.acknowledgePurchase(ackParams) { /* ack callback */ }
                     }
 
-                    val state = if (activePurchase.isAutoRenewing) {
+                    val isLifetime = productId == BillingConstants.PRODUCT_ID_LIFETIME
+                    val state = if (isLifetime || activePurchase.isAutoRenewing) {
                         SubscriptionState.ACTIVE
                     } else {
                         SubscriptionState.CANCELED_ACTIVE
@@ -309,7 +327,11 @@ class BillingRepositoryImpl(
                     val entitlement = EntitlementInfo(
                         subscriptionState = state,
                         planId = productId,
-                        planName = if (productId == BillingConstants.PRODUCT_ID_ANNUAL) "Fit10 Pro (Annual Plan)" else "Fit10 Pro (Monthly Plan)",
+                        planName = when (productId) {
+                            BillingConstants.PRODUCT_ID_ANNUAL -> "Fit10 Pro (Annual Plan)"
+                            BillingConstants.PRODUCT_ID_LIFETIME -> "Fit10 Pro (Lifetime)"
+                            else -> "Fit10 Pro (Monthly Plan)"
+                        },
                         expiryEpochMs = null, // In production, retrieved from backend / Play Developer API
                         isAutoRenewing = activePurchase.isAutoRenewing,
                         lastVerifiedEpochMs = System.currentTimeMillis()
@@ -345,12 +367,15 @@ class BillingRepositoryImpl(
             ?: return@withContext Result.failure(IllegalStateException("Product details not available for ${plan.productId}"))
 
         val offerToken = productDetails.subscriptionOfferDetails?.firstOrNull()?.offerToken
-            ?: return@withContext Result.failure(IllegalStateException("Offer token missing"))
+            ?: productDetails.oneTimePurchaseOfferDetailsList?.firstOrNull()?.offerToken
+        if (offerToken == null && plan.productId != BillingConstants.PRODUCT_ID_LIFETIME) {
+            return@withContext Result.failure(IllegalStateException("Offer token missing"))
+        }
 
         val productDetailsParamsList = listOf(
             BillingFlowParams.ProductDetailsParams.newBuilder()
                 .setProductDetails(productDetails)
-                .setOfferToken(offerToken)
+                .apply { offerToken?.let(::setOfferToken) }
                 .build()
         )
 
@@ -372,25 +397,17 @@ class BillingRepositoryImpl(
         }
 
         _isLoading.value = true
-        var wasRestored = false
-
-        val params = QueryPurchasesParams.newBuilder()
-            .setProductType(BillingClient.ProductType.SUBS)
-            .build()
-
-        billingClient.queryPurchasesAsync(params) { billingResult, purchasesList ->
-            _isLoading.value = false
-            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                processPurchases(purchasesList)
-                wasRestored = purchasesList.any { it.purchaseState == Purchase.PurchaseState.PURCHASED && it.products.any(::isProProduct) }
-            }
-        }
-
-        Result.success(wasRestored)
+        val purchases = queryAllPurchases()
+        _isLoading.value = false
+        if (purchases == null) return@withContext Result.failure(IllegalStateException("Could not load purchases"))
+        processPurchases(purchases)
+        Result.success(purchases.any { it.purchaseState == Purchase.PurchaseState.PURCHASED && it.products.any(::isProProduct) })
     }
 
     private fun isProProduct(productId: String): Boolean {
-        return productId == BillingConstants.PRODUCT_ID_ANNUAL || productId == BillingConstants.PRODUCT_ID_MONTHLY
+        return productId == BillingConstants.PRODUCT_ID_ANNUAL ||
+            productId == BillingConstants.PRODUCT_ID_MONTHLY ||
+            productId == BillingConstants.PRODUCT_ID_LIFETIME
     }
 
     private fun updateEntitlement(newEntitlement: EntitlementInfo) {

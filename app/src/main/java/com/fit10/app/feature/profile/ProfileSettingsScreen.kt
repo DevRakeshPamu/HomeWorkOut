@@ -90,6 +90,10 @@ private val CardSurface: Color
 @Composable
 fun ProfileSettingsScreen(
     isPro: Boolean = false,
+    userName: String = "",
+    streakDays: Int = 0,
+    sessions: Int = 0,
+    minutes: Int = 0,
     themeMode: ThemeMode = ThemeMode.SYSTEM,
     onThemeModeChange: (ThemeMode) -> Unit = {},
     hapticsEnabled: Boolean = true,
@@ -221,13 +225,13 @@ fun ProfileSettingsScreen(
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Rakesh Sharma",
+                            text = userName.ifBlank { "Welcome" },
                             fontWeight = FontWeight.Bold,
                             fontSize = 17.sp,
                             color = TextMain
                         )
                         Text(
-                            text = "rakesh.sharma@example.com",
+                            text = "Your data stays on this phone",
                             fontSize = 12.5.sp,
                             color = TextMuted
                         )
@@ -241,7 +245,7 @@ fun ProfileSettingsScreen(
                             )
                             Spacer(modifier = Modifier.width(5.dp))
                             Text(
-                                text = "Fit10 Pro Member",
+                                text = if (isPro) "Fit10 Pro Member" else "Free plan",
                                 fontSize = 11.5.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = BrandDeep
@@ -282,21 +286,21 @@ fun ProfileSettingsScreen(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    StatColumn(value = "14 Days", label = "Streak")
+                    StatColumn(value = "$streakDays Days", label = "Streak")
                     Box(
                         modifier = Modifier
                             .width(1.dp)
                             .height(28.dp)
                             .background(BorderInactive)
                     )
-                    StatColumn(value = "128", label = "Sessions")
+                    StatColumn(value = "$sessions", label = "Sessions")
                     Box(
                         modifier = Modifier
                             .width(1.dp)
                             .height(28.dp)
                             .background(BorderInactive)
                     )
-                    StatColumn(value = "1,280", label = "Minutes")
+                    StatColumn(value = "%,d".format(minutes), label = "Minutes")
                 }
             }
 

@@ -712,23 +712,6 @@ private fun ActiveExercisePlayerView(
         Spacer(Modifier.height(16.dp))
 
         // Stats footer
-        Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = CardSurface,
-            border = BorderStroke(1.dp, BorderInactive)
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                StatPill("Form Score", "96%", MaterialTheme.colorScheme.primary)
-                Box(Modifier.size(4.dp).clip(CircleShape).background(BorderInactive))
-                StatPill("Elapsed", "04:12", Fit10Theme.extendedColors.timer)
-                Box(Modifier.size(4.dp).clip(CircleShape).background(BorderInactive))
-                StatPill("Calories", "~42 kcal", Fit10Theme.extendedColors.streak)
-            }
-        }
 
         Spacer(Modifier.height(24.dp))
     }
@@ -761,12 +744,6 @@ private fun RestIntervalPlayerView(
         targetValue = 1.06f,
         animationSpec = infiniteRepeatable(tween(1000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
         label = "CirclePulse"
-    )
-    val heartPulse by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.3f,
-        animationSpec = infiniteRepeatable(tween(600, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-        label = "HeartPulse"
     )
 
     val skipInteraction = remember { MutableInteractionSource() }
@@ -853,17 +830,6 @@ private fun RestIntervalPlayerView(
                     letterSpacing = (-1).sp
                 )
                 Text(text = "SECONDS LEFT", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = TextMuted, letterSpacing = 1.5.sp)
-                Spacer(Modifier.height(6.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Rounded.Favorite,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.size(14.dp).scale(heartPulse)
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text(text = "118 bpm", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextMain)
-                }
             }
         }
 
@@ -1111,10 +1077,3 @@ private fun PillBadge(text: String) {
     }
 }
 
-@Composable
-private fun StatPill(label: String, value: String, color: Color) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = value, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = color)
-        Text(text = label, fontSize = 9.5.sp, color = TextMuted, fontWeight = FontWeight.Medium)
-    }
-}

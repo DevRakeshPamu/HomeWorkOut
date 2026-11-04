@@ -473,7 +473,7 @@ private fun WelcomeStep(onStart: () -> Unit) {
             }
             Spacer(Modifier.width(12.dp))
             Text(
-                text = "Joined by 14,000+ habit builders",
+                text = "Private, offline, no ads. Built for busy moms",
                 fontSize = 12.5.sp,
                 fontWeight = FontWeight.Medium,
                 color = TextMuted

@@ -10,6 +10,7 @@ import java.util.Locale
 object BillingConstants {
     const val PRODUCT_ID_ANNUAL = "fit10_pro_annual"
     const val PRODUCT_ID_MONTHLY = "fit10_pro_monthly"
+    const val PRODUCT_ID_LIFETIME = "fit10_pro_lifetime"
 
     /** Bounded offline grace period (7 days) before subscription must be re-verified with Play Store. */
     const val OFFLINE_ENTITLEMENT_GRACE_WINDOW_MS = 7L * 24 * 60 * 60 * 1000
@@ -127,8 +128,8 @@ data class SubscriptionPlanDetails(
         val FALLBACK_ANNUAL = SubscriptionPlanDetails(
             productId = BillingConstants.PRODUCT_ID_ANNUAL,
             title = "Annual Pass",
-            formattedPrice = "₹499",
-            priceAmountMicros = 499_000_000L,
+            formattedPrice = "₹699",
+            priceAmountMicros = 699_000_000L,
             currencyCode = "INR",
             billingPeriod = "P1Y",
             hasFreeTrial = true,
@@ -149,6 +150,17 @@ data class SubscriptionPlanDetails(
             freeTrialDays = 0,
             formattedMonthlyEquivalent = "₹149.00",
             savingsPercentage = null,
+            isFallbackSkeleton = true
+        )
+
+        val FALLBACK_LIFETIME = SubscriptionPlanDetails(
+            productId = BillingConstants.PRODUCT_ID_LIFETIME,
+            title = "Lifetime",
+            formattedPrice = "₹1,499",
+            priceAmountMicros = 1_499_000_000L,
+            currencyCode = "INR",
+            billingPeriod = "",
+            formattedMonthlyEquivalent = "₹1,499",
             isFallbackSkeleton = true
         )
     }

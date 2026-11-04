@@ -1,13 +1,13 @@
 package com.fit10.app.feature.player
 
-import android.net.Uri
-import android.view.ViewGroup
-import android.widget.FrameLayout
-import android.widget.VideoView
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -28,7 +28,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -45,6 +44,9 @@ import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
+import androidx.compose.material.icons.rounded.Spa
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -69,11 +71,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fit10.app.core.feedback.HapticKind
 import com.fit10.app.core.feedback.rememberFit10Haptics
-import com.fit10.app.core.ui.components.exerciseVideoRes
+import com.fit10.app.core.ui.components.IconTile
 import com.fit10.app.domain.model.WorkoutExercise
 import com.fit10.app.domain.workout.WorkoutSessionState
 
@@ -250,46 +251,75 @@ private fun CountdownView(s: WorkoutSessionState.Countdown) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ExerciseView(s: WorkoutSessionState.ActiveExercise) {
     val ex = s.currentExercise
-    Column(Modifier.fillMaxSize().padding(horizontal = 20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Spacer(Modifier.height(16.dp))
-        ExerciseMedia(ex, Modifier.fillMaxWidth().weight(1f, fill = false).aspectRatio(1f))
-        Spacer(Modifier.height(20.dp))
-        Text(ex.exercise.name, fontSize = 26.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground, textAlign = TextAlign.Center)
-        Spacer(Modifier.height(4.dp))
+    val next = s.workout.exercises.getOrNull(s.exerciseIndex + 1)
+    var showHow by remember { mutableStateOf(false) }
+    val pulse = rememberInfiniteTransition(label = "pulse")
+    val glow by pulse.animateFloat(0.92f, 1.06f, infiniteRepeatable(tween(4000), RepeatMode.Reverse), label = "glow")
+    val glowColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+
+    Column(Modifier.fillMaxSize().padding(horizontal = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Spacer(Modifier.weight(1f))
+        Text(ex.exercise.name, fontSize = 30.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground, textAlign = TextAlign.Center)
+        Spacer(Modifier.height(6.dp))
         Text(
-            ex.reps?.let { "$it reps · at your pace" } ?: "Hold steady, keep breathing",
-            fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurfaceVariant
+            ex.reps?.let { "$it reps · at your pace" } ?: (cueFor(ex) ?: "Breathe slowly"),
+            fontSize = 16.sp, lineHeight = 22.sp, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        cueFor(ex)?.let {
-            Spacer(Modifier.height(10.dp))
-            Text(it, fontSize = 14.sp, lineHeight = 20.sp, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.primary)
+        Spacer(Modifier.weight(0.6f))
+        Box(contentAlignment = Alignment.Center) {
+            Box(Modifier.size(260.dp).scale(glow).clip(CircleShape).background(glowColor))
+            TimerRing(s.secondsRemaining, s.totalExerciseSeconds, 220.dp)
         }
-        Spacer(Modifier.height(16.dp))
-        TimerRing(s.secondsRemaining, s.totalExerciseSeconds, 132.dp)
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.weight(0.6f))
+        if (ex.exercise.instructions.isNotEmpty()) {
+            TextButton(onClick = { showHow = true }) { Text("How to do it", fontSize = 15.sp) }
+        }
+        next?.let {
+            Text("Up next · ${it.exercise.name}", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Spacer(Modifier.weight(1f))
+    }
+
+    if (showHow) {
+        ModalBottomSheet(onDismissRequest = { showHow = false }) {
+            Column(Modifier.padding(horizontal = 24.dp).padding(bottom = 32.dp)) {
+                Text(ex.exercise.name, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Spacer(Modifier.height(12.dp))
+                ex.exercise.instructions.forEachIndexed { i, step ->
+                    Row(Modifier.padding(vertical = 6.dp)) {
+                        Box(Modifier.size(26.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
+                            Text("${i + 1}", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Text(step, fontSize = 15.sp, lineHeight = 22.sp, color = MaterialTheme.colorScheme.onSurface)
+                    }
+                }
+            }
+        }
     }
 }
 
 @Composable
 private fun RestView(s: WorkoutSessionState.RestInterval) {
     Column(
-        Modifier.fillMaxSize().padding(horizontal = 20.dp),
+        Modifier.fillMaxSize().padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text("Rest", fontSize = 34.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
-        Text("Breathe out slowly. Shake it out.", fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Spacer(Modifier.height(28.dp))
-        TimerRing(s.secondsRemaining, s.totalRestSeconds, 180.dp)
+        Text("Breathe out slowly. Shake it out.", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(32.dp))
+        TimerRing(s.secondsRemaining, s.totalRestSeconds, 200.dp)
         Spacer(Modifier.height(32.dp))
         Row(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(MaterialTheme.colorScheme.surface).padding(12.dp),
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            ExerciseMedia(s.nextExercise, Modifier.size(72.dp))
+            IconTile(Icons.Rounded.Spa, 48.dp)
             Spacer(Modifier.width(14.dp))
             Column {
                 Text("Up next", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -307,7 +337,7 @@ private fun TimerRing(secondsRemaining: Int, total: Int, size: Dp) {
     val color = MaterialTheme.colorScheme.primary
     Box(Modifier.size(size), contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
-            val stroke = Stroke(10.dp.toPx(), cap = StrokeCap.Round)
+            val stroke = Stroke(12.dp.toPx(), cap = StrokeCap.Round)
             drawArc(track, -90f, 360f, false, style = stroke)
             drawArc(color, -90f, 360f * progress, false, style = stroke)
         }
@@ -349,28 +379,6 @@ private fun RoundButton(icon: ImageVector, label: String, size: Dp, primary: Boo
             icon, contentDescription = label,
             tint = if (primary) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.size(size * 0.45f)
-        )
-    }
-}
-
-@Composable
-private fun ExerciseMedia(ex: WorkoutExercise, modifier: Modifier) {
-    val res = remember(ex.exercise.id) { exerciseVideoRes(ex.exercise.id) }
-    Box(modifier.clip(RoundedCornerShape(24.dp)).background(MaterialTheme.colorScheme.surfaceVariant)) {
-        AndroidView(
-            factory = { ctx ->
-                VideoView(ctx).apply {
-                    layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-                }
-            },
-            update = { view ->
-                if (view.tag != res) {
-                    view.tag = res
-                    view.setVideoURI(Uri.parse("android.resource://${view.context.packageName}/$res"))
-                    view.setOnPreparedListener { mp -> mp.isLooping = true; mp.setVolume(0f, 0f); mp.start() }
-                }
-            },
-            modifier = Modifier.fillMaxSize()
         )
     }
 }

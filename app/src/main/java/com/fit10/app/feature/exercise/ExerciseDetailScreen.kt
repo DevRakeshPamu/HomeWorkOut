@@ -31,8 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fit10.app.core.ui.components.BackBar
 import com.fit10.app.core.ui.components.SectionLabel
-import com.fit10.app.core.ui.components.ExerciseVideo
-import com.fit10.app.core.ui.components.exerciseVideoRes
+import com.fit10.app.core.ui.figure.ExerciseDemo
 import com.fit10.app.data.seed.ExerciseCatalog
 
 @Composable
@@ -43,11 +42,10 @@ fun ExerciseDetailScreen(
     onGotIt: () -> Unit = {}
 ) {
     val exercise = remember(exerciseId) { ExerciseCatalog.ALL.find { it.id == exerciseId } ?: ExerciseCatalog.ALL.first() }
-    val res = remember(exercise.id) { exerciseVideoRes(exercise.id) }
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).statusBarsPadding().navigationBarsPadding()) {
         BackBar(onBack)
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 20.dp)) {
-            res?.let { ExerciseVideo(it, Modifier.fillMaxWidth().aspectRatio(1.2f).clip(RoundedCornerShape(24.dp))) }
+            ExerciseDemo(exercise.id, Modifier.fillMaxWidth().aspectRatio(1.2f).clip(RoundedCornerShape(24.dp)))
             Spacer(Modifier.height(20.dp))
             Text(exercise.name, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
             if (exercise.targetMuscles.isNotEmpty()) {

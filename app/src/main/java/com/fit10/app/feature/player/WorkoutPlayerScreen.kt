@@ -75,9 +75,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fit10.app.core.feedback.HapticKind
 import com.fit10.app.core.feedback.rememberFit10Haptics
-import com.fit10.app.core.ui.components.ExerciseVideo
-import com.fit10.app.core.ui.components.IconTile
-import com.fit10.app.core.ui.components.exerciseVideoRes
+import com.fit10.app.core.ui.figure.ExerciseDemo
+import com.fit10.app.core.ui.figure.hasExerciseFigure
 import com.fit10.app.domain.model.WorkoutExercise
 import com.fit10.app.domain.workout.WorkoutSessionState
 
@@ -264,13 +263,13 @@ private fun ExerciseView(s: WorkoutSessionState.ActiveExercise) {
     val glow by pulse.animateFloat(0.92f, 1.06f, infiniteRepeatable(tween(4000), RepeatMode.Reverse), label = "glow")
     val glowColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
 
-    val video = remember(ex.exercise.id) { exerciseVideoRes(ex.exercise.id) }
+    val hasDemo = remember(ex.exercise.id) { hasExerciseFigure(ex.exercise.id) }
     val subtitle = ex.reps?.let { "$it reps · at your pace" } ?: (cueFor(ex) ?: "Breathe slowly")
 
-    if (video != null) {
+    if (hasDemo) {
         Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-            ExerciseVideo(
-                video,
+            ExerciseDemo(
+                ex.exercise.id,
                 Modifier.padding(horizontal = 16.dp, vertical = 8.dp).fillMaxWidth().weight(1f, fill = false).aspectRatio(1f).clip(RoundedCornerShape(28.dp))
             )
             Spacer(Modifier.height(16.dp))
@@ -348,7 +347,7 @@ private fun RestView(s: WorkoutSessionState.RestInterval) {
             Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(MaterialTheme.colorScheme.surfaceVariant).padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconTile(Icons.Rounded.Spa, 48.dp)
+            ExerciseDemo(s.nextExercise.exercise.id, Modifier.size(72.dp).clip(RoundedCornerShape(16.dp)), showSpeed = false)
             Spacer(Modifier.width(14.dp))
             Column {
                 Text("Up next", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)

@@ -2,6 +2,8 @@ package com.fit10.app.core.ui.figure
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.ui.draw.scale
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -63,6 +65,17 @@ internal class FigMove(val front: Boolean, val wall: Boolean, val frames: List<F
 
 fun hasExerciseFigure(exerciseId: String): Boolean = exerciseId in FigureMoves.ALL
 
+enum class Breath(val label: String) { IN("Breathe in"), OUT("Breathe out"), STEADY("Breathe steadily") }
+
+private val exhaleOnFirstFrame = setOf("ex_squats", "ex_lunges", "ex_reverse_lunges", "ex_push_ups", "ex_wide_push_ups", "ex_diamond_push_ups")
+
+private fun figureBreath(exerciseId: String, move: FigMove, frame: Int): Breath {
+    if (move.frames.sumOf { it.ms + it.hold } < 2000) return Breath.STEADY
+    if (exerciseId == "ex_prone_ytw") return if (frame == 0) Breath.IN else Breath.OUT
+    val out = if (exerciseId in exhaleOnFirstFrame) frame % 2 == 0 else frame % 2 == 1
+    return if (out) Breath.OUT else Breath.IN
+}
+
 private const val SLOW_FACTOR = 2.2f
 private const val VIEW_W = 1.6f
 private const val VIEW_TOP = -0.14f
@@ -105,7 +118,7 @@ private fun forward(a: FloatArray, front: Boolean): FloatArray {
     return p
 }
 
-private fun pose(move: FigMove, timeMs: Long, slow: Boolean): Pair<Skeleton, Float> {
+private fun pose(move: FigMove, timeMs: Long, slow: Boolean): Triple<Skeleton, Float, Int> {
     val k = if (slow) SLOW_FACTOR else 1f
     val frames = move.frames
     val total = frames.sumOf { ((it.ms + it.hold) * k).toInt() }.coerceAtLeast(1)
@@ -129,11 +142,11 @@ private fun pose(move: FigMove, timeMs: Long, slow: Boolean): Pair<Skeleton, Flo
     val ox = offA.x + (offB.x - offA.x) * e
     val oy = offA.y + (offB.y - offA.y) * e
     for (j in 0 until 15) { p[j * 2] += ox; p[j * 2 + 1] += oy }
-    return Skeleton(p) to a[1]
+    return Triple(Skeleton(p), a[1], i)
 }
 
 @Composable
-fun ExerciseFigure(exerciseId: String, modifier: Modifier = Modifier, slow: Boolean = false) {
+fun ExerciseFigure(exerciseId: String, modifier: Modifier = Modifier, slow: Boolean = false, onBreath: (Breath) -> Unit = {}) {
     val move = FigureMoves.ALL[exerciseId] ?: return
     var time by remember(exerciseId) { mutableLongStateOf(0L) }
     LaunchedEffect(exerciseId) {
@@ -145,7 +158,8 @@ fun ExerciseFigure(exerciseId: String, modifier: Modifier = Modifier, slow: Bool
     val ground = MaterialTheme.colorScheme.outlineVariant
     val shadow = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
     Canvas(modifier) {
-        val (sk, bend) = pose(move, time, slow)
+        val (sk, bend, frame) = pose(move, time, slow)
+        onBreath(figureBreath(exerciseId, move, frame))
         drawFigure(move, sk, bend, near, far, ground, shadow)
     }
 }
@@ -199,8 +213,10 @@ fun ExerciseDemo(exerciseId: String, modifier: Modifier = Modifier, showSpeed: B
     ) {
         val context = LocalContext.current
         val video = remember(exerciseId) { exerciseVideoRes(context, exerciseId) }
-        if (video != null) ExerciseVideo(exerciseId, video, slow, Modifier.fillMaxSize())
-        else ExerciseFigure(exerciseId, Modifier.fillMaxSize().padding(16.dp), slow)
+        var breath by remember(exerciseId) { mutableStateOf<Breath?>(null) }
+        if (video != null) ExerciseVideo(exerciseId, video, slow, Modifier.fillMaxSize()) { breath = it }
+        else ExerciseFigure(exerciseId, Modifier.fillMaxSize().padding(16.dp), slow) { if (breath != it) breath = it }
+        if (showSpeed) breath?.let { BreathPill(it, Modifier.align(Alignment.BottomCenter).padding(14.dp)) }
         if (showSpeed) {
             AnimatedContent(
                 targetState = slow,
@@ -225,5 +241,28 @@ fun ExerciseDemo(exerciseId: String, modifier: Modifier = Modifier, showSpeed: B
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun BreathPill(breath: Breath, modifier: Modifier) {
+    val target = when (breath) { Breath.IN -> 1f; Breath.OUT -> 0.45f; Breath.STEADY -> 0.7f }
+    val scale by animateFloatAsState(target, tween(if (breath == Breath.STEADY) 300 else 1400), label = "breath")
+    val primary = MaterialTheme.colorScheme.primary
+    Row(
+        modifier.clip(CircleShape).background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
+            .padding(start = 8.dp, end = 14.dp, top = 6.dp, bottom = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(Modifier.size(22.dp), contentAlignment = Alignment.Center) {
+            Box(Modifier.size(22.dp).scale(scale).clip(CircleShape).background(primary.copy(alpha = 0.35f)))
+            Box(Modifier.size(8.dp).clip(CircleShape).background(primary))
+        }
+        Spacer(Modifier.width(8.dp))
+        AnimatedContent(
+            targetState = breath,
+            transitionSpec = { fadeIn(tween(200)) togetherWith fadeOut(tween(150)) },
+            label = "breathLabel"
+        ) { Text(it.label, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface) }
     }
 }

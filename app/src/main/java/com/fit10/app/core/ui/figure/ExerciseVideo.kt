@@ -27,12 +27,32 @@ fun exerciseVideoRes(context: Context, exerciseId: String): Int? =
     context.resources.getIdentifier("video_" + exerciseId.removePrefix("ex_"), "raw", context.packageName).takeIf { it != 0 }
 
 @Composable
-internal fun ExerciseVideo(exerciseId: String, res: Int, slow: Boolean, modifier: Modifier = Modifier) {
+internal fun ExerciseVideo(exerciseId: String, res: Int, slow: Boolean, modifier: Modifier = Modifier, onBreath: (Breath) -> Unit = {}) {
     var player by remember(res) { mutableStateOf<MediaPlayer?>(null) }
     var mirrored by remember(res) { mutableStateOf(false) }
 
+    LaunchedEffect(player) {
+        val mp = player ?: return@LaunchedEffect
+        val duration = runCatching { mp.duration }.getOrDefault(0)
+        while (true) {
+            val pos = runCatching { mp.currentPosition }.getOrNull() ?: break
+            val b = if (duration >= 9000) BreathTimeline.at(exerciseId, pos / 1000f)
+                else if (pos < duration / 2) Breath.IN else Breath.OUT
+            b?.let(onBreath)
+            delay(100)
+        }
+    }
     LaunchedEffect(player, slow) {
-        player?.let { mp -> runCatching { mp.playbackParams = mp.playbackParams.setSpeed(if (slow) 1f else REAL_SPEED) } }
+        player?.let { mp ->
+            val realTime = runCatching { mp.duration }.getOrDefault(0) >= 9000
+            val speed = when {
+                realTime && slow -> 0.5f
+                realTime -> 1f
+                slow -> 1f
+                else -> REAL_SPEED
+            }
+            runCatching { mp.playbackParams = mp.playbackParams.setSpeed(speed) }
+        }
     }
     if (exerciseId in mirrorEveryLoop) {
         LaunchedEffect(player) {
